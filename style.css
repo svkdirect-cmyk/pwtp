@@ -385,6 +385,870 @@ body {
     width: 0%;
 }
 
+/* Стили для вкладок */
+.tab-content {
+    display: none;
+    min-height: calc(100vh - 80px);
+    padding: 20px;
+    padding-bottom: 80px;
+    overflow-y: auto;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Шапка вкладок */
+.tab-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.tab-header h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.tab-stats {
+    display: flex;
+    gap: 15px;
+}
+
+.tab-stats > div {
+    background: var(--bg-secondary);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+/* Нижняя панель вкладок */
+.bottom-tabs {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    padding: 10px 0;
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+}
+
+.tab-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0.6;
+}
+
+.tab-item.active {
+    opacity: 1;
+}
+
+.tab-item i {
+    font-size: 18px;
+    margin-bottom: 2px;
+}
+
+.tab-item span {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tab-item.active {
+    color: var(--text-accent);
+}
+
+/* Стили для вкладки друзей */
+.friends-content {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.7;
+}
+
+.empty-state h3 {
+    font-size: 18px;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+.empty-state p {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.btn-primary {
+    background: var(--text-accent);
+    color: var(--bg-primary);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 auto;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+.friends-bonuses h4 {
+    font-size: 16px;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+}
+
+.bonus-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.bonus-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.bonus-icon {
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+}
+
+.bonus-info {
+    flex: 1;
+}
+
+.bonus-name {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+.bonus-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.bonus-status {
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+}
+
+.bonus-status.active {
+    background: var(--success-color);
+    color: var(--bg-primary);
+}
+
+/* Стили для вкладки уровней */
+.levels-content {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.levels-progress {
+    background: var(--bg-secondary);
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+}
+
+.level-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.level-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: var(--text-secondary);
+    position: relative;
+    z-index: 2;
+}
+
+.level-circle.active {
+    background: var(--text-accent);
+    color: var(--bg-primary);
+}
+
+.level-line {
+    flex: 1;
+    height: 2px;
+    background: var(--border-color);
+    position: relative;
+    top: -1px;
+}
+
+.levels-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.level-card {
+    background: var(--bg-secondary);
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.level-card.active {
+    border-color: var(--text-accent);
+}
+
+.level-card.locked {
+    opacity: 0.5;
+}
+
+.level-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.level-number {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.level-status {
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+}
+
+.level-status.completed {
+    background: var(--success-color);
+    color: var(--bg-primary);
+}
+
+.level-reward {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.reward-icon {
+    font-size: 20px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+}
+
+.reward-info {
+    flex: 1;
+}
+
+.reward-name {
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 2px;
+}
+
+.reward-desc {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+/* Стили для вкладки комбо */
+.combo-content {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.combo-deck {
+    background: var(--bg-secondary);
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+}
+
+.deck-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.deck-power {
+    text-align: center;
+}
+
+.power-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-accent);
+    line-height: 1;
+}
+
+.power-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+.deck-stats {
+    display: flex;
+    gap: 20px;
+}
+
+.deck-stat {
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.stat-label {
+    font-size: 10px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+.combo-collection h4 {
+    font-size: 16px;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+}
+
+.cards-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.combo-card {
+    aspect-ratio: 2/3;
+    perspective: 1000px;
+}
+
+.combo-card.locked {
+    opacity: 0.5;
+    filter: grayscale(1);
+}
+
+.card-frame {
+    width: 100%;
+    height: 100%;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    padding: 12px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.card-rarity {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    font-size: 8px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.card-rarity.common {
+    background: var(--text-secondary);
+    color: var(--bg-primary);
+}
+
+.card-rarity.rare {
+    background: #3498db;
+    color: var(--bg-primary);
+}
+
+.card-rarity.epic {
+    background: #9b59b6;
+    color: var(--bg-primary);
+}
+
+.card-rarity.legendary {
+    background: var(--text-accent);
+    color: var(--bg-primary);
+}
+
+.card-icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+.card-name {
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.card-stats {
+    font-size: 9px;
+    color: var(--text-secondary);
+}
+
+.combo-info {
+    background: var(--bg-secondary);
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.combo-info h4 {
+    font-size: 14px;
+    margin-bottom: 12px;
+    color: var(--text-primary);
+}
+
+.combo-rules {
+    list-style: none;
+    padding: 0;
+}
+
+.combo-rules li {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    padding-left: 16px;
+    position: relative;
+}
+
+.combo-rules li:before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--text-accent);
+}
+
+/* Стили для модальных окон */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 2000;
+    backdrop-filter: blur(5px);
+}
+
+.modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: var(--bg-primary);
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    max-width: 90%;
+    max-height: 90%;
+    overflow: hidden;
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+/* Стили для профиля */
+.profile-modal {
+    width: 400px;
+    max-width: 95%;
+}
+
+.profile-content {
+    padding: 20px;
+    overflow-y: auto;
+    max-height: 70vh;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.profile-avatar {
+    position: relative;
+}
+
+.avatar-large {
+    width: 80px;
+    height: 80px;
+    border-radius: 20px;
+    background: var(--bg-secondary);
+    border: 3px solid var(--border-color);
+}
+
+.profile-level {
+    position: absolute;
+    bottom: -5px;
+    right: -5px;
+    background: var(--text-accent);
+    color: var(--bg-primary);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 12px;
+    min-width: 30px;
+    text-align: center;
+}
+
+.profile-info {
+    flex: 1;
+}
+
+.profile-info h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 0 5px 0;
+    color: var(--text-primary);
+}
+
+.profile-id {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.profile-rank {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-accent);
+    font-weight: 600;
+}
+
+.profile-stats {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.stat-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.stat-row:last-child {
+    margin-bottom: 0;
+}
+
+.stat-item {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--bg-tertiary);
+    border-radius: 12px;
+}
+
+.stat-icon {
+    font-size: 20px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-secondary);
+    border-radius: 10px;
+}
+
+.stat-data {
+    flex: 1;
+}
+
+.stat-number {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.profile-achievements {
+    margin-bottom: 20px;
+}
+
+.profile-achievements h4 {
+    font-size: 16px;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+}
+
+.achievements-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.achievement {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    opacity: 0.5;
+}
+
+.achievement.unlocked {
+    opacity: 1;
+    border-color: var(--text-accent);
+}
+
+.achievement-icon {
+    font-size: 20px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-tertiary);
+    border-radius: 10px;
+}
+
+.achievement.unlocked .achievement-icon {
+    background: var(--text-accent);
+    color: var(--bg-primary);
+}
+
+.achievement-info {
+    flex: 1;
+}
+
+.achievement-name {
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 2px;
+    color: var(--text-primary);
+}
+
+.achievement-desc {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.profile-upgrades {
+    margin-bottom: 20px;
+}
+
+.profile-upgrades h4 {
+    font-size: 16px;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+}
+
+.upgrades-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.profile-upgrade {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.upgrade-name {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+.upgrade-level {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.modal-actions {
+    padding: 20px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: center;
+}
+
+.btn-secondary {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-secondary:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--text-secondary);
+}
+
+/* Стиль для кликабельного имени */
+.clickable {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.clickable:hover {
+    color: var(--text-accent);
+}
+
+.clickable:active {
+    transform: scale(0.95);
+}
+
+/* Специальные эффекты */
+.critical-hit {
+    color: var(--text-accent) !important;
+    font-weight: 700;
+}
+
+.pulse {
+    animation: pulse 0.3s ease-in-out;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.coming-soon {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
 /* Адаптивность */
 @media (max-width: 768px) {
     .header {
@@ -412,20 +1276,89 @@ body {
         width: 50px;
         height: 50px;
     }
+
+    .tab-content {
+        padding: 15px;
+        padding-bottom: 70px;
+    }
+    
+    .tab-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+    
+    .tab-stats {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .cards-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .deck-info {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+    }
+    
+    .deck-stats {
+        justify-content: space-around;
+        width: 100%;
+    }
+    
+    .level-indicator {
+        gap: 4px;
+    }
+    
+    .level-circle {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+
+    .profile-modal {
+        width: 95%;
+        margin: 20px;
+    }
+    
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 12px;
+    }
+    
+    .stat-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .profile-content {
+        padding: 15px;
+    }
+    
+    .modal-header {
+        padding: 15px;
+    }
+    
+    .modal-actions {
+        padding: 15px;
+    }
 }
 
-/* Специальные эффекты */
-.critical-hit {
-    color: var(--text-accent) !important;
-    font-weight: 700;
+/* Анимация появления профиля */
+@keyframes profileAppear {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
-.pulse {
-    animation: pulse 0.3s ease-in-out;
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
+.profile-modal {
+    animation: profileAppear 0.3s ease-out;
 }
