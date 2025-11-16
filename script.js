@@ -1,4 +1,4 @@
-class HamsterClicker {
+class DarkPawsClicker {
     constructor() {
         this.tg = window.Telegram.WebApp;
         this.user = null;
@@ -13,118 +13,289 @@ class HamsterClicker {
             lastSave: Date.now()
         };
         
+        this.particles = [];
         this.init();
     }
 
     init() {
-        this.tg.expand();
+        console.log('Initializing Dark Paws Clicker...');
+        
+        // Инициализируем Telegram Web App
+        if (this.tg && this.tg.expand) {
+            this.tg.expand();
+            this.tg.enableClosingConfirmation();
+        }
+        
         this.setupEventListeners();
-        this.loadGameState();
         this.initTelegramAuth();
+        this.loadGameState();
+        this.updateUI();
+        this.startAutoClicker();
+        
+        // Запускаем анимацию частиц
+        this.animateParticles();
     }
 
     initTelegramAuth() {
-        if (this.tg.initDataUnsafe.user) {
+        if (this.tg && this.tg.initDataUnsafe && this.tg.initDataUnsafe.user) {
             this.user = this.tg.initDataUnsafe.user;
-            this.showGameScreen();
-        } else {
-            this.showAuthScreen();
+            this.updateUserInfo();
+        }
+    }
+
+    updateUserInfo() {
+        if (this.user) {
+            const avatar = document.getElementById('user-avatar');
+            const username = document.getElementById('user-name');
+            
+            if (avatar && this.user.photo_url) {
+                avatar.src = this.user.photo_url;
+            }
+            if (username) {
+                username.textContent = this.user.first_name || 'Player';
+            }
         }
     }
 
     setupEventListeners() {
-        // Кнопка начала игры
-        document.getElementById('start-btn').addEventListener('click', () => {
-            this.tg.openTelegramLink('https://t.me/HamsterClickerBot?start=game');
-        });
-
-        // Клик по хомяку
-        document.getElementById('hamster').addEventListener('click', (e) => {
-            this.handleClick(e);
-        });
+        // Клик по лапке
+        const pawButton = document.getElementById('paw-button');
+        if (pawButton) {
+            pawButton.addEventListener('click', (e) => {
+                this.handleClick(e);
+            });
+            
+            // Добавляем тактильную обратную связь
+            pawButton.addEventListener('mousedown', () => {
+                pawButton.classList.add('click-animation');
+            });
+            
+            pawButton.addEventListener('mouseup', () => {
+                setTimeout(() => {
+                    pawButton.classList.remove('click-animation');
+                }, 150);
+            });
+            
+            pawButton.addEventListener('touchstart', () => {
+                pawButton.classList.add('click-animation');
+            });
+            
+            pawButton.addEventListener('touchend', () => {
+                setTimeout(() => {
+                    pawButton.classList.remove('click-animation');
+                }, 150);
+            });
+        }
 
         // Кнопки улучшений
-        document.querySelectorAll('.btn-upgrade').forEach(btn => {
+        document.querySelectorAll('.upgrade-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const upgradeType = e.target.closest('.upgrade-item').dataset.upgrade;
-                this.buyUpgrade(upgradeType);
+                const upgradeCard = e.target.closest('.upgrade-card');
+                if (upgradeCard) {
+                    const upgradeType = upgradeCard.dataset.upgrade;
+                    this.buyUpgrade(upgradeType);
+                }
             });
         });
     }
 
-    showAuthScreen() {
-        document.getElementById('auth-screen').classList.add('active');
-        document.getElementById('game-screen').classList.remove('active');
-    }
-
-    showGameScreen() {
-        document.getElementById('auth-screen').classList.remove('active');
-        document.getElementById('game-screen').classList.add('active');
-        
-        // Обновляем информацию пользователя
-        document.getElementById('user-avatar').src = this.user.photo_url || '';
-        document.getElementById('user-name').textContent = this.user.first_name || 'Игрок';
-        
-        this.updateUI();
-        this.startAutoClicker();
-    }
-
     handleClick(event) {
-        const hamster = document.getElementById('hamster');
-        const rect = hamster.getBoundingClientRect();
-        
-        // Создаем эффект клика
-        this.createClickEffect(event.clientX, event.clientY);
+        // Создаем эффекты частиц
+        this.createParticles(event);
         
         // Вычисляем очки
         let points = this.gameState.upgrades.clickPower;
+        let isCritical = false;
         
-        // Шанс крита
-        const critChance = this.gameState.upgrades.criticalChance * 0.05; // 5% за уровень
+        // Шанс критического удара
+        const critChance = this.gameState.upgrades.criticalChance * 0.03; // 3% за уровень
         if (Math.random() < critChance) {
-            points *= 2;
-            this.createClickEffect(event.clientX, event.clientY, `CRIT! +${points}`, '#ff0000');
+            points *= 3;
+            isCritical = true;
         }
         
-        this.addScore(points);
-        
-        // Анимация хомяка
-        hamster.style.transform = 'scale(0.95)';
-        setTimeout(() => {
-            hamster.style.transform = 'scale(1)';
-        }, 100);
-    }
-
-    createClickEffect(x, y, text = `+${this.gameState.upgrades.clickPower}`, color = '#ffeb3b') {
-        const effect = document.getElementById('click-effect');
-        effect.textContent = text;
-        effect.style.color = color;
-        effect.style.left = (x - 20) + 'px';
-        effect.style.top = (y - 20) + 'px';
-        effect.style.animation = 'none';
-        
-        setTimeout(() => {
-            effect.style.animation = 'floatUp 1s ease-out forwards';
-        }, 10);
-    }
-
-    addScore(points) {
-        this.gameState.score += points;
-        
-        // Проверка уровня
-        const newLevel = Math.floor(Math.sqrt(this.gameState.score / 100)) + 1;
-        if (newLevel > this.gameState.level) {
-            this.gameState.level = newLevel;
-            this.showLevelUpMessage();
-        }
-        
-        this.updateUI();
+        this.addScore(points, isCritical);
         this.saveGameState();
     }
 
-    showLevelUpMessage() {
-        // Можно добавить красивую анимацию уровня
-        console.log(`Новый уровень: ${this.gameState.level}`);
+    createParticles(event) {
+        const container = document.getElementById('particles-container');
+        if (!container) return;
+        
+        const rect = container.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        
+        // Создаем 8-12 частиц
+        const particleCount = 8 + Math.floor(Math.random() * 5);
+        
+        for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            
+            // Случайное направление и расстояние
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 30 + Math.random() * 50;
+            const tx = Math.cos(angle) * distance;
+            const ty = Math.sin(angle) * distance;
+            
+            particle.style.setProperty('--tx', `${tx}px`);
+            particle.style.setProperty('--ty', `${ty}px`);
+            particle.style.left = `${x}px`;
+            particle.style.top = `${y}px`;
+            
+            // Случайный размер
+            const size = 2 + Math.random() * 4;
+            particle.style.width = `${size}px`;
+            particle.style.height = `${size}px`;
+            
+            // Случайная прозрачность
+            const opacity = 0.3 + Math.random() * 0.7;
+            particle.style.opacity = opacity;
+            
+            // Анимация
+            particle.style.animation = `particle-float ${0.8 + Math.random() * 0.4}s ease-out forwards`;
+            
+            container.appendChild(particle);
+            
+            // Удаляем частицу после анимации
+            setTimeout(() => {
+                if (particle.parentNode === container) {
+                    container.removeChild(particle);
+                }
+            }, 1200);
+        }
+    }
+
+    animateParticles() {
+        // Фоновая анимация редких частиц
+        setInterval(() => {
+            if (Math.random() < 0.1) { // 10% шанс создать частицу
+                this.createBackgroundParticle();
+            }
+        }, 1000);
+    }
+
+    createBackgroundParticle() {
+        const container = document.getElementById('particles-container');
+        if (!container) return;
+        
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        
+        // Случайная позиция по краям
+        const side = Math.floor(Math.random() * 4);
+        let x, y;
+        
+        switch(side) {
+            case 0: // верх
+                x = Math.random() * container.offsetWidth;
+                y = 0;
+                break;
+            case 1: // право
+                x = container.offsetWidth;
+                y = Math.random() * container.offsetHeight;
+                break;
+            case 2: // низ
+                x = Math.random() * container.offsetWidth;
+                y = container.offsetHeight;
+                break;
+            case 3: // лево
+                x = 0;
+                y = Math.random() * container.offsetHeight;
+                break;
+        }
+        
+        // Направление к центру
+        const centerX = container.offsetWidth / 2;
+        const centerY = container.offsetHeight / 2;
+        const angle = Math.atan2(centerY - y, centerX - x);
+        const distance = 100 + Math.random() * 100;
+        const tx = Math.cos(angle) * distance;
+        const ty = Math.sin(angle) * distance;
+        
+        particle.style.setProperty('--tx', `${tx}px`);
+        particle.style.setProperty('--ty', `${ty}px`);
+        particle.style.left = `${x}px`;
+        particle.style.top = `${y}px`;
+        
+        // Маленький размер и низкая opacity
+        const size = 1 + Math.random() * 2;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        particle.style.opacity = 0.1 + Math.random() * 0.2;
+        
+        particle.style.animation = `particle-float ${2 + Math.random() * 2}s ease-out forwards`;
+        
+        container.appendChild(particle);
+        
+        setTimeout(() => {
+            if (particle.parentNode === container) {
+                container.removeChild(particle);
+            }
+        }, 4000);
+    }
+
+    addScore(points, isCritical = false) {
+        const oldScore = this.gameState.score;
+        this.gameState.score += points;
+        
+        // Проверка уровня
+        const requiredForNextLevel = this.getRequiredScoreForLevel(this.gameState.level + 1);
+        if (this.gameState.score >= requiredForNextLevel) {
+            this.gameState.level++;
+            this.showLevelUp();
+        }
+        
+        this.updateUI();
+        
+        // Визуальный эффект при критическом ударе
+        if (isCritical) {
+            this.showCriticalEffect(points);
+        }
+    }
+
+    getRequiredScoreForLevel(level) {
+        return Math.pow(level, 2) * 100;
+    }
+
+    showLevelUp() {
+        // Можно добавить анимацию уровня
+        const levelBadge = document.querySelector('.level-badge');
+        if (levelBadge) {
+            levelBadge.textContent = this.gameState.level;
+            levelBadge.classList.add('pulse');
+            setTimeout(() => levelBadge.classList.remove('pulse'), 1000);
+        }
+    }
+
+    showCriticalEffect(points) {
+        const container = document.getElementById('particles-container');
+        if (!container) return;
+        
+        const critText = document.createElement('div');
+        critText.className = 'particle critical-hit';
+        critText.textContent = `CRIT! +${points}`;
+        critText.style.cssText = `
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--text-accent);
+            pointer-events: none;
+            z-index: 20;
+            animation: floatUp 1.5s ease-out forwards;
+        `;
+        
+        container.appendChild(critText);
+        
+        setTimeout(() => {
+            if (critText.parentNode === container) {
+                container.removeChild(critText);
+            }
+        }, 1500);
     }
 
     buyUpgrade(upgradeType) {
@@ -153,8 +324,6 @@ class HamsterClicker {
             
             this.updateUI();
             this.saveGameState();
-        } else {
-            this.showMessage('Недостаточно очков!');
         }
     }
 
@@ -163,133 +332,139 @@ class HamsterClicker {
             if (this.gameState.upgrades.autoClick > 0) {
                 const autoPoints = this.gameState.upgrades.autoClick;
                 this.addScore(autoPoints);
-                
-                // Создаем автоматический эффект клика
-                const hamster = document.getElementById('hamster');
-                const rect = hamster.getBoundingClientRect();
-                const x = rect.left + rect.width / 2;
-                const y = rect.top + rect.height / 2;
-                this.createClickEffect(x, y, `AUTO +${autoPoints}`, '#4ecdc4');
             }
-        }, 1000); // Каждую секунду
+        }, 1000);
     }
 
     updateUI() {
         // Обновляем счет и уровень
-        document.getElementById('score').textContent = Math.floor(this.gameState.score);
-        document.getElementById('level').textContent = this.gameState.level;
+        const scoreElement = document.getElementById('score');
+        const levelElement = document.getElementById('level');
+        
+        if (scoreElement) scoreElement.textContent = Math.floor(this.gameState.score);
+        if (levelElement) levelElement.textContent = this.gameState.level;
+        
+        // Обновляем силу клика и авто-клик
+        const clickPowerElement = document.getElementById('click-power');
+        const autoClicksElement = document.getElementById('auto-clicks');
+        
+        if (clickPowerElement) clickPowerElement.textContent = this.gameState.upgrades.clickPower;
+        if (autoClicksElement) autoClicksElement.textContent = this.gameState.upgrades.autoClick;
         
         // Обновляем кнопки улучшений
         this.updateUpgradeButtons();
         
-        // Обновляем таблицу лидеров
-        this.updateLeaderboard();
+        // Обновляем прогресс бар
+        this.updateProgressBar();
     }
 
     updateUpgradeButtons() {
-        const upgrades = document.querySelectorAll('.upgrade-item');
+        const upgrades = document.querySelectorAll('.upgrade-card');
         
-        upgrades.forEach(item => {
-            const type = item.dataset.upgrade;
-            const levelSpan = item.querySelector('.upgrade-level');
-            const button = item.querySelector('.btn-upgrade');
+        upgrades.forEach(card => {
+            const type = card.dataset.upgrade;
+            const levelSpan = card.querySelector('.upgrade-level span');
+            const button = card.querySelector('.upgrade-btn');
             
-            let level, cost, name;
+            if (!levelSpan || !button) return;
+            
+            let level, cost;
             
             switch(type) {
                 case 'click-power':
                     level = this.gameState.upgrades.clickPower;
                     cost = 10 * Math.pow(2, level - 1);
-                    name = 'Сила клика';
-                    levelSpan.textContent = `Ур. ${level}`;
-                    button.textContent = `Улучшить (${cost})`;
+                    levelSpan.textContent = level;
+                    button.textContent = cost;
+                    button.dataset.cost = cost;
                     break;
                     
                 case 'auto-click':
                     level = this.gameState.upgrades.autoClick;
                     cost = level === 0 ? 50 : 100 * Math.pow(2, level - 1);
-                    name = level === 0 ? 'Купить авто-клик' : 'Авто-клик';
-                    levelSpan.textContent = level === 0 ? 'Не куплено' : `Ур. ${level}`;
-                    button.textContent = level === 0 ? `Купить (${cost})` : `Улучшить (${cost})`;
+                    levelSpan.textContent = level;
+                    button.textContent = cost;
+                    button.dataset.cost = cost;
                     break;
                     
                 case 'critical-chance':
                     level = this.gameState.upgrades.criticalChance;
                     cost = 25 * Math.pow(2, level - 1);
-                    name = 'Шанс крита';
-                    levelSpan.textContent = `Ур. ${level}`;
-                    button.textContent = `Улучшить (${cost})`;
+                    levelSpan.textContent = level;
+                    button.textContent = cost;
+                    button.dataset.cost = cost;
                     break;
             }
             
-            button.disabled = this.gameState.score < cost;
+            // Обновляем доступность кнопок
+            if (this.gameState.score >= cost) {
+                button.disabled = false;
+                button.classList.add('affordable');
+            } else {
+                button.disabled = true;
+                button.classList.remove('affordable');
+            }
         });
     }
 
-    updateLeaderboard() {
-        // В реальном приложении здесь был бы запрос к серверу
-        const leaderboard = [
-            { name: 'Топовый Хомяк', score: 15000 },
-            { name: 'Хомяк-чемпион', score: 12000 },
-            { name: this.user.first_name, score: Math.floor(this.gameState.score) },
-            { name: 'Начинающий', score: 5000 },
-            { name: 'Новичок', score: 3000 }
-        ].sort((a, b) => b.score - a.score);
+    updateProgressBar() {
+        const currentLevelScore = this.getRequiredScoreForLevel(this.gameState.level);
+        const nextLevelScore = this.getRequiredScoreForLevel(this.gameState.level + 1);
+        const progress = this.gameState.score - currentLevelScore;
+        const totalNeeded = nextLevelScore - currentLevelScore;
+        const percentage = (progress / totalNeeded) * 100;
         
-        const list = document.getElementById('leaderboard-list');
-        list.innerHTML = '';
+        const progressFill = document.getElementById('level-progress');
+        const progressText = document.getElementById('progress-text');
         
-        leaderboard.forEach((player, index) => {
-            const item = document.createElement('div');
-            item.className = `leaderboard-item ${player.name === this.user.first_name ? 'you' : ''}`;
-            item.innerHTML = `
-                <span>${index + 1}. ${player.name}</span>
-                <span>${player.score}</span>
-            `;
-            list.appendChild(item);
-        });
-    }
-
-    showMessage(text) {
-        // Простая реализация сообщения
-        alert(text);
+        if (progressFill) {
+            progressFill.style.width = `${Math.min(percentage, 100)}%`;
+        }
+        
+        if (progressText) {
+            progressText.textContent = `${Math.floor(progress)}/${totalNeeded}`;
+        }
     }
 
     saveGameState() {
-        // Сохраняем в localStorage (в реальном приложении - на сервер)
-        const saveData = {
-            ...this.gameState,
-            userId: this.user?.id,
-            lastSave: Date.now()
-        };
-        localStorage.setItem('hamsterClicker_save', JSON.stringify(saveData));
+        try {
+            const saveData = {
+                ...this.gameState,
+                userId: this.user?.id,
+                lastSave: Date.now()
+            };
+            localStorage.setItem('darkPawsClicker_save', JSON.stringify(saveData));
+        } catch (error) {
+            console.error('Error saving game state:', error);
+        }
     }
 
     loadGameState() {
-        const saved = localStorage.getItem('hamsterClicker_save');
-        if (saved) {
-            const saveData = JSON.parse(saved);
-            
-            // Проверяем, что сохранение принадлежит текущему пользователю
-            if (!this.user || saveData.userId === this.user.id) {
-                this.gameState = { ...this.gameState, ...saveData };
+        try {
+            const saved = localStorage.getItem('darkPawsClicker_save');
+            if (saved) {
+                const saveData = JSON.parse(saved);
+                
+                // Проверяем, что сохранение принадлежит текущему пользователю
+                if (!this.user || saveData.userId === this.user.id) {
+                    this.gameState = { ...this.gameState, ...saveData };
+                    console.log('Game state loaded:', this.gameState);
+                }
             }
+        } catch (error) {
+            console.error('Error loading game state:', error);
         }
     }
 }
 
-// Инициализация игры когда DOM загружен
+// Инициализация игры
 document.addEventListener('DOMContentLoaded', () => {
-    new HamsterClicker();
+    window.clickerGame = new DarkPawsClicker();
 });
 
-// Обработка видимости страницы для авто-сохранения
-document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-        // Сохраняем игру когда пользователь уходит
-        const game = window.hamsterGame;
-        if (game) {
-            game.saveGameState();
-        }
+// Авто-сохранение
+window.addEventListener('beforeunload', () => {
+    if (window.clickerGame) {
+        window.clickerGame.saveGameState();
     }
 });
