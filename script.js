@@ -34,12 +34,12 @@ class DarkPawsClicker {
         this.lastTouch = null;
         
         // Настройки сервера
-        this.apiUrl = 'https://your-server.com/api'; // Замените на ваш URL сервера
-        this.botToken = 'YOUR_BOT_TOKEN_HERE'; // Замените на токен от @BotFather
+        this.apiUrl = 'https://your-server.com/api';
+        this.botToken = 'YOUR_BOT_TOKEN_HERE';
         
         // Настройки админ-панели
         this.adminEnabled = false;
-        this.adminCode = '1337'; // Секретный код для активации
+        this.adminCode = '1337';
         
         this.init();
     }
@@ -990,8 +990,20 @@ Admin Enabled: ${this.adminEnabled}
                 }
             } else if (levelNumber === this.gameState.level) {
                 card.classList.add('active');
+                
+                // Показываем прогресс до следующего уровня
+                const currentLevelScore = this.getRequiredScoreForLevel(this.gameState.level);
+                const nextLevelScore = this.getRequiredScoreForLevel(this.gameState.level + 1);
+                const progress = Math.max(0, this.gameState.score - currentLevelScore);
+                const totalNeeded = nextLevelScore - currentLevelScore;
+                
                 if (status) {
-                    status.textContent = 'Текущий';
+                    if (totalNeeded > 0) {
+                        const percentage = Math.min(100, (progress / totalNeeded) * 100);
+                        status.textContent = `${Math.floor(percentage)}%`;
+                    } else {
+                        status.textContent = 'Макс уровень';
+                    }
                     status.classList.remove('completed');
                 }
             } else {
@@ -1400,18 +1412,23 @@ Admin Enabled: ${this.adminEnabled}
         }, 4000);
     }
 
+    // ИСПРАВЛЕННЫЙ МЕТОД ДОБАВЛЕНИЯ ОЧКОВ
     addScore(points, isCritical = false) {
         const oldScore = this.gameState.score;
         this.gameState.score += points;
         
-        // Проверка уровня
-        const requiredForNextLevel = this.getRequiredScoreForLevel(this.gameState.level + 1);
-        if (this.gameState.score >= requiredForNextLevel) {
+        // Проверка уровня с защитой от ухода в минус
+        let leveledUp = false;
+        while (this.gameState.score >= this.getRequiredScoreForLevel(this.gameState.level + 1) && this.gameState.level < this.getMaxLevel()) {
             this.gameState.level++;
-            this.showLevelUp();
+            leveledUp = true;
         }
         
         this.updateUI();
+        
+        if (leveledUp) {
+            this.showLevelUp();
+        }
         
         // Визуальный эффект при критическом ударе
         if (isCritical) {
@@ -1419,8 +1436,15 @@ Admin Enabled: ${this.adminEnabled}
         }
     }
 
+    // Добавляем метод для получения максимального уровня
+    getMaxLevel() {
+        return 100; // Максимальный уровень игры
+    }
+
+    // ИСПРАВЛЕННАЯ ФОРМУЛА РАСЧЕТА ОЧКОВ ДЛЯ УРОВНЕЙ
     getRequiredScoreForLevel(level) {
-        return Math.pow(level, 2) * 100;
+        if (level <= 1) return 0;
+        return Math.pow(level - 1, 2) * 100; // Исправленная формула
     }
 
     showLevelUp() {
@@ -1469,6 +1493,7 @@ Admin Enabled: ${this.adminEnabled}
         }, 1500);
     }
 
+    // ИСПРАВЛЕННЫЙ МЕТОД ПОКУПКИ УЛУЧШЕНИЙ
     buyUpgrade(upgradeType) {
         const costs = {
             'click-power': 10 * Math.pow(2, this.gameState.upgrades.clickPower - 1),
@@ -1495,6 +1520,44 @@ Admin Enabled: ${this.adminEnabled}
             
             this.updateUI();
             this.saveGameState();
+            
+            // Показываем сообщение о успешной покупке
+            this.showUpgradeNotification(upgradeType);
+        } else {
+            // Показываем сообщение о недостатке очков
+            this.showInsufficientFundsNotification(cost);
+        }
+    }
+
+    showUpgradeNotification(upgradeType) {
+        const upgradeNames = {
+            'click-power': 'Сила лапы',
+            'auto-click': 'Авто-клик', 
+            'critical-chance': 'Точность'
+        };
+        
+        console.log(`🔼 Улучшение куплено: ${upgradeNames[upgradeType]}`);
+        
+        // Можно добавить визуальное уведомление
+        if (this.tg && this.tg.showPopup) {
+            this.tg.showPopup({
+                title: '✅ Улучшение куплено!',
+                message: `Вы улучшили: ${upgradeNames[upgradeType]}`,
+                buttons: [{ type: 'ok' }]
+            });
+        }
+    }
+
+    showInsufficientFundsNotification(requiredAmount) {
+        console.log(`❌ Недостаточно очков. Нужно: ${requiredAmount}`);
+        
+        // Можно добавить визуальное уведомление
+        if (this.tg && this.tg.showPopup) {
+            this.tg.showPopup({
+                title: '❌ Недостаточно очков',
+                message: `Для покупки нужно: ${requiredAmount} очков`,
+                buttons: [{ type: 'ok' }]
+            });
         }
     }
 
@@ -1529,17 +1592,30 @@ Admin Enabled: ${this.adminEnabled}
         this.updateUpgradeButtons();
     }
 
+    // ИСПРАВЛЕННЫЙ МЕТОД ОБНОВЛЕНИЯ ПРОГРЕСС БАРА
     updateHeaderProgressBar() {
         const currentLevelScore = this.getRequiredScoreForLevel(this.gameState.level);
         const nextLevelScore = this.getRequiredScoreForLevel(this.gameState.level + 1);
-        const progress = this.gameState.score - currentLevelScore;
+        
+        // Исправление: не даем прогрессу уходить в минус
+        let progress = Math.max(0, this.gameState.score - currentLevelScore);
         const totalNeeded = nextLevelScore - currentLevelScore;
-        const percentage = (progress / totalNeeded) * 100;
+        
+        // Если достигнут максимум текущего уровня, показываем 100%
+        let percentage = 0;
+        if (totalNeeded > 0) {
+            percentage = (progress / totalNeeded) * 100;
+        } else {
+            percentage = 100; // Если следующий уровень требует 0 очков (максимальный уровень)
+        }
+        
+        // Ограничиваем процент от 0 до 100
+        percentage = Math.max(0, Math.min(100, percentage));
         
         const progressFillHeader = document.getElementById('level-progress-header');
         
         if (progressFillHeader) {
-            progressFillHeader.style.width = `${Math.min(percentage, 100)}%`;
+            progressFillHeader.style.width = `${percentage}%`;
         }
     }
 
