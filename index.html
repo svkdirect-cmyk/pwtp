@@ -3,78 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hamster Clicker</title>
+    <title>Dark Paws Clicker</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="app">
-        <!-- Экран авторизации -->
-        <div id="auth-screen" class="screen active">
-            <div class="auth-container">
-                <h1>🐹 Hamster Clicker</h1>
-                <p>Нажимай на хомяка, улучшай его и соревнуйся с друзьями!</p>
-                <button id="start-btn" class="btn-primary">Начать игру</button>
-            </div>
-        </div>
-
-        <!-- Основной экран игры -->
-        <div id="game-screen" class="screen">
+        <!-- Главный экран -->
+        <div id="game-screen" class="screen active">
+            <!-- Шапка -->
             <div class="header">
-                <div class="user-info">
-                    <img id="user-avatar" src="" alt="Аватар">
-                    <span id="user-name">Игрок</span>
-                </div>
-                <div class="stats">
-                    <div class="stat">
-                        <span class="stat-label">Очки:</span>
-                        <span id="score">0</span>
+                <div class="user-section">
+                    <div class="avatar-container">
+                        <img id="user-avatar" src="" alt="Avatar" class="avatar">
+                        <div class="level-badge">1</div>
                     </div>
-                    <div class="stat">
-                        <span class="stat-label">Уровень:</span>
-                        <span id="level">1</span>
+                    <div class="user-info">
+                        <div id="user-name" class="username">Player</div>
+                        <div class="user-id">ID: 0000</div>
+                    </div>
+                </div>
+                
+                <div class="stats-section">
+                    <div class="stat-card">
+                        <div class="stat-label">БАЛЛЫ</div>
+                        <div id="score" class="stat-value">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">УРОВЕНЬ</div>
+                        <div id="level" class="stat-value">1</div>
                     </div>
                 </div>
             </div>
 
+            <!-- Игровая зона -->
             <div class="game-area">
-                <div id="hamster" class="hamster">
-                    <div class="hamster-body">
-                        <div class="hamster-face">
-                            <div class="eye left"></div>
-                            <div class="eye right"></div>
-                            <div class="nose"></div>
+                <div class="click-container">
+                    <div id="paw-button" class="paw-button">
+                        <div class="paw-pad">
+                            <div class="paw-toe toe-1"></div>
+                            <div class="paw-toe toe-2"></div>
+                            <div class="paw-toe toe-3"></div>
+                            <div class="paw-toe toe-4"></div>
                         </div>
                     </div>
-                </div>
-                <div id="click-effect" class="click-effect">+1</div>
-            </div>
-
-            <div class="upgrades">
-                <h3>Улучшения</h3>
-                <div class="upgrade-list">
-                    <div class="upgrade-item" data-upgrade="click-power">
-                        <span>Сила клика</span>
-                        <span class="upgrade-level">Ур. 1</span>
-                        <button class="btn-upgrade">Улучшить (10)</button>
-                    </div>
-                    <div class="upgrade-item" data-upgrade="auto-click">
-                        <span>Авто-клик</span>
-                        <span class="upgrade-level">Ур. 0</span>
-                        <button class="btn-upgrade">Купить (50)</button>
-                    </div>
-                    <div class="upgrade-item" data-upgrade="critical-chance">
-                        <span>Шанс крита</span>
-                        <span class="upgrade-level">Ур. 1</span>
-                        <button class="btn-upgrade">Улучшить (25)</button>
+                    <div class="click-stats">
+                        <div class="click-power">+<span id="click-power">1</span> за клик</div>
+                        <div class="auto-clicks">+<span id="auto-clicks">0</span>/сек</div>
                     </div>
                 </div>
+                
+                <!-- Эффекты частиц -->
+                <div id="particles-container" class="particles-container"></div>
             </div>
 
-            <div class="leaderboard">
-                <h3>Таблица лидеров</h3>
-                <div id="leaderboard-list" class="leaderboard-list">
-                    <!-- Заполняется динамически -->
+            <!-- Улучшения -->
+            <div class="upgrades-section">
+                <h3 class="section-title">УЛУЧШЕНИЯ</h3>
+                <div class="upgrades-grid">
+                    <div class="upgrade-card" data-upgrade="click-power">
+                        <div class="upgrade-icon">💪</div>
+                        <div class="upgrade-info">
+                            <div class="upgrade-name">Сила лапы</div>
+                            <div class="upgrade-level">Уровень <span>1</span></div>
+                        </div>
+                        <button class="upgrade-btn" data-cost="10">10</button>
+                    </div>
+                    
+                    <div class="upgrade-card" data-upgrade="auto-click">
+                        <div class="upgrade-icon">⚡</div>
+                        <div class="upgrade-info">
+                            <div class="upgrade-name">Авто-клик</div>
+                            <div class="upgrade-level">Уровень <span>0</span></div>
+                        </div>
+                        <button class="upgrade-btn" data-cost="50">50</button>
+                    </div>
+                    
+                    <div class="upgrade-card" data-upgrade="critical-chance">
+                        <div class="upgrade-icon">🎯</div>
+                        <div class="upgrade-info">
+                            <div class="upgrade-name">Точность</div>
+                            <div class="upgrade-level">Уровень <span>1</span></div>
+                        </div>
+                        <button class="upgrade-btn" data-cost="25">25</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Прогресс бар -->
+            <div class="progress-section">
+                <div class="progress-info">
+                    <span>До следующего уровня</span>
+                    <span id="progress-text">0/100</span>
+                </div>
+                <div class="progress-bar">
+                    <div id="level-progress" class="progress-fill"></div>
                 </div>
             </div>
         </div>
