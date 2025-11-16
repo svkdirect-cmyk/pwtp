@@ -1504,6 +1504,9 @@ Admin Enabled: ${this.adminEnabled}
         const cost = costs[upgradeType];
         
         if (this.gameState.score >= cost) {
+            // Сохраняем текущий прогресс до покупки
+            const oldScore = this.gameState.score;
+            
             this.gameState.score -= cost;
             
             switch(upgradeType) {
@@ -1518,6 +1521,9 @@ Admin Enabled: ${this.adminEnabled}
                     break;
             }
             
+            // Проверяем, не понизился ли уровень из-за траты очков
+            this.checkLevelAfterPurchase(oldScore);
+            
             this.updateUI();
             this.saveGameState();
             
@@ -1526,6 +1532,35 @@ Admin Enabled: ${this.adminEnabled}
         } else {
             // Показываем сообщение о недостатке очков
             this.showInsufficientFundsNotification(cost);
+        }
+    }
+
+    // НОВЫЙ МЕТОД: Проверка уровня после покупки улучшений
+    checkLevelAfterPurchase(oldScore) {
+        const currentLevel = this.gameState.level;
+        const currentScore = this.gameState.score;
+        
+        // Проверяем, не упал ли игрок ниже требований текущего уровня
+        while (currentScore < this.getRequiredScoreForLevel(currentLevel) && currentLevel > 1) {
+            this.gameState.level--;
+            // Продолжаем проверять, пока не найдем подходящий уровень
+        }
+        
+        // Если уровень изменился, показываем уведомление
+        if (this.gameState.level !== currentLevel) {
+            this.showLevelDownNotification(currentLevel, this.gameState.level);
+        }
+    }
+
+    showLevelDownNotification(oldLevel, newLevel) {
+        console.log(`🔽 Уровень понижен с ${oldLevel} до ${newLevel}`);
+        
+        if (this.tg && this.tg.showPopup) {
+            this.tg.showPopup({
+                title: '⚠️ Уровень понижен',
+                message: `Из-за траты очков ваш уровень понизился с ${oldLevel} до ${newLevel}`,
+                buttons: [{ type: 'ok' }]
+            });
         }
     }
 
