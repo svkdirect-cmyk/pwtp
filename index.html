@@ -13,27 +13,32 @@
     <div id="app">
         <!-- Экран игры -->
         <div id="game-tab" class="tab-content active">
-            <!-- Шапка -->
+            <!-- Исправленная шапка -->
             <div class="header">
-                <div class="user-section">
-                    <div class="avatar-container">
-                        <img id="user-avatar" src="" alt="Avatar" class="avatar">
-                        <div class="level-badge">1</div>
+                <div class="header-main">
+                    <div class="user-section clickable" id="profile-opener">
+                        <div class="avatar-container">
+                            <img id="user-avatar" src="" alt="Avatar" class="avatar">
+                            <div class="level-badge">1</div>
+                        </div>
+                        <div class="user-info">
+                            <div id="user-name" class="username">Player</div>
+                            <div class="level-text">Уровень 1</div>
+                        </div>
                     </div>
-                    <div class="user-info">
-                        <div id="user-name" class="username clickable">Player</div>
-                        <div class="user-id">ID: 0000</div>
+                    
+                    <div class="coin-balance">
+                        <div class="coin-icon">🪙</div>
+                        <div class="coin-amount">
+                            <span id="score">0</span>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="stats-section">
-                    <div class="stat-card">
-                        <div class="stat-label">БАЛЛЫ</div>
-                        <div id="score" class="stat-value">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">УРОВЕНЬ</div>
-                        <div id="level" class="stat-value">1</div>
+                <!-- Прогресс бар под шапкой -->
+                <div class="header-progress">
+                    <div class="progress-bar-header">
+                        <div class="progress-fill-header" id="level-progress-header"></div>
                     </div>
                 </div>
             </div>
@@ -42,16 +47,10 @@
             <div class="game-area">
                 <div class="click-container">
                     <div id="paw-button" class="paw-button">
-                        <div class="paw-pad">
-                            <div class="paw-toe toe-1"></div>
-                            <div class="paw-toe toe-2"></div>
-                            <div class="paw-toe toe-3"></div>
-                            <div class="paw-toe toe-4"></div>
+                        <div class="paw-icon">
+                            <i class="fas fa-paw"></i>
                         </div>
-                    </div>
-                    <div class="click-stats">
-                        <div class="click-power">+<span id="click-power">1</span> за клик</div>
-                        <div class="auto-clicks">+<span id="auto-clicks">0</span>/сек</div>
+                        <div class="paw-glow"></div>
                     </div>
                 </div>
                 
@@ -91,17 +90,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Прогресс бар -->
-            <div class="progress-section">
-                <div class="progress-info">
-                    <span>До следующего уровня</span>
-                    <span id="progress-text">0/100</span>
-                </div>
-                <div class="progress-bar">
-                    <div id="level-progress" class="progress-fill"></div>
-                </div>
-            </div>
         </div>
 
         <!-- Вкладка друзей -->
@@ -110,22 +98,31 @@
                 <h2>Друзья</h2>
                 <div class="tab-stats">
                     <div class="friends-count">Друзей: <span>0</span></div>
+                    <div class="friends-bonus">Бонус: <span>0%</span></div>
                 </div>
             </div>
 
             <div class="friends-content">
-                <div class="empty-state">
-                    <div class="empty-icon">👥</div>
-                    <h3>Пригласите друзей</h3>
-                    <p>Приглашайте друзей и получайте бонусы за их прогресс</p>
+                <div class="friends-actions">
                     <button class="btn-primary" id="invite-friends">
-                        <i class="fas fa-share-alt"></i>
-                        Пригласить друзей
+                        <i class="fas fa-user-plus"></i>
+                        Пригласить друга
+                    </button>
+                    <button class="btn-secondary" id="refresh-friends">
+                        <i class="fas fa-sync-alt"></i>
+                        Обновить
                     </button>
                 </div>
 
-                <div class="friends-list" style="display: none;">
-                    <div class="coming-soon">Список друзей будет доступен после подключения</div>
+                <div class="friends-list-section">
+                    <h4>Мои друзья</h4>
+                    <div class="friends-list" id="friends-list-container">
+                        <div class="empty-state">
+                            <div class="empty-icon">👥</div>
+                            <h3>Друзей пока нет</h3>
+                            <p>Пригласите друзей и получайте бонусы за их прогресс</p>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="friends-bonuses">
@@ -155,6 +152,13 @@
                             </div>
                             <div class="bonus-status">Не активно</div>
                         </div>
+                    </div>
+                </div>
+
+                <div class="leaderboard-section">
+                    <h4>Топ игроков</h4>
+                    <div class="leaderboard" id="leaderboard-container">
+                        <div class="loading">Загрузка...</div>
                     </div>
                 </div>
             </div>
@@ -363,7 +367,7 @@
                 <span>Уровни</span>
             </div>
             <div class="tab-item" data-tab="combo-tab">
-                <i class="fas fa-cards"></i>
+                <i class="fas fa-layer-group"></i>
                 <span>Комбо</span>
             </div>
         </div>
@@ -490,6 +494,114 @@
                         <i class="fas fa-share"></i>
                         Поделиться профилем
                     </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Скрытая админ панель -->
+        <div id="admin-panel" class="modal">
+            <div class="modal-content admin-modal">
+                <div class="modal-header">
+                    <h2>🤫 Админ Панель</h2>
+                    <button class="modal-close" id="close-admin">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="admin-content">
+                    <!-- Статистика игры -->
+                    <div class="admin-section">
+                        <h3>📊 Статистика игры</h3>
+                        <div class="admin-stats">
+                            <div class="admin-stat">
+                                <span>Очки:</span>
+                                <input type="number" id="admin-score" value="0">
+                            </div>
+                            <div class="admin-stat">
+                                <span>Уровень:</span>
+                                <input type="number" id="admin-level" value="1" min="1" max="100">
+                            </div>
+                            <div class="admin-stat">
+                                <span>Всего кликов:</span>
+                                <input type="number" id="admin-total-clicks" value="0">
+                            </div>
+                            <div class="admin-stat">
+                                <span>Время игры (ч):</span>
+                                <input type="number" id="admin-play-time" value="0" step="0.1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Управление улучшениями -->
+                    <div class="admin-section">
+                        <h3>⚡ Управление улучшениями</h3>
+                        <div class="upgrades-controls">
+                            <div class="upgrade-control">
+                                <label>Сила клика:</label>
+                                <input type="number" id="admin-click-power" value="1" min="1" max="1000">
+                            </div>
+                            <div class="upgrade-control">
+                                <label>Авто-клик:</label>
+                                <input type="number" id="admin-auto-click" value="0" min="0" max="1000">
+                            </div>
+                            <div class="upgrade-control">
+                                <label>Шанс крита:</label>
+                                <input type="number" id="admin-critical" value="1" min="1" max="1000">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Быстрые действия -->
+                    <div class="admin-section">
+                        <h3>🎮 Быстрые действия</h3>
+                        <div class="quick-actions">
+                            <button class="btn-admin" id="admin-add-1000">+1000 очков</button>
+                            <button class="btn-admin" id="admin-add-10000">+10000 очков</button>
+                            <button class="btn-admin" id="admin-level-up">Уровень ↑</button>
+                            <button class="btn-admin" id="admin-max-upgrades">Макс улучшения</button>
+                            <button class="btn-admin" id="admin-reset-game">Сброс игры</button>
+                            <button class="btn-admin" id="admin-unlock-all">Разблокировать всё</button>
+                        </div>
+                    </div>
+
+                    <!-- Настройки сервера -->
+                    <div class="admin-section">
+                        <h3>🔧 Настройки сервера</h3>
+                        <div class="server-settings">
+                            <div class="server-setting">
+                                <label>API URL:</label>
+                                <input type="text" id="admin-api-url" value="https://your-server.com/api">
+                            </div>
+                            <div class="server-setting">
+                                <label>Bot Token:</label>
+                                <input type="text" id="admin-bot-token" value="YOUR_BOT_TOKEN_HERE">
+                            </div>
+                            <div class="server-actions">
+                                <button class="btn-admin" id="admin-test-connection">Тест соединения</button>
+                                <button class="btn-admin" id="admin-force-save">Принудительное сохранение</button>
+                                <button class="btn-admin" id="admin-force-load">Принудительная загрузка</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Отладка -->
+                    <div class="admin-section">
+                        <h3>🐛 Отладка</h3>
+                        <div class="debug-actions">
+                            <button class="btn-admin" id="admin-export-save">Экспорт сохранения</button>
+                            <button class="btn-admin" id="admin-import-save">Импорт сохранения</button>
+                            <button class="btn-admin" id="admin-show-logs">Показать логи</button>
+                            <button class="btn-admin" id="admin-clear-data">Очистить все данные</button>
+                        </div>
+                        <div class="debug-info">
+                            <textarea id="admin-debug-output" placeholder="Логи и отладочная информация..." readonly></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn-secondary" id="admin-apply">Применить изменения</button>
+                    <button class="btn-primary" id="admin-save-close">Сохранить и закрыть</button>
                 </div>
             </div>
         </div>
