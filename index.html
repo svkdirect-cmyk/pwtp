@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hamster Clicker</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Экран авторизации -->
+        <div id="auth-screen" class="screen active">
+            <div class="auth-container">
+                <h1>🐹 Hamster Clicker</h1>
+                <p>Нажимай на хомяка, улучшай его и соревнуйся с друзьями!</p>
+                <button id="start-btn" class="btn-primary">Начать игру</button>
+            </div>
+        </div>
+
+        <!-- Основной экран игры -->
+        <div id="game-screen" class="screen">
+            <div class="header">
+                <div class="user-info">
+                    <img id="user-avatar" src="" alt="Аватар">
+                    <span id="user-name">Игрок</span>
+                </div>
+                <div class="stats">
+                    <div class="stat">
+                        <span class="stat-label">Очки:</span>
+                        <span id="score">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Уровень:</span>
+                        <span id="level">1</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="game-area">
+                <div id="hamster" class="hamster">
+                    <div class="hamster-body">
+                        <div class="hamster-face">
+                            <div class="eye left"></div>
+                            <div class="eye right"></div>
+                            <div class="nose"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="click-effect" class="click-effect">+1</div>
+            </div>
+
+            <div class="upgrades">
+                <h3>Улучшения</h3>
+                <div class="upgrade-list">
+                    <div class="upgrade-item" data-upgrade="click-power">
+                        <span>Сила клика</span>
+                        <span class="upgrade-level">Ур. 1</span>
+                        <button class="btn-upgrade">Улучшить (10)</button>
+                    </div>
+                    <div class="upgrade-item" data-upgrade="auto-click">
+                        <span>Авто-клик</span>
+                        <span class="upgrade-level">Ур. 0</span>
+                        <button class="btn-upgrade">Купить (50)</button>
+                    </div>
+                    <div class="upgrade-item" data-upgrade="critical-chance">
+                        <span>Шанс крита</span>
+                        <span class="upgrade-level">Ур. 1</span>
+                        <button class="btn-upgrade">Улучшить (25)</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="leaderboard">
+                <h3>Таблица лидеров</h3>
+                <div id="leaderboard-list" class="leaderboard-list">
+                    <!-- Заполняется динамически -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
