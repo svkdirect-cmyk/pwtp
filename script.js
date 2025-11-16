@@ -10,10 +10,27 @@ class DarkPawsClicker {
                 autoClick: 0,
                 criticalChance: 1
             },
+            stats: {
+                totalClicks: 0,
+                totalScore: 0,
+                playTime: 0,
+                joinDate: new Date().toISOString(),
+                criticalHits: 0
+            },
+            friends: [],
+            comboCards: [],
+            achievements: {
+                firstSteps: false,
+                hardWorker: false,
+                clickMaster: false,
+                clickLegend: false
+            },
             lastSave: Date.now()
         };
         
         this.particles = [];
+        this.currentTab = 'game-tab';
+        this.startTime = Date.now();
         this.init();
     }
 
@@ -31,30 +48,13 @@ class DarkPawsClicker {
         this.loadGameState();
         this.updateUI();
         this.startAutoClicker();
-        
-        // Запускаем анимацию частиц
         this.animateParticles();
-    }
-
-    initTelegramAuth() {
-        if (this.tg && this.tg.initDataUnsafe && this.tg.initDataUnsafe.user) {
-            this.user = this.tg.initDataUnsafe.user;
-            this.updateUserInfo();
-        }
-    }
-
-    updateUserInfo() {
-        if (this.user) {
-            const avatar = document.getElementById('user-avatar');
-            const username = document.getElementById('user-name');
-            
-            if (avatar && this.user.photo_url) {
-                avatar.src = this.user.photo_url;
-            }
-            if (username) {
-                username.textContent = this.user.first_name || 'Player';
-            }
-        }
+        
+        // Инициализируем вкладки
+        this.setupTabs();
+        
+        // Запускаем отсчет времени игры
+        this.startPlayTimeCounter();
     }
 
     setupEventListeners() {
@@ -97,9 +97,458 @@ class DarkPawsClicker {
                 }
             });
         });
+
+        // Кнопка приглашения друзей
+        const inviteBtn = document.getElementById('invite-friends');
+        if (inviteBtn) {
+            inviteBtn.addEventListener('click', () => {
+                this.inviteFriends();
+            });
+        }
+
+        // Клик по имени пользователя для открытия профиля
+        const userName = document.getElementById('user-name');
+        if (userName) {
+            userName.addEventListener('click', () => {
+                this.openProfile();
+            });
+        }
+
+        // Закрытие модального окна профиля
+        const closeProfile = document.getElementById('close-profile');
+        if (closeProfile) {
+            closeProfile.addEventListener('click', () => {
+                this.closeProfile();
+            });
+        }
+
+        // Клик по фону для закрытия модального окна
+        const profileModal = document.getElementById('profile-modal');
+        if (profileModal) {
+            profileModal.addEventListener('click', (e) => {
+                if (e.target === profileModal) {
+                    this.closeProfile();
+                }
+            });
+        }
+
+        // Кнопка поделиться профилем
+        const shareProfile = document.getElementById('share-profile');
+        if (shareProfile) {
+            shareProfile.addEventListener('click', () => {
+                this.shareProfile();
+            });
+        }
+    }
+
+    initTelegramAuth() {
+        if (this.tg && this.tg.initDataUnsafe && this.tg.initDataUnsafe.user) {
+            this.user = this.tg.initDataUnsafe.user;
+            console.log('User authenticated:', this.user);
+            this.updateUserInfo();
+        } else {
+            console.log('No user data available');
+            // Для демо создаем тестового пользователя
+            this.user = {
+                id: Math.floor(Math.random() * 10000),
+                first_name: 'Игрок',
+                photo_url: ''
+            };
+            this.updateUserInfo();
+        }
+    }
+
+    updateUserInfo() {
+        if (this.user) {
+            const avatar = document.getElementById('user-avatar');
+            const username = document.getElementById('user-name');
+            const userid = document.querySelector('.user-id');
+            
+            if (avatar) {
+                if (this.user.photo_url) {
+                    avatar.src = this.user.photo_url;
+                } else {
+                    avatar.style.display = 'none';
+                }
+            }
+            if (username) {
+                username.textContent = this.user.first_name || 'Player';
+            }
+            if (userid) {
+                userid.textContent = `ID: ${this.user.id}`;
+            }
+        }
+    }
+
+    setupTabs() {
+        const tabItems = document.querySelectorAll('.tab-item');
+        
+        tabItems.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.dataset.tab;
+                this.switchTab(tabId);
+            });
+        });
+    }
+
+    switchTab(tabId) {
+        // Скрываем все вкладки
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        
+        // Убираем активный класс со всех кнопок
+        document.querySelectorAll('.tab-item').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // Показываем выбранную вкладку
+        const targetTab = document.getElementById(tabId);
+        const targetTabButton = document.querySelector(`[data-tab="${tabId}"]`);
+        
+        if (targetTab && targetTabButton) {
+            targetTab.classList.add('active');
+            targetTabButton.classList.add('active');
+            this.currentTab = tabId;
+            
+            // Обновляем контент вкладки если нужно
+            this.updateTabContent(tabId);
+        }
+    }
+
+    updateTabContent(tabId) {
+        switch(tabId) {
+            case 'friends-tab':
+                this.updateFriendsTab();
+                break;
+            case 'levels-tab':
+                this.updateLevelsTab();
+                break;
+            case 'combo-tab':
+                this.updateComboTab();
+                break;
+        }
+    }
+
+    updateFriendsTab() {
+        // Обновляем счетчик друзей
+        const friendsCount = document.querySelector('.friends-count span');
+        if (friendsCount) {
+            friendsCount.textContent = this.gameState.friends.length;
+        }
+        
+        // Показываем/скрываем список друзей
+        const emptyState = document.querySelector('.empty-state');
+        const friendsList = document.querySelector('.friends-list');
+        
+        if (this.gameState.friends.length > 0) {
+            if (emptyState) emptyState.style.display = 'none';
+            if (friendsList) friendsList.style.display = 'block';
+            this.updateFriendsList();
+        } else {
+            if (emptyState) emptyState.style.display = 'block';
+            if (friendsList) friendsList.style.display = 'none';
+        }
+        
+        // Обновляем бонусы
+        this.updateFriendsBonuses();
+    }
+
+    updateFriendsList() {
+        // Заглушка - в реальном приложении здесь будет список друзей
+        const friendsList = document.querySelector('.friends-list');
+        if (friendsList) {
+            friendsList.innerHTML = '<div class="coming-soon">Список друзей будет доступен после подключения</div>';
+        }
+    }
+
+    updateFriendsBonuses() {
+        const bonusCards = document.querySelectorAll('.bonus-card');
+        const friendCount = this.gameState.friends.length;
+        
+        bonusCards.forEach((card, index) => {
+            const status = card.querySelector('.bonus-status');
+            const requiredFriends = [1, 3, 5][index];
+            
+            if (status) {
+                if (friendCount >= requiredFriends) {
+                    status.textContent = 'Активно';
+                    status.classList.add('active');
+                } else {
+                    status.textContent = 'Не активно';
+                    status.classList.remove('active');
+                }
+            }
+        });
+    }
+
+    updateLevelsTab() {
+        // Обновляем текущий уровень
+        const currentLevel = document.querySelector('.current-level span');
+        if (currentLevel) {
+            currentLevel.textContent = this.gameState.level;
+        }
+        
+        // Обновляем индикатор прогресса
+        this.updateLevelsProgress();
+        
+        // Обновляем карточки уровней
+        this.updateLevelCards();
+    }
+
+    updateLevelsProgress() {
+        const levelCircles = document.querySelectorAll('.level-circle');
+        levelCircles.forEach((circle, index) => {
+            const levelNumber = index + 1;
+            
+            circle.classList.remove('active');
+            if (levelNumber <= this.gameState.level) {
+                circle.classList.add('active');
+            }
+        });
+    }
+
+    updateLevelCards() {
+        const levelCards = document.querySelectorAll('.level-card');
+        
+        levelCards.forEach((card, index) => {
+            const levelNumber = index + 1;
+            const status = card.querySelector('.level-status');
+            
+            // Убираем все классы статуса
+            card.classList.remove('active', 'locked', 'completed');
+            
+            if (levelNumber < this.gameState.level) {
+                card.classList.add('completed');
+                if (status) {
+                    status.textContent = 'Пройден';
+                    status.classList.add('completed');
+                }
+            } else if (levelNumber === this.gameState.level) {
+                card.classList.add('active');
+                if (status) {
+                    status.textContent = 'Текущий';
+                    status.classList.remove('completed');
+                }
+            } else {
+                card.classList.add('locked');
+                const requiredScore = this.getRequiredScoreForLevel(levelNumber);
+                if (status) {
+                    status.textContent = `${requiredScore} очков`;
+                    status.classList.remove('completed');
+                }
+            }
+        });
+    }
+
+    updateComboTab() {
+        // Обновляем статистику колоды
+        this.updateDeckStats();
+        
+        // Обновляем коллекцию карт
+        this.updateComboCards();
+    }
+
+    updateDeckStats() {
+        const deckPower = document.querySelector('.power-value');
+        const deckStats = document.querySelectorAll('.stat-value');
+        
+        if (deckPower) {
+            deckPower.textContent = this.calculateDeckPower();
+        }
+        
+        // Заглушка для статистики
+        if (deckStats.length >= 3) {
+            deckStats[0].textContent = '0%';
+            deckStats[1].textContent = '0%';
+            deckStats[2].textContent = '0%';
+        }
+    }
+
+    calculateDeckPower() {
+        // Простой расчет силы колоды
+        return this.gameState.comboCards.length * 10;
+    }
+
+    updateComboCards() {
+        const comboCards = document.querySelectorAll('.combo-card');
+        
+        comboCards.forEach((card, index) => {
+            // В реальном приложении здесь будет проверка наличия карт
+            // Сейчас все карты заблокированы
+            card.classList.add('locked');
+        });
+    }
+
+    openProfile() {
+        this.updateProfileModal();
+        const profileModal = document.getElementById('profile-modal');
+        if (profileModal) {
+            profileModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    closeProfile() {
+        const profileModal = document.getElementById('profile-modal');
+        if (profileModal) {
+            profileModal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+    }
+
+    updateProfileModal() {
+        // Обновляем аватар
+        const profileAvatar = document.getElementById('profile-avatar');
+        if (profileAvatar) {
+            if (this.user && this.user.photo_url) {
+                profileAvatar.src = this.user.photo_url;
+                profileAvatar.style.display = 'block';
+            } else {
+                profileAvatar.style.display = 'none';
+            }
+        }
+
+        // Обновляем основную информацию
+        const profileName = document.getElementById('profile-name');
+        const profileLevel = document.getElementById('profile-level');
+        const profileId = document.getElementById('profile-id');
+        const profileRank = document.getElementById('profile-rank');
+
+        if (profileName) {
+            profileName.textContent = this.user ? this.user.first_name : 'Player';
+        }
+        if (profileLevel) {
+            profileLevel.textContent = this.gameState.level;
+        }
+        if (profileId) {
+            profileId.textContent = this.user ? this.user.id : '0000';
+        }
+        if (profileRank) {
+            profileRank.textContent = this.getPlayerRank();
+        }
+
+        // Обновляем статистику
+        this.updateProfileStats();
+
+        // Обновляем достижения
+        this.updateProfileAchievements();
+
+        // Обновляем улучшения
+        this.updateProfileUpgrades();
+    }
+
+    updateProfileStats() {
+        const totalClicks = document.getElementById('profile-total-clicks');
+        const playTime = document.getElementById('profile-play-time');
+        const totalScore = document.getElementById('profile-total-score');
+        const joinDate = document.getElementById('profile-join-date');
+
+        if (totalClicks) {
+            totalClicks.textContent = this.gameState.stats.totalClicks.toLocaleString();
+        }
+        if (playTime) {
+            const hours = Math.floor(this.gameState.stats.playTime / 3600000);
+            playTime.textContent = `${hours}ч`;
+        }
+        if (totalScore) {
+            totalScore.textContent = this.gameState.stats.totalScore.toLocaleString();
+        }
+        if (joinDate) {
+            const joinDateObj = new Date(this.gameState.stats.joinDate);
+            const now = new Date();
+            const diffTime = Math.abs(now - joinDateObj);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 1) {
+                joinDate.textContent = 'Сегодня';
+            } else if (diffDays === 2) {
+                joinDate.textContent = 'Вчера';
+            } else if (diffDays <= 7) {
+                joinDate.textContent = `${diffDays} дней назад`;
+            } else {
+                joinDate.textContent = joinDateObj.toLocaleDateString('ru-RU');
+            }
+        }
+    }
+
+    updateProfileAchievements() {
+        // Обновляем статус достижений
+        const achievements = document.querySelectorAll('.achievement');
+        
+        if (achievements.length >= 4) {
+            achievements[0].classList.toggle('unlocked', this.gameState.achievements.firstSteps);
+            achievements[1].classList.toggle('unlocked', this.gameState.achievements.hardWorker);
+            achievements[2].classList.toggle('unlocked', this.gameState.achievements.clickMaster);
+            achievements[3].classList.toggle('unlocked', this.gameState.achievements.clickLegend);
+        }
+    }
+
+    updateProfileUpgrades() {
+        const clickPower = document.getElementById('profile-click-power');
+        const autoClick = document.getElementById('profile-auto-click');
+        const critical = document.getElementById('profile-critical');
+
+        if (clickPower) {
+            clickPower.textContent = this.gameState.upgrades.clickPower;
+        }
+        if (autoClick) {
+            autoClick.textContent = this.gameState.upgrades.autoClick;
+        }
+        if (critical) {
+            critical.textContent = this.gameState.upgrades.criticalChance;
+        }
+    }
+
+    getPlayerRank() {
+        const level = this.gameState.level;
+        if (level >= 20) return 'Легенда';
+        if (level >= 15) return 'Мастер';
+        if (level >= 10) return 'Опытный';
+        if (level >= 5) return 'Новичок';
+        return 'Начинающий';
+    }
+
+    shareProfile() {
+        if (this.tg && this.tg.showPopup) {
+            this.tg.showPopup({
+                title: 'Поделиться профилем',
+                message: `Мой профиль в Dark Paws Clicker!\nУровень: ${this.gameState.level}\nОчки: ${this.gameState.score}\nПрисоединяйся!`,
+                buttons: [
+                    { type: 'default', text: 'Поделиться' },
+                    { type: 'cancel', text: 'Отмена' }
+                ]
+            });
+        } else {
+            // Заглушка для браузера
+            const shareText = `Мой профиль в Dark Paws Clicker!\nУровень: ${this.gameState.level}\nОчки: ${this.gameState.score}\nПрисоединяйся!`;
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Dark Paws Clicker',
+                    text: shareText,
+                    url: window.location.href
+                });
+            } else {
+                alert(shareText);
+            }
+        }
+    }
+
+    startPlayTimeCounter() {
+        setInterval(() => {
+            this.gameState.stats.playTime += 1000; // +1 секунда
+            this.saveGameState();
+        }, 1000);
     }
 
     handleClick(event) {
+        // Увеличиваем счетчик кликов
+        this.gameState.stats.totalClicks++;
+        this.gameState.stats.totalScore += this.gameState.upgrades.clickPower;
+
+        // Проверяем достижения
+        this.checkAchievements();
+
         // Создаем эффекты частиц
         this.createParticles(event);
         
@@ -108,14 +557,49 @@ class DarkPawsClicker {
         let isCritical = false;
         
         // Шанс критического удара
-        const critChance = this.gameState.upgrades.criticalChance * 0.03; // 3% за уровень
+        const critChance = this.gameState.upgrades.criticalChance * 0.03;
         if (Math.random() < critChance) {
             points *= 3;
             isCritical = true;
+            this.gameState.stats.criticalHits++;
         }
         
         this.addScore(points, isCritical);
         this.saveGameState();
+    }
+
+    checkAchievements() {
+        const clicks = this.gameState.stats.totalClicks;
+        
+        if (clicks >= 100 && !this.gameState.achievements.firstSteps) {
+            this.gameState.achievements.firstSteps = true;
+            this.showAchievementNotification('Первые шаги');
+        }
+        if (clicks >= 1000 && !this.gameState.achievements.hardWorker) {
+            this.gameState.achievements.hardWorker = true;
+            this.showAchievementNotification('Усердный работник');
+        }
+        if (clicks >= 10000 && !this.gameState.achievements.clickMaster) {
+            this.gameState.achievements.clickMaster = true;
+            this.showAchievementNotification('Клик-мастер');
+        }
+        if (clicks >= 50000 && !this.gameState.achievements.clickLegend) {
+            this.gameState.achievements.clickLegend = true;
+            this.showAchievementNotification('Легенда кликов');
+        }
+    }
+
+    showAchievementNotification(achievementName) {
+        // Можно добавить красивое уведомление
+        console.log(`🎉 Достижение разблокировано: ${achievementName}`);
+        
+        if (this.tg && this.tg.showPopup) {
+            this.tg.showPopup({
+                title: '🎉 Новое достижение!',
+                message: `Вы получили достижение: "${achievementName}"`,
+                buttons: [{ type: 'ok' }]
+            });
+        }
     }
 
     createParticles(event) {
@@ -170,7 +654,7 @@ class DarkPawsClicker {
     animateParticles() {
         // Фоновая анимация редких частиц
         setInterval(() => {
-            if (Math.random() < 0.1) { // 10% шанс создать частицу
+            if (Math.random() < 0.1) {
                 this.createBackgroundParticle();
             }
         }, 1000);
@@ -426,6 +910,22 @@ class DarkPawsClicker {
         }
     }
 
+    inviteFriends() {
+        if (this.tg && this.tg.showPopup) {
+            this.tg.showPopup({
+                title: 'Пригласить друзей',
+                message: 'Поделитесь ссылкой с друзьями, чтобы получить бонусы!',
+                buttons: [
+                    { type: 'default', text: 'Поделиться' },
+                    { type: 'cancel', text: 'Закрыть' }
+                ]
+            });
+        } else {
+            // Заглушка для браузера
+            alert('Функция приглашения друзей будет доступна в Telegram');
+        }
+    }
+
     saveGameState() {
         try {
             const saveData = {
@@ -466,5 +966,14 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('beforeunload', () => {
     if (window.clickerGame) {
         window.clickerGame.saveGameState();
+    }
+});
+
+// Закрытие модального окна по ESC
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        if (window.clickerGame) {
+            window.clickerGame.closeProfile();
+        }
     }
 });
