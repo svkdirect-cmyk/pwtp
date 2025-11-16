@@ -991,7 +991,7 @@ Admin Enabled: ${this.adminEnabled}
             } else if (levelNumber === this.gameState.level) {
                 card.classList.add('active');
                 
-                // Показываем прогресс до следующего уровня
+                // Показываем прогресс до следующего уровня (от накопленных очков)
                 const currentLevelScore = this.getRequiredScoreForLevel(this.gameState.level);
                 const nextLevelScore = this.getRequiredScoreForLevel(this.gameState.level + 1);
                 const progress = Math.max(0, this.gameState.score - currentLevelScore);
@@ -1417,7 +1417,7 @@ Admin Enabled: ${this.adminEnabled}
         const oldScore = this.gameState.score;
         this.gameState.score += points;
         
-        // Проверка уровня с защитой от ухода в минус
+        // Проверка уровня - используем накопленные очки (не вычитаем потраченные на улучшения)
         let leveledUp = false;
         while (this.gameState.score >= this.getRequiredScoreForLevel(this.gameState.level + 1) && this.gameState.level < this.getMaxLevel()) {
             this.gameState.level++;
@@ -1444,7 +1444,7 @@ Admin Enabled: ${this.adminEnabled}
     // ИСПРАВЛЕННАЯ ФОРМУЛА РАСЧЕТА ОЧКОВ ДЛЯ УРОВНЕЙ
     getRequiredScoreForLevel(level) {
         if (level <= 1) return 0;
-        return Math.pow(level - 1, 2) * 100; // Исправленная формула
+        return Math.pow(level - 1, 2) * 100;
     }
 
     showLevelUp() {
@@ -1504,9 +1504,7 @@ Admin Enabled: ${this.adminEnabled}
         const cost = costs[upgradeType];
         
         if (this.gameState.score >= cost) {
-            // Сохраняем текущий прогресс до покупки
-            const oldScore = this.gameState.score;
-            
+            // Просто вычитаем стоимость улучшения
             this.gameState.score -= cost;
             
             switch(upgradeType) {
@@ -1521,9 +1519,6 @@ Admin Enabled: ${this.adminEnabled}
                     break;
             }
             
-            // Проверяем, не понизился ли уровень из-за траты очков
-            this.checkLevelAfterPurchase(oldScore);
-            
             this.updateUI();
             this.saveGameState();
             
@@ -1532,35 +1527,6 @@ Admin Enabled: ${this.adminEnabled}
         } else {
             // Показываем сообщение о недостатке очков
             this.showInsufficientFundsNotification(cost);
-        }
-    }
-
-    // НОВЫЙ МЕТОД: Проверка уровня после покупки улучшений
-    checkLevelAfterPurchase(oldScore) {
-        const currentLevel = this.gameState.level;
-        const currentScore = this.gameState.score;
-        
-        // Проверяем, не упал ли игрок ниже требований текущего уровня
-        while (currentScore < this.getRequiredScoreForLevel(currentLevel) && currentLevel > 1) {
-            this.gameState.level--;
-            // Продолжаем проверять, пока не найдем подходящий уровень
-        }
-        
-        // Если уровень изменился, показываем уведомление
-        if (this.gameState.level !== currentLevel) {
-            this.showLevelDownNotification(currentLevel, this.gameState.level);
-        }
-    }
-
-    showLevelDownNotification(oldLevel, newLevel) {
-        console.log(`🔽 Уровень понижен с ${oldLevel} до ${newLevel}`);
-        
-        if (this.tg && this.tg.showPopup) {
-            this.tg.showPopup({
-                title: '⚠️ Уровень понижен',
-                message: `Из-за траты очков ваш уровень понизился с ${oldLevel} до ${newLevel}`,
-                buttons: [{ type: 'ok' }]
-            });
         }
     }
 
@@ -1573,7 +1539,6 @@ Admin Enabled: ${this.adminEnabled}
         
         console.log(`🔼 Улучшение куплено: ${upgradeNames[upgradeType]}`);
         
-        // Можно добавить визуальное уведомление
         if (this.tg && this.tg.showPopup) {
             this.tg.showPopup({
                 title: '✅ Улучшение куплено!',
@@ -1586,7 +1551,6 @@ Admin Enabled: ${this.adminEnabled}
     showInsufficientFundsNotification(requiredAmount) {
         console.log(`❌ Недостаточно очков. Нужно: ${requiredAmount}`);
         
-        // Можно добавить визуальное уведомление
         if (this.tg && this.tg.showPopup) {
             this.tg.showPopup({
                 title: '❌ Недостаточно очков',
@@ -1632,16 +1596,15 @@ Admin Enabled: ${this.adminEnabled}
         const currentLevelScore = this.getRequiredScoreForLevel(this.gameState.level);
         const nextLevelScore = this.getRequiredScoreForLevel(this.gameState.level + 1);
         
-        // Исправление: не даем прогрессу уходить в минус
+        // Прогресс рассчитывается от накопленных очков (включая потраченные на улучшения)
         let progress = Math.max(0, this.gameState.score - currentLevelScore);
         const totalNeeded = nextLevelScore - currentLevelScore;
         
-        // Если достигнут максимум текущего уровня, показываем 100%
         let percentage = 0;
         if (totalNeeded > 0) {
             percentage = (progress / totalNeeded) * 100;
         } else {
-            percentage = 100; // Если следующий уровень требует 0 очков (максимальный уровень)
+            percentage = 100;
         }
         
         // Ограничиваем процент от 0 до 100
