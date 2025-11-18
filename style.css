@@ -503,33 +503,9 @@ html {
     display: block;
 }
 
-/* Шапка вкладок */
+/* Убираем стили для шапки вкладок */
 .tab-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 25px 15px;
-    margin-bottom: 25px;
-}
-
-.tab-header h2 {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--text-primary);
-}
-
-.tab-stats {
-    display: flex;
-    gap: 15px;
-}
-
-.tab-stats > div {
-    background: var(--tg-theme-secondary-bg-color, var(--bg-secondary));
-    padding: 10px 15px;
-    border-radius: 12px;
-    font-size: 12px;
-    color: var(--text-secondary);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    display: none;
 }
 
 /* Нижняя панель вкладок */
@@ -587,8 +563,8 @@ html {
 .levels-content {
     display: flex;
     flex-direction: column;
-    gap: 25px;
-    padding: 0 15px;
+    gap: 20px;
+    padding: 15px;
 }
 
 .levels-progress {
@@ -596,6 +572,7 @@ html {
     padding: 20px;
     border-radius: 16px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    margin-top: 10px;
 }
 
 .level-indicator {
@@ -763,8 +740,8 @@ html {
 .combo-content {
     display: flex;
     flex-direction: column;
-    gap: 25px;
-    padding: 0 15px;
+    gap: 20px;
+    padding: 15px;
 }
 
 .combo-deck {
@@ -772,6 +749,7 @@ html {
     padding: 20px;
     border-radius: 16px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    margin-top: 10px;
 }
 
 .deck-info {
@@ -833,9 +811,7 @@ html {
 }
 
 .combo-collection h4 {
-    font-size: 16px;
-    margin-bottom: 15px;
-    color: var(--text-primary);
+    display: none; /* Скрываем заголовок коллекции карт */
 }
 
 .cards-grid {
@@ -980,6 +956,7 @@ html {
     padding: 18px;
     border-radius: 16px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    margin-bottom: 20px;
 }
 
 .combo-info h4 {
@@ -1416,19 +1393,6 @@ html {
     
     .tab-content {
         padding-bottom: 70px;
-    }
-    
-    .tab-header {
-        flex-direction: column;
-        gap: 10px;
-        align-items: flex-start;
-        margin: 15px;
-        margin-bottom: 20px;
-    }
-    
-    .tab-stats {
-        width: 100%;
-        justify-content: space-between;
     }
     
     .cards-grid {
