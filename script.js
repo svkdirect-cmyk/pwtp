@@ -38,6 +38,13 @@ class DarkPawsClicker {
             lastSave: Date.now()
         };
         
+        this.referralData = {
+            referrerId: null,
+            referredFriends: [],
+            referralBonus: 0,
+            referralLevel: 0
+        };
+        
         this.particles = [];
         this.currentTab = 'game-tab';
         this.startTime = Date.now();
@@ -57,6 +64,7 @@ class DarkPawsClicker {
         this.setupEventListeners();
         this.initTelegramAuth();
         this.loadGameState();
+        this.processReferral();
         this.updateUI();
         this.startAutoClicker();
         this.setupTabs();
@@ -168,85 +176,162 @@ class DarkPawsClicker {
             });
         }
 
-        // Секретная кнопка для админки (удерживать 5 секунд)
-        this.setupAdminTrigger();
-    }
-
-    setupAdminTrigger() {
-        const adminTrigger = document.createElement('div');
-        adminTrigger.id = 'admin-trigger';
-        adminTrigger.style.cssText = `
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            width: 30px;
-            height: 30px;
-            background: transparent;
-            z-index: 3000;
-            cursor: pointer;
-        `;
-        document.body.appendChild(adminTrigger);
-
-        let pressTimer;
-        
-        adminTrigger.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            pressTimer = setTimeout(() => {
-                this.openAdminPanel();
-            }, 5000);
-        });
-        
-        adminTrigger.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            clearTimeout(pressTimer);
-        });
-        
-        adminTrigger.addEventListener('mousedown', () => {
-            pressTimer = setTimeout(() => {
-                this.openAdminPanel();
-            }, 5000);
-        });
-        
-        adminTrigger.addEventListener('mouseup', () => {
-            clearTimeout(pressTimer);
-        });
-    }
-
-    openAdminPanel() {
-        // Проверяем права администратора
-        if (this.checkAdminAccess()) {
-            // Перенаправляем в админ панель
-            window.location.href = 'admin/';
+        const referralStatsBtn = document.getElementById('referral-stats-btn');
+        if (referralStatsBtn) {
+            referralStatsBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.showReferralStats();
+            });
         }
     }
 
-    checkAdminAccess() {
-        // Список ID администраторов
-        const adminIds = [1, 12345, 67890, 123456789];
+    // РЕФЕРАЛЬНАЯ СИСТЕМА
+    processReferral() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const referrerId = urlParams.get('ref');
         
-        // Проверка по ID пользователя
-        if (this.user && adminIds.includes(this.user.id)) {
-            return true;
+        if (referrerId && referrerId != this.user?.id) {
+            this.referralData.referrerId = referrerId;
+            this.saveGameState();
+            console.log(`Реферал от пользователя: ${referrerId}`);
+            
+            // Показываем уведомление о успешной регистрации по реферальной ссылке
+            this.showReferralWelcome();
         }
         
-        // Альтернативная проверка - секретный код
-        const code = prompt('🔐 Введите код доступа администратора:');
-        if (code === 'darkpaws2024') {
-            return true;
+        // Проверяем, есть ли рефералы для бонусов
+        this.updateReferralBonuses();
+    }
+
+    showReferralWelcome() {
+        if (this.tg && this.tg.showPopup) {
+            this.tg.showPopup({
+                title: '🎉 Добро пожаловать!',
+                message: 'Вы присоединились по приглашению друга! Получите бонус +100 очков!',
+                buttons: [{ type: 'ok' }]
+            });
+        }
+        
+        // Даем бонус новому пользователю
+        this.addScore(100, false, true);
+    }
+
+    addReferredFriend(friendId) {
+        if (!this.referralData.referredFriends.includes(friendId)) {
+            this.referralData.referredFriends.push(friendId);
+            this.updateReferralBonuses();
+            this.saveGameState();
+            
+            // Даем бонус за приглашенного друга
+            this.giveReferralReward();
+        }
+    }
+
+    updateReferralBonuses() {
+        const friendCount = this.referralData.referredFriends.length;
+        
+        // Определяем уровень реферальной программы
+        let newLevel = 0;
+        if (friendCount >= 10) newLevel = 3;
+        else if (friendCount >= 5) newLevel = 2;
+        else if (friendCount >= 1) newLevel = 1;
+        
+        if (newLevel !== this.referralData.referralLevel) {
+            this.referralData.referralLevel = newLevel;
+            this.onReferralLevelUp(newLevel);
+        }
+        
+        // Рассчитываем бонус в зависимости от количества друзей
+        this.referralData.referralBonus = friendCount * 5; // 5% за каждого друга
+    }
+
+    onReferralLevelUp(level) {
+        const levelNames = ['', 'Новичок', 'Амбассадор', 'Легенда'];
+        const rewards = [0, 500, 2000, 5000];
+        
+        if (level > 0 && rewards[level]) {
+            this.addScore(rewards[level], false, true);
+            
+            if (this.tg && this.tg.showPopup) {
+                this.tg.showPopup({
+                    title: '🏆 Новый уровень рефералов!',
+                    message: `Вы достигли уровня "${levelNames[level]}"! Награда: ${rewards[level]} очков`,
+                    buttons: [{ type: 'ok' }]
+                });
+            }
+        }
+    }
+
+    giveReferralReward() {
+        const baseReward = 250;
+        const levelMultiplier = 1 + (this.referralData.referralLevel * 0.5);
+        const reward = Math.floor(baseReward * levelMultiplier);
+        
+        this.addScore(reward, false, true);
+        
+        if (this.tg && this.tg.showPopup) {
+            this.tg.showPopup({
+                title: '🎁 Новый реферал!',
+                message: `Друг присоединился по вашей ссылке! Вы получаете ${reward} очков!`,
+                buttons: [{ type: 'ok' }]
+            });
+        }
+    }
+
+    getReferralStats() {
+        return {
+            referredCount: this.referralData.referredFriends.length,
+            referralLevel: this.referralData.referralLevel,
+            totalBonus: this.referralData.referralBonus,
+            referralLink: `${window.location.origin}${window.location.pathname}?ref=${this.user.id}`
+        };
+    }
+
+    getReferralLevelName(level) {
+        const levels = ['Нет', 'Новичок', 'Амбассадор', 'Легенда'];
+        return levels[level] || 'Нет';
+    }
+
+    showReferralStats() {
+        const stats = this.getReferralStats();
+        const levelNames = ['Нет', 'Новичок', 'Амбассадор', 'Легенда'];
+        const nextLevelFriends = [1, 5, 10];
+        
+        let nextLevelInfo = '';
+        if (stats.referralLevel < 3) {
+            const needed = nextLevelFriends[stats.referralLevel] - stats.referredCount;
+            nextLevelInfo = `До следующего уровня: ${needed} друзей`;
+        } else {
+            nextLevelInfo = 'Максимальный уровень достигнут!';
         }
         
         if (this.tg && this.tg.showPopup) {
             this.tg.showPopup({
-                title: '🚫 Доступ запрещен',
-                message: 'У вас нет прав для доступа к панели администратора',
+                title: '📊 Статистика рефералов',
+                message: `Приглашено друзей: ${stats.referredCount}\n` +
+                        `Текущий уровень: ${levelNames[stats.referralLevel]}\n` +
+                        `Бонус к очкам: +${stats.totalBonus}%\n\n` +
+                        nextLevelInfo,
                 buttons: [{ type: 'ok' }]
             });
         } else {
-            alert('🚫 Доступ запрещен');
+            alert(`📊 Статистика рефералов\n\nПриглашено друзей: ${stats.referredCount}\nТекущий уровень: ${levelNames[stats.referralLevel]}\nБонус к очкам: +${stats.totalBonus}%\n\n${nextLevelInfo}`);
         }
-        
-        return false;
     }
+
+    updateReferralUI() {
+        const stats = this.getReferralStats();
+        
+        const referralCount = document.getElementById('referral-count');
+        const referralLevel = document.getElementById('referral-level');
+        const referralBonus = document.getElementById('referral-bonus');
+        
+        if (referralCount) referralCount.textContent = stats.referredCount;
+        if (referralLevel) referralLevel.textContent = this.getReferralLevelName(stats.referralLevel);
+        if (referralBonus) referralBonus.textContent = `+${stats.totalBonus}%`;
+    }
+
+    // КОНЕЦ РЕФЕРАЛЬНОЙ СИСТЕМЫ
 
     initTelegramAuth() {
         if (this.tg && this.tg.initDataUnsafe && this.tg.initDataUnsafe.user) {
@@ -256,7 +341,7 @@ class DarkPawsClicker {
         } else {
             console.log('No user data available');
             this.user = {
-                id: Math.floor(Math.random() * 1000000),
+                id: Math.floor(Math.random() * 10000),
                 first_name: 'Игрок',
                 username: 'player_' + Math.floor(Math.random() * 1000)
             };
@@ -369,9 +454,9 @@ class DarkPawsClicker {
             friendsBonus.textContent = bonusPercent + '%';
         }
         
+        this.updateReferralUI();
         this.updateFriendsList();
         this.updateFriendsBonuses();
-        this.loadLeaderboard();
     }
 
     updateFriendsList() {
@@ -426,44 +511,42 @@ class DarkPawsClicker {
     }
 
     loadFriendsList() {
-        // Заглушка для загрузки друзей
+        // Симуляция загрузки друзей
         this.gameState.friends = [
             { first_name: 'Друг 1', level: 5, score: 1500 },
-            { first_name: 'Друг 2', level: 3, score: 800 },
-            { first_name: 'Друг 3', level: 7, score: 3200 }
+            { first_name: 'Друг 2', level: 3, score: 800 }
         ];
-        this.updateFriendsTab();
         
-        if (this.tg && this.tg.showPopup) {
-            this.tg.showPopup({
-                title: '✅ Список обновлен',
-                message: 'Данные друзей загружены',
-                buttons: [{ type: 'ok' }]
+        // Добавляем рефералов в список друзей
+        this.referralData.referredFriends.forEach(friendId => {
+            this.gameState.friends.push({
+                first_name: `Реферал ${friendId}`,
+                level: 1,
+                score: 100
             });
-        }
+        });
+        
+        this.updateFriendsTab();
     }
 
     loadLeaderboard() {
         const container = document.getElementById('leaderboard-container');
         if (!container) return;
         
-        // Заглушка для рейтинга
         const leaderboard = [
-            { first_name: 'Чемпион', score: 50000, level: 25 },
-            { first_name: 'Профи', score: 25000, level: 18 },
-            { first_name: 'Любитель', score: 12000, level: 12 },
-            { first_name: 'Новичок', score: 5000, level: 8 },
-            { first_name: this.user.first_name || 'Вы', score: this.gameState.score, level: this.gameState.level }
-        ].sort((a, b) => b.score - a.score);
+            { first_name: 'Чемпион', score: 50000 },
+            { first_name: 'Профи', score: 25000 },
+            { first_name: 'Любитель', score: 12000 },
+            { first_name: 'Новичок', score: 5000 }
+        ];
         
         let leaderboardHTML = '';
         leaderboard.forEach((player, index) => {
             const rank = index + 1;
             const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank + '.';
-            const isCurrentUser = player.first_name === this.user.first_name;
             
             leaderboardHTML += `
-                <div class="leaderboard-item ${isCurrentUser ? 'current-user' : ''}">
+                <div class="leaderboard-item">
                     <div class="leaderboard-rank">${rankIcon}</div>
                     <div class="leaderboard-user">
                         <div class="leaderboard-avatar">
@@ -826,26 +909,17 @@ class DarkPawsClicker {
 
     showCardLockedMessage(card) {
         const cardId = card.dataset.cardId;
-        const cardData = this.getCardData(parseInt(cardId));
-        const unlockLevel = this.getUnlockLevelForCard(parseInt(cardId));
+        console.log(`Карта ${cardId} заблокирована`);
         
         if (this.tg && this.tg.showPopup) {
             this.tg.showPopup({
                 title: '🔒 Карта заблокирована',
-                message: `"${cardData.name}" будет доступна на ${unlockLevel} уровне`,
+                message: 'Эта карта будет доступна на более высоких уровнях',
                 buttons: [{ type: 'ok' }]
             });
         } else {
-            alert(`🔒 Карта "${cardData.name}" будет доступна на ${unlockLevel} уровне`);
+            alert('Эта карта будет доступна на более высоких уровнях');
         }
-    }
-
-    getUnlockLevelForCard(cardId) {
-        if (cardId <= 3) return 1;
-        if (cardId <= 6) return 2;
-        if (cardId <= 8) return 3;
-        if (cardId <= 9) return 5;
-        return 10;
     }
 
     showCardNotification(message, cardData) {
@@ -912,8 +986,7 @@ class DarkPawsClicker {
         }
         if (playTime) {
             const hours = Math.floor(this.gameState.stats.playTime / 3600000);
-            const minutes = Math.floor((this.gameState.stats.playTime % 3600000) / 60000);
-            playTime.textContent = `${hours}ч ${minutes}м`;
+            playTime.textContent = `${hours}ч`;
         }
         if (totalScore) {
             totalScore.textContent = this.gameState.totalEarnedScore.toLocaleString();
@@ -973,7 +1046,8 @@ class DarkPawsClicker {
     }
 
     shareProfile() {
-        const shareText = `🎮 Мой профиль в Dark Paws Clicker!\nУровень: ${this.gameState.level}\nОчки: ${Math.floor(this.gameState.score).toLocaleString()}\nКлики: ${this.gameState.stats.totalClicks.toLocaleString()}\n\nПрисоединяйся к игре!`;
+        const stats = this.getReferralStats();
+        const shareText = `Мой профиль в Dark Paws Clicker!\nУровень: ${this.gameState.level}\nОчки: ${this.gameState.score}\nПриглашено друзей: ${stats.referredCount}\nПрисоединяйся по моей ссылке: ${stats.referralLink}`;
         
         if (this.tg && this.tg.showPopup) {
             this.tg.showPopup({
@@ -988,41 +1062,55 @@ class DarkPawsClicker {
             navigator.share({
                 title: 'Dark Paws Clicker',
                 text: shareText,
-                url: window.location.href
+                url: stats.referralLink
             });
         } else {
-            navigator.clipboard.writeText(shareText).then(() => {
-                alert('Профиль скопирован в буфер обмена!');
-            });
+            alert(shareText);
         }
     }
 
     inviteFriends() {
-        const shareText = `🐾 Присоединяйся к Dark Paws Clicker! 🎮\n\nПрокачивай свою лапу, собирай комбо-карты и соревнуйся с друзьями!\n\nСсылка: ${window.location.href}?ref=${this.user.id}`;
+        const stats = this.getReferralStats();
+        const shareText = `Присоединяйся к Dark Paws Clicker! 🎮\n\n` +
+                         `Мой уровень: ${this.gameState.level}\n` +
+                         `Мои очки: ${this.gameState.score}\n` +
+                         `Приглашено друзей: ${stats.referredCount}\n\n` +
+                         `Играй и прокачивай свою лапу! 🐾\n\n` +
+                         `Ссылка: ${stats.referralLink}`;
         
         if (this.tg && this.tg.showPopup) {
             this.tg.showPopup({
                 title: 'Пригласить друга',
-                message: 'Поделитесь ссылкой с друзьями и получайте бонусы!',
+                message: `Поделитесь ссылкой с друзьями!\n\nУже приглашено: ${stats.referredCount} друзей\nВаш уровень: ${this.getReferralLevelName(stats.referralLevel)}`,
                 buttons: [{ type: 'ok' }]
             });
         } else if (navigator.share) {
             navigator.share({
                 title: 'Dark Paws Clicker',
                 text: shareText,
-                url: window.location.href + `?ref=${this.user.id}`
+                url: stats.referralLink
             });
         } else {
-            navigator.clipboard.writeText(shareText).then(() => {
-                alert('Ссылка скопирована в буфер обмена! Отправь её другу 🐾');
-            });
+            navigator.clipboard.writeText(stats.referralLink);
+            alert('Ссылка скопирована в буфер обмена!\n\n' + shareText);
         }
+        
+        // Симуляция добавления реферала для тестирования
+        setTimeout(() => {
+            this.simulateReferral();
+        }, 2000);
+    }
+
+    simulateReferral() {
+        // Для тестирования - добавляем случайного реферала
+        const randomId = Math.floor(Math.random() * 1000);
+        this.addReferredFriend(randomId);
+        this.updateFriendsTab();
     }
 
     startPlayTimeCounter() {
         setInterval(() => {
             this.gameState.stats.playTime += 1000;
-            // Сохраняем каждую минуту
             if (this.gameState.stats.playTime % 60000 === 0) {
                 this.saveGameState();
             }
@@ -1031,11 +1119,8 @@ class DarkPawsClicker {
 
     handleClick(event) {
         this.gameState.stats.totalClicks++;
-        
-        // Проверяем достижения
         this.checkAchievements();
         
-        // Применяем эффект хаоса если есть
         if (this.gameState.cardEffects.chaos) {
             this.applyChaosEffect();
         }
@@ -1043,10 +1128,8 @@ class DarkPawsClicker {
         let points = this.gameState.upgrades.clickPower;
         let isCritical = false;
         
-        // Применяем бонусы от карт
         points *= this.gameState.cardEffects.clickPower;
         
-        // Расчет шанса критического удара
         const baseCritChance = this.gameState.upgrades.criticalChance * 0.03;
         const totalCritChance = baseCritChance + this.gameState.cardEffects.criticalChance;
         
@@ -1060,7 +1143,6 @@ class DarkPawsClicker {
         this.addScore(points, isCritical);
         this.createParticles(event);
         
-        // Сохраняем каждые 10 кликов
         if (this.gameState.stats.totalClicks % 10 === 0) {
             this.saveGameState();
         }
@@ -1069,44 +1151,11 @@ class DarkPawsClicker {
     applyChaosEffect() {
         const randomEffect = Math.random();
         if (randomEffect < 0.3) {
-            // Временное усиление силы клика
-            const originalPower = this.gameState.cardEffects.clickPower;
             this.gameState.cardEffects.clickPower *= 1.5;
-            
             setTimeout(() => {
-                this.gameState.cardEffects.clickPower = originalPower;
+                this.gameState.cardEffects.clickPower /= 1.5;
             }, 3000);
-            
-            this.showChaosEffect('⚡ УСИЛЕНИЕ!');
-        } else if (randomEffect < 0.6) {
-            // Временный бонус к авто-клику
-            this.gameState.cardEffects.autoClick += 10;
-            
-            setTimeout(() => {
-                this.gameState.cardEffects.autoClick -= 10;
-            }, 5000);
-            
-            this.showChaosEffect('🌀 БУРСТ!');
         }
-    }
-
-    showChaosEffect(message) {
-        const container = document.getElementById('particles-container');
-        if (!container) return;
-        
-        const chaosText = document.createElement('div');
-        chaosText.className = 'critical-hit';
-        chaosText.textContent = message;
-        chaosText.style.color = '#ff00ff';
-        chaosText.style.fontSize = '24px';
-        
-        container.appendChild(chaosText);
-        
-        setTimeout(() => {
-            if (chaosText.parentNode === container) {
-                container.removeChild(chaosText);
-            }
-        }, 2000);
     }
 
     checkAchievements() {
@@ -1114,64 +1163,36 @@ class DarkPawsClicker {
         
         if (clicks >= 100 && !this.gameState.achievements.firstSteps) {
             this.gameState.achievements.firstSteps = true;
-            this.showAchievementNotification('Первые шаги', 'Сделано 100 кликов!');
+            this.showAchievementNotification('Первые шаги');
         }
         if (clicks >= 1000 && !this.gameState.achievements.hardWorker) {
             this.gameState.achievements.hardWorker = true;
-            this.showAchievementNotification('Усердный работник', '1000 кликов! Вы настоящий труженик!');
+            this.showAchievementNotification('Усердный работник');
         }
         if (clicks >= 10000 && !this.gameState.achievements.clickMaster) {
             this.gameState.achievements.clickMaster = true;
-            this.showAchievementNotification('Клик-мастер', '10000 кликов! Мастерское владение лапой!');
+            this.showAchievementNotification('Клик-мастер');
         }
         if (clicks >= 50000 && !this.gameState.achievements.clickLegend) {
             this.gameState.achievements.clickLegend = true;
-            this.showAchievementNotification('Легенда кликов', '50000 кликов! Вы вошли в историю!');
+            this.showAchievementNotification('Легенда кликов');
         }
     }
 
-    showAchievementNotification(achievementName, message) {
+    showAchievementNotification(achievementName) {
         console.log(`🎉 Достижение разблокировано: ${achievementName}`);
-        
-        // Показываем визуальный эффект
-        this.showAchievementEffect(achievementName);
         
         if (this.tg && this.tg.showPopup) {
             this.tg.showPopup({
                 title: '🎉 Новое достижение!',
-                message: `${achievementName}\n\n${message}`,
+                message: `Вы получили достижение: "${achievementName}"`,
                 buttons: [{ type: 'ok' }]
             });
         } else {
-            alert(`🎉 ${achievementName}\n${message}`);
+            alert(`🎉 Новое достижение: ${achievementName}`);
         }
         
         this.saveGameState();
-    }
-
-    showAchievementEffect(achievementName) {
-        const container = document.getElementById('particles-container');
-        if (!container) return;
-        
-        const achievementElement = document.createElement('div');
-        achievementElement.className = 'critical-hit';
-        achievementElement.innerHTML = `
-            <div style="text-align: center;">
-                <div style="font-size: 48px; margin-bottom: 10px;">🏆</div>
-                <div style="font-size: 20px; font-weight: bold;">${achievementName}</div>
-                <div style="font-size: 14px; opacity: 0.8;">Достижение разблокировано!</div>
-            </div>
-        `;
-        achievementElement.style.color = '#FFD700';
-        achievementElement.style.textShadow = '0 0 20px rgba(255, 215, 0, 0.8)';
-        
-        container.appendChild(achievementElement);
-        
-        setTimeout(() => {
-            if (achievementElement.parentNode === container) {
-                container.removeChild(achievementElement);
-            }
-        }, 3000);
     }
 
     createParticles(event) {
@@ -1214,12 +1235,6 @@ class DarkPawsClicker {
             particle.style.height = (2 + Math.random() * 4) + 'px';
             particle.style.opacity = (0.3 + Math.random() * 0.7);
             
-            // Случайный цвет частицы
-            const colors = ['#8b5cf6', '#ec4899', '#f59e0b', '#10b981'];
-            const randomColor = colors[Math.floor(Math.random() * colors.length)];
-            particle.style.background = randomColor;
-            particle.style.boxShadow = `0 0 20px ${randomColor}`;
-            
             container.appendChild(particle);
             
             setTimeout(() => {
@@ -1230,10 +1245,14 @@ class DarkPawsClicker {
         }
     }
 
-    addScore(points, isCritical = false) {
-        const actualPoints = Math.floor(points);
-        this.gameState.score += actualPoints;
-        this.gameState.totalEarnedScore += actualPoints;
+    addScore(points, isCritical = false, isBonus = false) {
+        // Применяем реферальный бонус (только для обычных кликов, не для бонусов)
+        if (!isBonus && this.referralData.referralBonus > 0) {
+            points = points * (1 + this.referralData.referralBonus / 100);
+        }
+        
+        this.gameState.score += points;
+        this.gameState.totalEarnedScore += points;
         
         let leveledUp = false;
         const maxLevel = this.getMaxLevel();
@@ -1253,7 +1272,7 @@ class DarkPawsClicker {
         }
         
         if (isCritical) {
-            this.showCriticalEffect(actualPoints);
+            this.showCriticalEffect(points);
         }
     }
 
@@ -1278,35 +1297,7 @@ class DarkPawsClicker {
             levelText.textContent = `Уровень ${this.gameState.level}`;
         }
         
-        // Показываем анимацию уровня
-        this.showLevelUpAnimation();
-        
         this.saveGameState();
-    }
-
-    showLevelUpAnimation() {
-        const container = document.getElementById('particles-container');
-        if (!container) return;
-        
-        const levelUpElement = document.createElement('div');
-        levelUpElement.className = 'critical-hit';
-        levelUpElement.innerHTML = `
-            <div style="text-align: center;">
-                <div style="font-size: 48px; margin-bottom: 10px;">⭐</div>
-                <div style="font-size: 24px; font-weight: bold;">Уровень ${this.gameState.level}!</div>
-                <div style="font-size: 16px; opacity: 0.8;">Новые возможности открыты!</div>
-            </div>
-        `;
-        levelUpElement.style.color = '#FFD700';
-        levelUpElement.style.textShadow = '0 0 30px rgba(255, 215, 0, 0.8)';
-        
-        container.appendChild(levelUpElement);
-        
-        setTimeout(() => {
-            if (levelUpElement.parentNode === container) {
-                container.removeChild(levelUpElement);
-            }
-        }, 3000);
     }
 
     showCriticalEffect(points) {
@@ -1315,11 +1306,7 @@ class DarkPawsClicker {
         
         const critText = document.createElement('div');
         critText.className = 'critical-hit';
-        critText.textContent = `CRIT! +${points}`;
-        critText.style.color = '#ff6b6b';
-        critText.style.fontSize = '32px';
-        critText.style.fontWeight = 'bold';
-        critText.style.textShadow = '0 0 20px rgba(255, 107, 107, 0.8)';
+        critText.textContent = `CRIT! +${Math.floor(points)}`;
         
         container.appendChild(critText);
         
@@ -1370,22 +1357,16 @@ class DarkPawsClicker {
             'critical-chance': 'Точность'
         };
         
-        const upgradeLevels = {
-            'click-power': this.gameState.upgrades.clickPower,
-            'auto-click': this.gameState.upgrades.autoClick,
-            'critical-chance': this.gameState.upgrades.criticalChance
-        };
-        
         console.log(`🔼 Улучшение куплено: ${upgradeNames[upgradeType]}`);
         
         if (this.tg && this.tg.showPopup) {
             this.tg.showPopup({
                 title: '✅ Улучшение куплено!',
-                message: `Вы улучшили: ${upgradeNames[upgradeType]}\nТеперь уровень: ${upgradeLevels[upgradeType]}`,
+                message: `Вы улучшили: ${upgradeNames[upgradeType]}`,
                 buttons: [{ type: 'ok' }]
             });
         } else {
-            alert(`✅ Улучшение куплено: ${upgradeNames[upgradeType]}\nУровень: ${upgradeLevels[upgradeType]}`);
+            alert(`✅ Улучшение куплено: ${upgradeNames[upgradeType]}`);
         }
     }
 
@@ -1395,11 +1376,11 @@ class DarkPawsClicker {
         if (this.tg && this.tg.showPopup) {
             this.tg.showPopup({
                 title: '❌ Недостаточно очков',
-                message: `Для покупки нужно: ${cost} очков\nУ вас: ${Math.floor(this.gameState.score)} очков`,
+                message: `Для покупки нужно: ${cost} очков`,
                 buttons: [{ type: 'ok' }]
             });
         } else {
-            alert(`❌ Недостаточно очков\nНужно: ${cost}\nУ вас: ${Math.floor(this.gameState.score)}`);
+            alert(`❌ Недостаточно очков. Нужно: ${cost}`);
         }
     }
 
@@ -1412,6 +1393,12 @@ class DarkPawsClicker {
                 
                 if (totalPoints > 0) {
                     let points = totalPoints * this.gameState.cardEffects.clickPower;
+                    
+                    // Применяем реферальный бонус к авто-кликам
+                    if (this.referralData.referralBonus > 0) {
+                        points = points * (1 + this.referralData.referralBonus / 100);
+                    }
+                    
                     this.addScore(points);
                 }
             }
@@ -1478,7 +1465,7 @@ class DarkPawsClicker {
         if (totalNeeded > 0) {
             earnedScoreElement.textContent = `${Math.floor(progress).toLocaleString()} / ${totalNeeded.toLocaleString()} очков до уровня ${this.gameState.level + 1}`;
         } else {
-            earnedScoreElement.textContent = '🏆 Максимальный уровень достигнут!';
+            earnedScoreElement.textContent = 'Максимальный уровень достигнут!';
         }
     }
 
@@ -1531,130 +1518,14 @@ class DarkPawsClicker {
         try {
             const saveData = {
                 ...this.gameState,
+                referralData: this.referralData,
                 userId: this.user?.id,
                 lastSave: Date.now()
             };
             localStorage.setItem('darkPawsClicker_save', JSON.stringify(saveData));
-            
-            // Сохраняем данные для админки
-            this.saveUserToAdmin();
-            
-            console.log('Game state saved');
         } catch (error) {
             console.error('Local storage save error:', error);
         }
-    }
-
-    saveUserToAdmin() {
-        if (!this.user) return;
-        
-        try {
-            const usersData = localStorage.getItem('darkPawsClicker_users');
-            let users = usersData ? JSON.parse(usersData) : [];
-            
-            // Ищем существующего пользователя
-            const existingUserIndex = users.findIndex(u => u.id === this.user.id);
-            
-            const userData = {
-                id: this.user.id,
-                first_name: this.user.first_name,
-                username: this.user.username,
-                photo_url: this.user.photo_url,
-                gameState: { ...this.gameState },
-                lastActive: new Date().toISOString(),
-                joinDate: this.gameState.stats.joinDate,
-                totalPlayTime: this.gameState.stats.playTime
-            };
-            
-            if (existingUserIndex !== -1) {
-                users[existingUserIndex] = userData;
-            } else {
-                users.push(userData);
-            }
-            
-            localStorage.setItem('darkPawsClicker_users', JSON.stringify(users));
-            console.log('User data saved to admin:', userData.id);
-        } catch (error) {
-            console.error('Error saving user to admin:', error);
-        }
-    }
-
-    // Методы для админки
-    getGameDataForAdmin() {
-        return {
-            users: this.getUsersData(),
-            upgrades: this.getUpgradesData(),
-            cards: this.getAllCards(),
-            levels: this.getLevelsData(),
-            settings: this.getGameSettings(),
-            version: '1.0'
-        };
-    }
-
-    getUsersData() {
-        try {
-            const usersData = localStorage.getItem('darkPawsClicker_users');
-            return usersData ? JSON.parse(usersData) : [];
-        } catch (error) {
-            console.error('Error getting users data:', error);
-            return [];
-        }
-    }
-
-    getUpgradesData() {
-        return {
-            'click-power': {
-                name: 'Сила лапы',
-                baseCost: 10,
-                currentLevel: this.gameState.upgrades.clickPower,
-                multiplier: 2
-            },
-            'auto-click': {
-                name: 'Авто-клик',
-                baseCost: 50,
-                currentLevel: this.gameState.upgrades.autoClick,
-                multiplier: 2
-            },
-            'critical-chance': {
-                name: 'Точность',
-                baseCost: 25,
-                currentLevel: this.gameState.upgrades.criticalChance,
-                multiplier: 2
-            }
-        };
-    }
-
-    getLevelsData() {
-        const levels = {};
-        for (let i = 1; i <= 10; i++) {
-            levels[i] = {
-                requiredScore: this.getRequiredScoreForLevel(i),
-                rewards: this.getLevelRewards(i)
-            };
-        }
-        return levels;
-    }
-
-    getLevelRewards(level) {
-        const rewards = {
-            1: { type: 'clickPower', value: 10, description: '+10 к силе клика' },
-            2: { type: 'autoClick', value: 1, description: '+1 авто-клик/сек' },
-            3: { type: 'criticalChance', value: 10, description: '+10% шанс крита' },
-            4: { type: 'multiplier', value: 2, description: 'x2 все бонусы' },
-            5: { type: 'card', value: 'diamond-paw', description: 'Карта Алмазная лапа' }
-        };
-        return rewards[level] || { type: 'score', value: level * 100, description: 'Бонусные очки' };
-    }
-
-    getGameSettings() {
-        return {
-            baseCost: 10,
-            costMultiplier: 2,
-            baseExp: 100,
-            maxLevel: 100,
-            autoSaveInterval: 30,
-            maxFriends: 50
-        };
     }
 
     loadGameState() {
@@ -1663,7 +1534,6 @@ class DarkPawsClicker {
             if (saved) {
                 const saveData = JSON.parse(saved);
                 
-                // Миграция старых сохранений
                 if (!saveData.totalEarnedScore) {
                     saveData.totalEarnedScore = saveData.score || 0;
                 }
@@ -1683,17 +1553,12 @@ class DarkPawsClicker {
                     };
                 }
                 
-                if (!saveData.achievements) {
-                    saveData.achievements = {
-                        firstSteps: false,
-                        hardWorker: false,
-                        clickMaster: false,
-                        clickLegend: false
-                    };
+                // Загружаем реферальные данные
+                if (saveData.referralData) {
+                    this.referralData = { ...this.referralData, ...saveData.referralData };
                 }
                 
-                // Загружаем только если это тот же пользователь или нет пользователя
-                if (!this.user || !saveData.userId || saveData.userId === this.user.id) {
+                if (!this.user || saveData.userId === this.user.id) {
                     this.gameState = { ...this.gameState, ...saveData };
                     this.applyCardEffects();
                     console.log('Game state loaded from localStorage');
@@ -1705,21 +1570,12 @@ class DarkPawsClicker {
     }
 }
 
-// Инициализация игры при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
     window.clickerGame = new DarkPawsClicker();
 });
 
-// Сохранение при закрытии страницы
 window.addEventListener('beforeunload', () => {
     if (window.clickerGame) {
-        window.clickerGame.saveGameState();
-    }
-});
-
-// Сохранение при изменении видимости страницы
-document.addEventListener('visibilitychange', () => {
-    if (document.hidden && window.clickerGame) {
         window.clickerGame.saveGameState();
     }
 });
