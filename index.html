@@ -13,12 +13,12 @@
     <div id="app">
         <!-- Экран игры -->
         <div id="game-tab" class="tab-content active">
-            <!-- Исправленная шапка -->
+            <!-- Шапка -->
             <div class="header">
                 <div class="header-main">
                     <div class="user-section clickable" id="profile-opener">
                         <div class="avatar-container">
-                            <img id="user-avatar" src="" alt="Avatar" class="avatar">
+                            <div class="avatar" id="user-avatar"></div>
                             <div class="level-badge">1</div>
                         </div>
                         <div class="user-info">
@@ -176,25 +176,15 @@
             <div class="levels-content">
                 <div class="levels-progress">
                     <div class="level-indicator">
-                        <div class="level-circle active">
-                            <span>1</span>
-                        </div>
+                        <div class="level-circle active">1</div>
                         <div class="level-line"></div>
-                        <div class="level-circle">
-                            <span>2</span>
-                        </div>
+                        <div class="level-circle">2</div>
                         <div class="level-line"></div>
-                        <div class="level-circle">
-                            <span>3</span>
-                        </div>
+                        <div class="level-circle">3</div>
                         <div class="level-line"></div>
-                        <div class="level-circle">
-                            <span>4</span>
-                        </div>
+                        <div class="level-circle">4</div>
                         <div class="level-line"></div>
-                        <div class="level-circle">
-                            <span>5</span>
-                        </div>
+                        <div class="level-circle">5</div>
                     </div>
                 </div>
 
@@ -263,7 +253,7 @@
             <div class="tab-header">
                 <h2>Комбо карты</h2>
                 <div class="tab-stats">
-                    <div class="combo-count">Карт: <span>0/12</span></div>
+                    <div class="combo-count">Карт: <span>0/4</span></div>
                 </div>
             </div>
 
@@ -273,6 +263,7 @@
                         <div class="deck-power">
                             <div class="power-value">0</div>
                             <div class="power-label">Сила колоды</div>
+                            <div class="deck-size">Карт: <span>0/4</span></div>
                         </div>
                         <div class="deck-stats">
                             <div class="deck-stat">
@@ -280,7 +271,7 @@
                                 <div class="stat-label">Бонус клика</div>
                             </div>
                             <div class="deck-stat">
-                                <div class="stat-value">0%</div>
+                                <div class="stat-value">0</div>
                                 <div class="stat-label">Бонус авто</div>
                             </div>
                             <div class="deck-stat">
@@ -293,50 +284,8 @@
 
                 <div class="combo-collection">
                     <h4>Коллекция карт</h4>
-                    <div class="cards-grid">
-                        <div class="combo-card locked">
-                            <div class="card-frame">
-                                <div class="card-rarity common">Обычная</div>
-                                <div class="card-icon">🐾</div>
-                                <div class="card-name">Лапа новичка</div>
-                                <div class="card-stats">
-                                    <div class="card-stat">+5% к клику</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="combo-card locked">
-                            <div class="card-frame">
-                                <div class="card-rarity rare">Редкая</div>
-                                <div class="card-icon">⚡</div>
-                                <div class="card-name">Энергия</div>
-                                <div class="card-stats">
-                                    <div class="card-stat">+3 авто-клика</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="combo-card locked">
-                            <div class="card-frame">
-                                <div class="card-rarity epic">Эпическая</div>
-                                <div class="card-icon">🎯</div>
-                                <div class="card-name">Точность</div>
-                                <div class="card-stats">
-                                    <div class="card-stat">+15% шанс крита</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="combo-card locked">
-                            <div class="card-frame">
-                                <div class="card-rarity legendary">Легендарная</div>
-                                <div class="card-icon">💎</div>
-                                <div class="card-name">Алмазная лапа</div>
-                                <div class="card-stats">
-                                    <div class="card-stat">x2 все бонусы</div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="cards-grid" id="cards-grid-container">
+                        <!-- Карточки будут добавляться через JavaScript -->
                     </div>
                 </div>
 
@@ -345,8 +294,10 @@
                     <ul class="combo-rules">
                         <li>Собирайте карты для усиления характеристик</li>
                         <li>Комбинируйте карты для получения бонусов</li>
-                        <li>Редкость карт: Обычная, Редкая, Эпическая, Легендарная</li>
+                        <li>Редкость карт: Обычная, Редкая, Эпическая, Легендарная, Мифическая</li>
                         <li>Карты открываются при достижении уровней</li>
+                        <li>Можно активировать до 4 карт одновременно</li>
+                        <li>Кликните по карте чтобы добавить/убрать из колоды</li>
                     </ul>
                 </div>
             </div>
@@ -385,7 +336,7 @@
                 <div class="profile-content">
                     <div class="profile-header">
                         <div class="profile-avatar">
-                            <img id="profile-avatar" src="" alt="Avatar" class="avatar-large">
+                            <div class="avatar-large" id="profile-avatar"></div>
                             <div class="profile-level">
                                 <span id="profile-level">1</span>
                             </div>
@@ -446,21 +397,21 @@
                                     <div class="achievement-desc">Сделать 100 кликов</div>
                                 </div>
                             </div>
-                            <div class="achievement locked">
+                            <div class="achievement">
                                 <div class="achievement-icon">💪</div>
                                 <div class="achievement-info">
                                     <div class="achievement-name">Усердный работник</div>
                                     <div class="achievement-desc">Сделать 1000 кликов</div>
                                 </div>
                             </div>
-                            <div class="achievement locked">
+                            <div class="achievement">
                                 <div class="achievement-icon">🚀</div>
                                 <div class="achievement-info">
                                     <div class="achievement-name">Клик-мастер</div>
                                     <div class="achievement-desc">Сделать 10000 кликов</div>
                                 </div>
                             </div>
-                            <div class="achievement locked">
+                            <div class="achievement">
                                 <div class="achievement-icon">🏆</div>
                                 <div class="achievement-info">
                                     <div class="achievement-name">Легенда кликов</div>
@@ -494,114 +445,6 @@
                         <i class="fas fa-share"></i>
                         Поделиться профилем
                     </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Скрытая админ панель -->
-        <div id="admin-panel" class="modal">
-            <div class="modal-content admin-modal">
-                <div class="modal-header">
-                    <h2>🤫 Админ Панель</h2>
-                    <button class="modal-close" id="close-admin">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                
-                <div class="admin-content">
-                    <!-- Статистика игры -->
-                    <div class="admin-section">
-                        <h3>📊 Статистика игры</h3>
-                        <div class="admin-stats">
-                            <div class="admin-stat">
-                                <span>Очки:</span>
-                                <input type="number" id="admin-score" value="0">
-                            </div>
-                            <div class="admin-stat">
-                                <span>Уровень:</span>
-                                <input type="number" id="admin-level" value="1" min="1" max="100">
-                            </div>
-                            <div class="admin-stat">
-                                <span>Всего кликов:</span>
-                                <input type="number" id="admin-total-clicks" value="0">
-                            </div>
-                            <div class="admin-stat">
-                                <span>Время игры (ч):</span>
-                                <input type="number" id="admin-play-time" value="0" step="0.1">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Управление улучшениями -->
-                    <div class="admin-section">
-                        <h3>⚡ Управление улучшениями</h3>
-                        <div class="upgrades-controls">
-                            <div class="upgrade-control">
-                                <label>Сила клика:</label>
-                                <input type="number" id="admin-click-power" value="1" min="1" max="1000">
-                            </div>
-                            <div class="upgrade-control">
-                                <label>Авто-клик:</label>
-                                <input type="number" id="admin-auto-click" value="0" min="0" max="1000">
-                            </div>
-                            <div class="upgrade-control">
-                                <label>Шанс крита:</label>
-                                <input type="number" id="admin-critical" value="1" min="1" max="1000">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Быстрые действия -->
-                    <div class="admin-section">
-                        <h3>🎮 Быстрые действия</h3>
-                        <div class="quick-actions">
-                            <button class="btn-admin" id="admin-add-1000">+1000 очков</button>
-                            <button class="btn-admin" id="admin-add-10000">+10000 очков</button>
-                            <button class="btn-admin" id="admin-level-up">Уровень ↑</button>
-                            <button class="btn-admin" id="admin-max-upgrades">Макс улучшения</button>
-                            <button class="btn-admin" id="admin-reset-game">Сброс игры</button>
-                            <button class="btn-admin" id="admin-unlock-all">Разблокировать всё</button>
-                        </div>
-                    </div>
-
-                    <!-- Настройки сервера -->
-                    <div class="admin-section">
-                        <h3>🔧 Настройки сервера</h3>
-                        <div class="server-settings">
-                            <div class="server-setting">
-                                <label>API URL:</label>
-                                <input type="text" id="admin-api-url" value="https://your-server.com/api">
-                            </div>
-                            <div class="server-setting">
-                                <label>Bot Token:</label>
-                                <input type="text" id="admin-bot-token" value="YOUR_BOT_TOKEN_HERE">
-                            </div>
-                            <div class="server-actions">
-                                <button class="btn-admin" id="admin-test-connection">Тест соединения</button>
-                                <button class="btn-admin" id="admin-force-save">Принудительное сохранение</button>
-                                <button class="btn-admin" id="admin-force-load">Принудительная загрузка</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Отладка -->
-                    <div class="admin-section">
-                        <h3>🐛 Отладка</h3>
-                        <div class="debug-actions">
-                            <button class="btn-admin" id="admin-export-save">Экспорт сохранения</button>
-                            <button class="btn-admin" id="admin-import-save">Импорт сохранения</button>
-                            <button class="btn-admin" id="admin-show-logs">Показать логи</button>
-                            <button class="btn-admin" id="admin-clear-data">Очистить все данные</button>
-                        </div>
-                        <div class="debug-info">
-                            <textarea id="admin-debug-output" placeholder="Логи и отладочная информация..." readonly></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="modal-actions">
-                    <button class="btn-secondary" id="admin-apply">Применить изменения</button>
-                    <button class="btn-primary" id="admin-save-close">Сохранить и закрыть</button>
                 </div>
             </div>
         </div>
