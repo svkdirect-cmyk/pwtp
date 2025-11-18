@@ -347,7 +347,135 @@ class DarkPawsClicker {
         if (referralBonus) referralBonus.textContent = `+${stats.totalBonus}%`;
     }
 
-    // КОНЕЦ РЕФЕРАЛЬНОЙ СИСТЕМЫ
+    // ИСПРАВЛЕННАЯ ФУНКЦИЯ ПРИГЛАШЕНИЯ ДРУЗЕЙ
+    inviteFriends() {
+        const stats = this.getReferralStats();
+        const shareText = `Присоединяйся к Dark Paws Clicker! 🎮\n\n` +
+                         `Мой уровень: ${this.gameState.level}\n` +
+                         `Мои очки: ${this.gameState.score}\n` +
+                         `Приглашено друзей: ${stats.referredCount}\n\n` +
+                         `Играй и прокачивай свою лапу! 🐾\n\n` +
+                         `Ссылка: ${stats.referralLink}`;
+
+        // Используем нативный шеринг Telegram Web Apps
+        if (this.tg && this.tg.showPopup) {
+            // Показываем алерт с информацией о рефералах
+            this.tg.showPopup({
+                title: 'Пригласить друга',
+                message: `Поделитесь ссылкой с друзьями!\n\nУже приглашено: ${stats.referredCount} друзей\nВаш уровень: ${this.getReferralLevelName(stats.referralLevel)}`,
+                buttons: [
+                    {
+                        type: 'default',
+                        text: '📤 Поделиться ссылкой',
+                        id: 'share'
+                    },
+                    {
+                        type: 'cancel',
+                        text: 'Отмена'
+                    }
+                ]
+            }).then(buttonId => {
+                if (buttonId === 'share') {
+                    // Используем Telegram Web Apps Share
+                    if (this.tg.shareMessage) {
+                        this.tg.shareMessage({
+                            text: shareText,
+                            url: stats.referralLink
+                        });
+                    } else {
+                        // Fallback для старых версий
+                        this.tg.showAlert('Скопируйте ссылку: ' + stats.referralLink);
+                        navigator.clipboard.writeText(stats.referralLink);
+                    }
+                }
+            });
+        } 
+        // Для браузера используем Web Share API
+        else if (navigator.share) {
+            navigator.share({
+                title: 'Dark Paws Clicker',
+                text: shareText,
+                url: stats.referralLink
+            }).then(() => {
+                console.log('Ссылка успешно отправлена');
+            }).catch(error => {
+                console.log('Ошибка шеринга:', error);
+                // Fallback - копирование в буфер обмена
+                this.fallbackShare(stats.referralLink, shareText);
+            });
+        } else {
+            // Fallback для браузеров без поддержки шеринга
+            this.fallbackShare(stats.referralLink, shareText);
+        }
+    }
+
+    // Метод для fallback шеринга
+    fallbackShare(link, text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(link).then(() => {
+                alert('Ссылка скопирована в буфер обмена!\n\n' + text);
+            }).catch(() => {
+                // Старый способ для браузеров без Clipboard API
+                const textArea = document.createElement('textarea');
+                textArea.value = link;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('Ссылка скопирована в буфер обмена!\n\n' + text);
+            });
+        } else {
+            // Самый простой fallback
+            prompt('Скопируйте ссылку:', link);
+            alert('Теперь отправьте ссылку другу!\n\n' + text);
+        }
+    }
+
+    // Дополнительный метод для расширенного шеринга
+    showShareOptions() {
+        const stats = this.getReferralStats();
+        const shareText = `Присоединяйся к Dark Paws Clicker! 🎮\n\nСсылка: ${stats.referralLink}`;
+        
+        if (this.tg && this.tg.showPopup) {
+            this.tg.showPopup({
+                title: 'Поделиться с друзьями',
+                message: 'Выберите способ отправки приглашения:',
+                buttons: [
+                    {
+                        type: 'default',
+                        text: '📱 Отправить в Telegram',
+                        id: 'telegram'
+                    },
+                    {
+                        type: 'default', 
+                        text: '📋 Скопировать ссылку',
+                        id: 'copy'
+                    },
+                    {
+                        type: 'cancel',
+                        text: 'Отмена'
+                    }
+                ]
+            }).then(buttonId => {
+                if (buttonId === 'telegram') {
+                    if (this.tg.openTelegramLink) {
+                        this.tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(stats.referralLink)}&text=${encodeURIComponent(shareText)}`);
+                    } else {
+                        window.open(`https://t.me/share/url?url=${encodeURIComponent(stats.referralLink)}&text=${encodeURIComponent(shareText)}`, '_blank');
+                    }
+                } else if (buttonId === 'copy') {
+                    navigator.clipboard.writeText(stats.referralLink);
+                    if (this.tg.showAlert) {
+                        this.tg.showAlert('Ссылка скопирована в буфер обмена!');
+                    } else {
+                        alert('Ссылка скопирована в буфер обмена!');
+                    }
+                }
+            });
+        } else {
+            this.inviteFriends(); // Используем стандартный метод
+        }
+    }
 
     initTelegramAuth() {
         if (this.tg && this.tg.initDataUnsafe && this.tg.initDataUnsafe.user) {
@@ -1080,44 +1208,6 @@ class DarkPawsClicker {
         } else {
             alert(shareText);
         }
-    }
-
-    inviteFriends() {
-        const stats = this.getReferralStats();
-        const shareText = `Присоединяйся к Dark Paws Clicker! 🎮\n\n` +
-                         `Мой уровень: ${this.gameState.level}\n` +
-                         `Мои очки: ${this.gameState.score}\n` +
-                         `Приглашено друзей: ${stats.referredCount}\n\n` +
-                         `Играй и прокачивай свою лапу! 🐾\n\n` +
-                         `Ссылка: ${stats.referralLink}`;
-        
-        if (this.tg && this.tg.showPopup) {
-            this.tg.showPopup({
-                title: 'Пригласить друга',
-                message: `Поделитесь ссылкой с друзьями!\n\nУже приглашено: ${stats.referredCount} друзей\nВаш уровень: ${this.getReferralLevelName(stats.referralLevel)}`,
-                buttons: [{ type: 'ok' }]
-            });
-        } else if (navigator.share) {
-            navigator.share({
-                title: 'Dark Paws Clicker',
-                text: shareText,
-                url: stats.referralLink
-            });
-        } else {
-            navigator.clipboard.writeText(stats.referralLink);
-            alert('Ссылка скопирована в буфер обмена!\n\n' + shareText);
-        }
-        
-        // УБРАНА СИМУЛЯЦИЯ РЕФЕРАЛА - теперь счетчик увеличивается только при реальных приглашениях
-    }
-
-    startPlayTimeCounter() {
-        setInterval(() => {
-            this.gameState.stats.playTime += 1000;
-            if (this.gameState.stats.playTime % 60000 === 0) {
-                this.saveGameState();
-            }
-        }, 1000);
     }
 
     handleClick(event) {
