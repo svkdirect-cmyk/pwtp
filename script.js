@@ -381,46 +381,54 @@ class DarkPawsClicker {
         const levelCircles = document.querySelectorAll('.level-circle');
         const levelLines = document.querySelectorAll('.level-line');
         
+        // Создаем элементы для заполнения линий если их нет
+        levelLines.forEach(line => {
+            if (!line.querySelector('.level-line-fill')) {
+                const fill = document.createElement('div');
+                fill.className = 'level-line-fill';
+                line.appendChild(fill);
+            }
+        });
+        
         // Сбрасываем все стили
         levelCircles.forEach(circle => {
             circle.classList.remove('active', 'completed', 'current');
         });
-        levelLines.forEach(line => {
-            line.classList.remove('completed', 'partial');
-            line.style.background = '';
-        });
+        
+        // Определяем milestone уровни
+        const milestoneLevels = [1, 25, 50, 75, 100];
+        const currentLevel = this.gameState.level;
         
         levelCircles.forEach((circle, index) => {
-            const circleLevel = parseInt(circle.dataset.level);
+            const circleLevel = milestoneLevels[index];
             const isLastCircle = index === levelCircles.length - 1;
             
-            // Обновляем текст в кружке - показываем текущий уровень игрока
-            if (this.gameState.level >= circleLevel) {
-                circle.textContent = this.gameState.level;
-            } else {
-                circle.textContent = circleLevel;
-            }
+            // Обновляем текст в кружке
+            circle.textContent = circleLevel;
             
-            if (this.gameState.level >= circleLevel) {
+            if (currentLevel >= circleLevel) {
                 // Полностью заполненный кружок
                 circle.classList.add('completed');
                 
                 // Если это текущий уровень игрока, добавляем специальный класс
-                if (this.gameState.level === circleLevel) {
+                if (currentLevel === circleLevel) {
                     circle.classList.add('current');
                 }
                 
                 // Заполняем линию до этого кружка (кроме первого)
                 if (index > 0) {
                     const prevLine = levelLines[index - 1];
+                    const fill = prevLine.querySelector('.level-line-fill');
+                    if (fill) {
+                        fill.style.width = '100%';
+                    }
                     prevLine.classList.add('completed');
-                    prevLine.style.background = 'var(--gradient-primary)';
                 }
             } else if (!isLastCircle) {
                 // Частичное заполнение для текущего уровня
-                const nextCircleLevel = parseInt(levelCircles[index + 1].dataset.level);
+                const nextCircleLevel = milestoneLevels[index + 1];
                 const currentRange = nextCircleLevel - circleLevel;
-                const progressInRange = Math.max(0, this.gameState.level - circleLevel);
+                const progressInRange = Math.max(0, currentLevel - circleLevel);
                 const percentage = (progressInRange / currentRange) * 100;
                 
                 if (progressInRange > 0) {
@@ -428,23 +436,26 @@ class DarkPawsClicker {
                     
                     // Частично заполняем линию
                     const currentLine = levelLines[index];
+                    const fill = currentLine.querySelector('.level-line-fill');
+                    if (fill) {
+                        fill.style.width = `${percentage}%`;
+                    }
                     currentLine.classList.add('partial');
-                    currentLine.style.background = `linear-gradient(90deg, 
-                        var(--gradient-primary) 0% ${percentage}%, 
-                        var(--bg-tertiary) ${percentage}% 100%)`;
                 }
             }
         });
         
         // Особый случай: если уровень выше 100, отмечаем все как завершенные
-        if (this.gameState.level >= 100) {
+        if (currentLevel >= 100) {
             levelCircles.forEach(circle => {
                 circle.classList.add('completed');
-                circle.textContent = this.gameState.level;
             });
             levelLines.forEach(line => {
+                const fill = line.querySelector('.level-line-fill');
+                if (fill) {
+                    fill.style.width = '100%';
+                }
                 line.classList.add('completed');
-                line.style.background = 'var(--gradient-primary)';
             });
         }
     }
