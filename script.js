@@ -47,6 +47,89 @@ class DarkPawsClicker {
         this.init();
     }
 
+    // Добавляем функцию форматирования чисел
+    formatNumber(number) {
+        if (number < 1000) {
+            return Math.floor(number).toString();
+        }
+        
+        const suffixes = ['', 'K', 'M', 'B', 'T'];
+        const tier = Math.floor(Math.log10(Math.abs(number)) / 3);
+        
+        if (tier >= suffixes.length) {
+            return Math.floor(number).toLocaleString();
+        }
+        
+        const suffix = suffixes[tier];
+        const scale = Math.pow(10, tier * 3);
+        const scaled = number / scale;
+        
+        // Форматируем с 1-2 знаками после запятой для больших чисел
+        if (tier > 0) {
+            if (scaled < 10) {
+                return scaled.toFixed(2) + suffix;
+            } else if (scaled < 100) {
+                return scaled.toFixed(1) + suffix;
+            } else {
+                return Math.floor(scaled) + suffix;
+            }
+        }
+        
+        return Math.floor(number).toLocaleString();
+    }
+
+    // Функция для форматирования с округлением до целых
+    formatNumberRounded(number) {
+        if (number < 1000) {
+            return Math.floor(number).toString();
+        }
+        
+        const suffixes = ['', 'K', 'M', 'B', 'T'];
+        const tier = Math.floor(Math.log10(Math.abs(number)) / 3);
+        
+        if (tier >= suffixes.length) {
+            return Math.floor(number).toLocaleString();
+        }
+        
+        const suffix = suffixes[tier];
+        const scale = Math.pow(10, tier * 3);
+        const scaled = number / scale;
+        
+        return Math.floor(scaled) + suffix;
+    }
+
+    // Функция для точного форматирования (для улучшений)
+    formatNumberPrecise(number) {
+        if (number < 1000) {
+            return Math.floor(number).toString();
+        }
+        
+        const suffixes = ['', 'K', 'M', 'B', 'T'];
+        const tier = Math.floor(Math.log10(Math.abs(number)) / 3);
+        
+        if (tier >= suffixes.length) {
+            return Math.floor(number).toLocaleString();
+        }
+        
+        const suffix = suffixes[tier];
+        const scale = Math.pow(10, tier * 3);
+        const scaled = number / scale;
+        
+        // Для очень больших чисел показываем без десятичных
+        if (scaled >= 1000) {
+            return this.formatNumberPrecise(scaled) + suffix;
+        }
+        
+        // Определяем количество знаков после запятой
+        if (scaled < 10) {
+            return scaled.toFixed(2) + suffix;
+        } else if (scaled < 100) {
+            return scaled.toFixed(1) + suffix;
+        } else {
+            return Math.floor(scaled) + suffix;
+        }
+    }
+
     init() {
         console.log('Initializing Dark Paws Clicker for Telegram Mini Apps...');
         
@@ -351,7 +434,7 @@ class DarkPawsClicker {
                         </div>
                         <div class="friend-info">
                             <div class="friend-name">${friend.first_name || 'Unknown'}</div>
-                            <div class="friend-stats">Уровень ${friend.level || 1} • <span class="friend-score">${friend.score || 0} очков</span></div>
+                            <div class="friend-stats">Уровень ${friend.level || 1} • <span class="friend-score">${this.formatNumber(friend.score || 0)} очков</span></div>
                         </div>
                     </div>
                 `;
@@ -384,7 +467,10 @@ class DarkPawsClicker {
         // В реальном приложении здесь будет запрос к API Telegram
         this.gameState.friends = [
             { first_name: 'Друг 1', level: 5, score: 1500 },
-            { first_name: 'Друг 2', level: 3, score: 800 }
+            { first_name: 'Друг 2', level: 3, score: 800 },
+            { first_name: 'Друг 3', level: 7, score: 12500 },
+            { first_name: 'Друг 4', level: 12, score: 85000 },
+            { first_name: 'Друг 5', level: 15, score: 250000 }
         ];
         this.updateFriendsTab();
     }
@@ -394,10 +480,11 @@ class DarkPawsClicker {
         if (!container) return;
         
         const leaderboard = [
-            { first_name: 'Чемпион', score: 50000 },
-            { first_name: 'Профи', score: 25000 },
-            { first_name: 'Любитель', score: 12000 },
-            { first_name: 'Новичок', score: 5000 }
+            { first_name: 'Чемпион', score: 5000000 },
+            { first_name: 'Профи', score: 2500000 },
+            { first_name: 'Любитель', score: 1200000 },
+            { first_name: 'Новичок', score: 500000 },
+            { first_name: 'Игрок', score: 150000 }
         ];
         
         let leaderboardHTML = '';
@@ -414,7 +501,7 @@ class DarkPawsClicker {
                         </div>
                         <div class="leaderboard-name">${player.first_name || 'Unknown'}</div>
                     </div>
-                    <div class="leaderboard-score">${player.score || 0}</div>
+                    <div class="leaderboard-score">${this.formatNumber(player.score || 0)}</div>
                 </div>
             `;
         });
@@ -480,7 +567,7 @@ class DarkPawsClicker {
                 card.classList.add('locked');
                 const requiredScore = this.getRequiredScoreForLevel(levelNumber);
                 if (status) {
-                    status.textContent = `${requiredScore} очков`;
+                    status.textContent = `${this.formatNumber(requiredScore)} очков`;
                     status.classList.remove('completed');
                 }
             }
@@ -500,7 +587,7 @@ class DarkPawsClicker {
         const deckSize = document.querySelector('.deck-size span');
         
         if (deckPower) {
-            deckPower.textContent = this.calculateDeckPower();
+            deckPower.textContent = this.formatNumberRounded(this.calculateDeckPower());
         }
         
         if (comboCount) {
@@ -517,7 +604,7 @@ class DarkPawsClicker {
         
         if (deckStats.length >= 3) {
             deckStats[0].textContent = `${clickBonus}%`;
-            deckStats[1].textContent = `${autoBonus}`;
+            deckStats[1].textContent = `${this.formatNumberRounded(autoBonus)}`;
             deckStats[2].textContent = `${critBonus}%`;
         }
     }
@@ -855,14 +942,14 @@ class DarkPawsClicker {
         const joinDate = document.getElementById('profile-join-date');
 
         if (totalClicks) {
-            totalClicks.textContent = this.gameState.stats.totalClicks.toLocaleString();
+            totalClicks.textContent = this.formatNumber(this.gameState.stats.totalClicks);
         }
         if (playTime) {
             const hours = Math.floor(this.gameState.stats.playTime / 3600000);
             playTime.textContent = `${hours}ч`;
         }
         if (totalScore) {
-            totalScore.textContent = this.gameState.totalEarnedScore.toLocaleString();
+            totalScore.textContent = this.formatNumber(this.gameState.totalEarnedScore);
         }
         if (joinDate) {
             const joinDateObj = new Date(this.gameState.stats.joinDate);
@@ -919,7 +1006,7 @@ class DarkPawsClicker {
     }
 
     shareProfile() {
-        const shareText = `Мой профиль в Dark Paws Clicker!\nУровень: ${this.gameState.level}\nОчки: ${this.gameState.score}\nПрисоединяйся!`;
+        const shareText = `Мой профиль в Dark Paws Clicker!\nУровень: ${this.gameState.level}\nОчки: ${this.formatNumber(this.gameState.score)}\nПрисоединяйся!`;
         
         if (this.isTelegram && this.tg.showPopup) {
             this.tg.showPopup({
@@ -1161,7 +1248,7 @@ class DarkPawsClicker {
         
         const critText = document.createElement('div');
         critText.className = 'critical-hit';
-        critText.textContent = `CRIT! +${Math.floor(points)}`;
+        critText.textContent = `CRIT! +${this.formatNumberRounded(points)}`;
         
         container.appendChild(critText);
         
@@ -1226,16 +1313,17 @@ class DarkPawsClicker {
     }
 
     showInsufficientFundsNotification(cost) {
-        console.log(`❌ Недостаточно очков. Нужно: ${cost}`);
+        const formattedCost = this.formatNumberPrecise(cost);
+        console.log(`❌ Недостаточно очков. Нужно: ${formattedCost}`);
         
         if (this.isTelegram && this.tg.showPopup) {
             this.tg.showPopup({
                 title: '❌ Недостаточно очков',
-                message: `Для покупки нужно: ${cost} очков`,
+                message: `Для покупки нужно: ${formattedCost} очков`,
                 buttons: [{ type: 'ok' }]
             });
         } else {
-            alert(`❌ Недостаточно очков. Нужно: ${cost}`);
+            alert(`❌ Недостаточно очков. Нужно: ${formattedCost}`);
         }
     }
 
@@ -1259,7 +1347,7 @@ class DarkPawsClicker {
         const levelBadge = document.querySelector('.level-badge');
         const levelText = document.querySelector('.level-text');
         
-        if (scoreElement) scoreElement.textContent = Math.floor(this.gameState.score).toLocaleString();
+        if (scoreElement) scoreElement.textContent = this.formatNumber(this.gameState.score);
         if (levelBadge) levelBadge.textContent = this.gameState.level;
         if (levelText) levelText.textContent = `Уровень ${this.gameState.level}`;
         
@@ -1312,7 +1400,7 @@ class DarkPawsClicker {
         const totalNeeded = nextLevelScore - currentLevelScore;
         
         if (totalNeeded > 0) {
-            earnedScoreElement.textContent = `${Math.floor(progress).toLocaleString()} / ${totalNeeded.toLocaleString()} очков до уровня ${this.gameState.level + 1}`;
+            earnedScoreElement.textContent = `${this.formatNumber(progress)} / ${this.formatNumber(totalNeeded)} очков до уровня ${this.gameState.level + 1}`;
         } else {
             earnedScoreElement.textContent = 'Максимальный уровень достигнут!';
         }
@@ -1335,21 +1423,21 @@ class DarkPawsClicker {
                     level = this.gameState.upgrades.clickPower;
                     cost = 10 * Math.pow(2, level - 1);
                     levelSpan.textContent = level;
-                    button.textContent = cost;
+                    button.textContent = this.formatNumberPrecise(cost);
                     break;
                     
                 case 'auto-click':
                     level = this.gameState.upgrades.autoClick;
                     cost = level === 0 ? 50 : 50 * Math.pow(2, level);
                     levelSpan.textContent = level;
-                    button.textContent = cost;
+                    button.textContent = this.formatNumberPrecise(cost);
                     break;
                     
                 case 'critical-chance':
                     level = this.gameState.upgrades.criticalChance;
                     cost = 25 * Math.pow(2, level - 1);
                     levelSpan.textContent = level;
-                    button.textContent = cost;
+                    button.textContent = this.formatNumberPrecise(cost);
                     break;
             }
             
