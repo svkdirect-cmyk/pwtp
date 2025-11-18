@@ -1,1158 +1,75 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-}
+/* Добавьте эти стили в конец существующего CSS файла */
 
-:root {
-    --bg-primary: #0a0a0a;
-    --bg-secondary: #1a1a1a;
-    --bg-tertiary: #2a2a2a;
-    --text-primary: #e0e0e0;
-    --text-secondary: #888;
-    --text-accent: #d4af37;
-    --border-color: #333;
-    --success-color: #2ecc71;
-    --danger-color: #e74c3c;
-    --gradient-primary: linear-gradient(135deg, #8b5cf6, #ec4899, #8b5cf6);
-    --gradient-gold: linear-gradient(135deg, #ffd700, #ff6b00);
-    --gradient-success: linear-gradient(135deg, #2ecc71, #27ae60);
-    --gradient-mythic: linear-gradient(135deg, #ff00ff, #00ffff, #ffff00);
-    --tg-theme-bg-color: var(--bg-primary);
-    --tg-theme-text-color: var(--text-primary);
-    --tg-theme-hint-color: var(--text-secondary);
-    --tg-theme-link-color: #8b5cf6;
-    --tg-theme-button-color: #8b5cf6;
-    --tg-theme-button-text-color: #ffffff;
-    --tg-theme-secondary-bg-color: var(--bg-secondary);
-}
-
-body {
-    font-family: 'Inter', sans-serif;
-    background: var(--tg-theme-bg-color, var(--bg-primary));
-    color: var(--tg-theme-text-color, var(--text-primary));
-    overflow-x: hidden;
-    line-height: 1.6;
-    -webkit-touch-callout: none;
-    -webkit-text-size-adjust: none;
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-}
-
-/* Шапка */
-.header {
-    background: var(--tg-theme-secondary-bg-color, var(--bg-secondary));
-    border-radius: 16px;
-    margin: 15px;
-    margin-bottom: 20px;
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
-.header-main {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px;
-}
-
-.user-section {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    flex: 1;
-}
-
-.user-section:active {
-    transform: scale(0.95);
-}
-
-.avatar-container {
-    position: relative;
-}
-
-.avatar {
-    width: 50px;
-    height: 50px;
-    border-radius: 12px;
-    background: var(--bg-tertiary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    color: var(--text-primary);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-}
-
-.avatar-large {
-    width: 80px;
-    height: 80px;
-    border-radius: 20px;
-    background: var(--bg-secondary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    color: var(--text-primary);
-    font-size: 24px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-}
-
-.level-badge {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: var(--gradient-gold);
-    color: var(--bg-primary);
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 6px;
-    border-radius: 8px;
-    min-width: 20px;
-    text-align: center;
-    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
-}
-
-.user-info {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.username {
-    font-weight: 600;
-    font-size: 16px;
-    color: var(--text-primary);
-}
-
-.level-text {
-    font-size: 12px;
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-/* Баланс монет */
-.earned-score-display {
-    font-size: 11px;
-    color: var(--text-secondary);
-    text-align: center;
-    margin-top: 8px;
-    font-weight: 500;
-    font-feature-settings: "tnum";
-}
-
-.coin-balance {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--bg-tertiary);
-    padding: 10px 15px;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-}
-
-.coin-icon {
-    font-size: 24px;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--gradient-gold);
-    border-radius: 50%;
-    box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
-}
-
-.coin-amount {
-    display: flex;
-    flex-direction: column;
-}
-
-.coin-amount span {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text-primary);
-    line-height: 1;
-    font-feature-settings: "tnum";
-}
-
-/* Прогресс бар под шапкой */
-.header-progress {
-    padding: 0 15px 15px 15px;
-}
-
-.progress-bar-header {
-    width: 100%;
-    height: 6px;
-    background: var(--bg-tertiary);
-    border-radius: 3px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.progress-fill-header {
-    height: 100%;
-    background: var(--gradient-primary);
-    border-radius: 3px;
-    transition: width 0.3s ease;
-    width: 0%;
-    background-size: 200% 100%;
-    animation: progress-shine 2s ease-in-out infinite;
-}
-
-@keyframes progress-shine {
-    0% {
-        background-position: -200% 0;
-    }
-    100% {
-        background-position: 200% 0;
-    }
-}
-
-/* Кнопка-лапка */
-.paw-button {
-    width: 240px;
-    height: 240px;
-    background: var(--gradient-primary);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 
-        0 8px 32px rgba(139, 92, 246, 0.4),
-        0 0 0 4px rgba(139, 92, 246, 0.2),
-        inset 0 2px 20px rgba(255, 255, 255, 0.1);
-    -webkit-tap-highlight-color: transparent;
-    animation: paw-pulse 3s ease-in-out infinite;
-    touch-action: manipulation;
-}
-
-@keyframes paw-pulse {
-    0%, 100% {
-        box-shadow: 
-            0 8px 32px rgba(139, 92, 246, 0.4),
-            0 0 0 4px rgba(139, 92, 246, 0.2),
-            inset 0 2px 20px rgba(255, 255, 255, 0.1);
-        transform: scale(1);
-    }
-    50% {
-        box-shadow: 
-            0 12px 40px rgba(139, 92, 246, 0.6),
-            0 0 0 6px rgba(139, 92, 246, 0.3),
-            inset 0 2px 25px rgba(255, 255, 255, 0.15);
-        transform: scale(1.02);
-    }
-}
-
-.paw-button:active {
-    transform: scale(0.85);
-    box-shadow: 
-        0 4px 20px rgba(139, 92, 246, 0.6),
-        0 0 0 8px rgba(139, 92, 246, 0.4),
-        inset 0 2px 15px rgba(255, 255, 255, 0.2);
-    animation: none;
-}
-
-.paw-icon {
-    font-size: 90px;
-    color: white;
-    transition: all 0.3s ease;
-    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-}
-
-.paw-button:active .paw-icon {
-    transform: scale(0.8) rotate(10deg);
-    color: var(--text-accent);
-}
-
-.paw-glow {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
-    transform: translate(-50%, -50%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.paw-button:active .paw-glow {
-    opacity: 1;
-}
-
-/* Анимации для кнопки */
-.paw-button.click-animation {
-    animation: paw-shake 0.15s ease-in-out, paw-press 0.3s ease-out;
-}
-
-@keyframes paw-shake {
-    0%, 100% { transform: translateX(0) scale(0.85); }
-    25% { transform: translateX(-3px) scale(0.85); }
-    75% { transform: translateX(3px) scale(0.85); }
-}
-
-@keyframes paw-press {
-    0% { transform: scale(1); }
-    50% { transform: scale(0.85); }
-    100% { transform: scale(0.85); }
-}
-
-/* Игровая зона */
-.game-area {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 40px 0;
-    min-height: 200px;
-}
-
-.click-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-}
-
-/* Эффекты частиц */
-.particles-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 10;
-    overflow: hidden;
-}
-
-.particle {
-    position: absolute;
-    width: 8px;
-    height: 8px;
-    background: var(--gradient-primary);
-    border-radius: 50%;
-    pointer-events: none;
-    box-shadow: 0 0 20px rgba(139, 92, 246, 0.8);
-    z-index: 10;
-    animation: particle-float 1s ease-out forwards;
-}
-
-@keyframes particle-float {
-    0% {
-        opacity: 1;
-        transform: translate(0, 0) scale(1);
-    }
-    100% {
-        opacity: 0;
-        transform: translate(var(--tx), var(--ty)) scale(0);
-    }
-}
-
-/* Улучшения */
-.upgrades-section {
-    margin: 25px 15px;
-}
-
-.section-title {
-    font-size: 14px;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 15px;
-    font-weight: 600;
-}
-
-.upgrades-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.upgrade-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: var(--tg-theme-secondary-bg-color, var(--bg-secondary));
-    padding: 15px;
-    border-radius: 16px;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.upgrade-card:active {
-    transform: scale(0.98);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.upgrade-icon {
-    font-size: 24px;
-    width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg-tertiary);
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.upgrade-info {
-    flex: 1;
-}
-
-.upgrade-name {
-    font-weight: 600;
-    font-size: 15px;
-    margin-bottom: 4px;
-    color: var(--text-primary);
-}
-
-.upgrade-level {
-    font-size: 12px;
-    color: var(--text-secondary);
-}
-
-.upgrade-btn {
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
-    padding: 10px 16px;
-    border-radius: 12px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    min-width: 80px;
-    -webkit-tap-highlight-color: transparent;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    border: none;
-    font-family: inherit;
-    font-feature-settings: "tnum";
-}
-
-.upgrade-btn:active:not(:disabled) {
-    transform: scale(0.95);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-}
-
-.upgrade-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.upgrade-btn.affordable {
-    background: var(--gradient-success);
-    color: white;
-    box-shadow: 0 2px 12px rgba(46, 204, 113, 0.4);
-}
-
-/* Стили для вкладок */
-.tab-content {
-    display: none;
-    min-height: calc(100vh - 80px);
-    padding-bottom: 80px;
-    overflow-y: auto;
-}
-
-.tab-content.active {
-    display: block;
-}
-
-/* Шапка вкладок */
-.tab-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 25px 15px;
-    margin-bottom: 25px;
-}
-
-.tab-header h2 {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--text-primary);
-}
-
-.tab-stats {
-    display: flex;
-    gap: 15px;
-}
-
-.tab-stats > div {
-    background: var(--tg-theme-secondary-bg-color, var(--bg-secondary));
-    padding: 10px 15px;
-    border-radius: 12px;
-    font-size: 12px;
-    color: var(--text-secondary);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-/* Нижняя панель вкладок */
-.bottom-tabs {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: var(--tg-theme-secondary-bg-color, var(--bg-secondary));
-    display: flex;
-    padding: 12px 0;
-    z-index: 1000;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
-    padding-bottom: calc(12px + env(safe-area-inset-bottom));
-}
-
-.tab-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 0;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    opacity: 0.6;
-    -webkit-tap-highlight-color: transparent;
-}
-
-.tab-item.active {
-    opacity: 1;
-    color: var(--text-accent);
-    transform: translateY(-2px);
-}
-
-.tab-item i {
-    font-size: 20px;
-    margin-bottom: 2px;
-    transition: all 0.3s ease;
-}
-
-.tab-item.active i {
-    transform: scale(1.1);
-}
-
-.tab-item span {
-    font-size: 11px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-/* Стили для вкладки друзей */
-.friends-content {
+/* Стили для заданий и ивентов */
+.quests-content {
+    padding: 0 15px;
     display: flex;
     flex-direction: column;
     gap: 25px;
-    padding: 0 15px;
+    padding-bottom: 20px;
 }
 
-.friends-actions {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 20px;
-}
-
-.friends-actions .btn-primary,
-.friends-actions .btn-secondary {
-    flex: 1;
-    justify-content: center;
-}
-
-.friends-list-section h4 {
-    font-size: 16px;
-    margin-bottom: 15px;
-    color: var(--text-primary);
-}
-
-.friends-list {
+.quests-section, .events-section {
     background: var(--tg-theme-secondary-bg-color, var(--bg-secondary));
     border-radius: 16px;
-    min-height: 200px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    padding: 20px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
-.friend-item {
+.quests-section h3, .events-section h3 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: var(--text-primary);
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 15px;
-    transition: all 0.3s ease;
+    gap: 8px;
 }
 
-.friend-item:active {
-    background: var(--bg-tertiary);
-    transform: scale(0.98);
-}
-
-.friend-avatar {
-    width: 45px;
-    height: 45px;
-    border-radius: 12px;
-    background: var(--bg-tertiary);
+.quests-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    margin-bottom: 20px;
 }
 
-.friend-info {
-    flex: 1;
-}
-
-.friend-name {
-    font-weight: 600;
-    font-size: 15px;
-    margin-bottom: 4px;
-}
-
-.friend-stats {
+.quests-stats {
+    display: flex;
+    gap: 15px;
     font-size: 12px;
     color: var(--text-secondary);
 }
 
-.friend-score {
-    font-weight: 600;
-    color: var(--text-accent);
-    font-feature-settings: "tnum";
+.quests-list, .events-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
-.empty-state {
-    text-align: center;
-    padding: 40px 20px;
+.quest-item, .event-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px;
+    background: var(--bg-tertiary);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    position: relative;
 }
 
-.empty-icon {
-    font-size: 48px;
-    margin-bottom: 16px;
+.quest-item:active, .event-item:active {
+    transform: scale(0.98);
+}
+
+.quest-item.completed {
+    border-left: 4px solid var(--success-color);
+}
+
+.quest-item.claimed {
     opacity: 0.7;
 }
 
-.empty-state h3 {
-    font-size: 18px;
-    margin-bottom: 8px;
-    color: var(--text-primary);
-}
-
-.empty-state p {
-    color: var(--text-secondary);
-    margin-bottom: 20px;
-    font-size: 14px;
-}
-
-.btn-primary {
-    background: var(--gradient-primary);
-    color: white;
-    padding: 14px 24px;
-    border-radius: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    -webkit-tap-highlight-color: transparent;
-    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
-    border: none;
-    font-family: inherit;
-    text-decoration: none;
-}
-
-.btn-primary:active {
-    transform: translateY(2px) scale(0.98);
-    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4);
-}
-
-.btn-secondary {
-    background: var(--tg-theme-secondary-bg-color, var(--bg-secondary));
-    color: var(--text-primary);
-    padding: 14px 24px;
-    border-radius: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    -webkit-tap-highlight-color: transparent;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    border: none;
-    font-family: inherit;
-    text-decoration: none;
-}
-
-.btn-secondary:active {
-    background: var(--bg-tertiary);
-    transform: translateY(2px) scale(0.98);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.friends-bonuses h4 {
-    font-size: 16px;
-    margin-bottom: 15px;
-    color: var(--text-primary);
-}
-
-.bonus-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.bonus-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 15px;
-    background: var(--tg-theme-secondary-bg-color, var(--bg-secondary));
-    border-radius: 16px;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.bonus-card:active {
-    transform: scale(0.98);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.bonus-icon {
-    font-size: 24px;
-    width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg-tertiary);
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.bonus-info {
-    flex: 1;
-}
-
-.bonus-name {
-    font-weight: 600;
-    font-size: 15px;
-    margin-bottom: 4px;
-}
-
-.bonus-desc {
-    font-size: 12px;
-    color: var(--text-secondary);
-}
-
-.bonus-status {
-    font-size: 11px;
-    padding: 6px 10px;
-    border-radius: 8px;
-    background: var(--bg-tertiary);
-    color: var(--text-secondary);
-    font-weight: 600;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
-.bonus-status.active {
-    background: var(--gradient-success);
-    color: white;
-    box-shadow: 0 2px 10px rgba(46, 204, 113, 0.4);
-}
-
-.leaderboard-section h4 {
-    font-size: 16px;
-    margin-bottom: 15px;
-    color: var(--text-primary);
-}
-
-.leaderboard {
-    background: var(--tg-theme-secondary-bg-color, var(--bg-secondary));
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.leaderboard-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 0;
-    transition: all 0.3s ease;
-}
-
-.leaderboard-item:active {
-    transform: scale(0.98);
-}
-
-.leaderboard-rank {
-    font-weight: 700;
-    color: var(--text-accent);
-    min-width: 35px;
-    font-size: 14px;
-}
-
-.leaderboard-user {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.leaderboard-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    background: var(--bg-tertiary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
-    font-weight: 600;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.leaderboard-name {
-    font-weight: 600;
-    font-size: 15px;
-}
-
-.leaderboard-score {
-    font-weight: 700;
-    color: var(--text-accent);
-    font-size: 14px;
-    font-feature-settings: "tnum";
-}
-
-.loading {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--text-secondary);
-    font-style: italic;
-}
-
-/* Стили для вкладки уровней */
-.levels-content {
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
-    padding: 0 15px;
-}
-
-.levels-progress {
-    background: var(--tg-theme-secondary-bg-color, var(--bg-secondary));
-    padding: 20px;
-    border-radius: 16px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.level-indicator {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.level-circle {
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    background: var(--bg-tertiary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    color: var(--text-secondary);
-    position: relative;
-    z-index: 2;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s ease;
-}
-
-.level-circle.active {
-    background: var(--gradient-gold);
-    color: var(--bg-primary);
-    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
-    transform: scale(1.1);
-}
-
-.level-line {
-    flex: 1;
-    height: 3px;
-    background: var(--bg-tertiary);
-    position: relative;
-    top: -1px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-}
-
-.levels-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.level-card {
-    background: var(--tg-theme-secondary-bg-color, var(--bg-secondary));
-    padding: 18px;
-    border-radius: 16px;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.level-card.active {
-    box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
-    transform: translateY(-2px);
-}
-
-.level-card.locked {
-    opacity: 0.5;
-}
-
-.level-card:active {
-    transform: scale(0.98);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.level-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
-
-.level-number {
-    font-weight: 600;
-    font-size: 15px;
-}
-
-.level-status {
-    font-size: 12px;
-    padding: 6px 10px;
-    border-radius: 8px;
-    background: var(--bg-tertiary);
-    color: var(--text-secondary);
-    font-weight: 600;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    font-feature-settings: "tnum";
-}
-
-.level-status.completed {
-    background: var(--gradient-success);
-    color: white;
-    box-shadow: 0 2px 10px rgba(46, 204, 113, 0.4);
-}
-
-.level-reward {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.reward-icon {
-    font-size: 24px;
-    width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg-tertiary);
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.reward-info {
-    flex: 1;
-}
-
-.reward-name {
-    font-weight: 600;
-    font-size: 14px;
-    margin-bottom: 4px;
-}
-
-.reward-desc {
-    font-size: 12px;
-    color: var(--text-secondary);
-}
-
-/* Стили для вкладки комбо */
-.combo-content {
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
-    padding: 0 15px;
-}
-
-.combo-deck {
-    background: var(--tg-theme-secondary-bg-color, var(--bg-secondary));
-    padding: 20px;
-    border-radius: 16px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.deck-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.deck-power {
-    text-align: center;
-}
-
-.power-value {
-    font-size: 36px;
-    font-weight: 700;
-    color: var(--text-accent);
-    line-height: 1;
-    text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);
-    font-feature-settings: "tnum";
-}
-
-.power-label {
-    font-size: 12px;
-    color: var(--text-secondary);
-    margin-top: 6px;
-}
-
-.deck-size {
-    font-size: 12px;
-    color: var(--text-secondary);
-    margin-top: 5px;
-}
-
-.deck-size span {
-    color: var(--text-accent);
-    font-weight: 600;
-}
-
-.deck-stats {
-    display: flex;
-    gap: 20px;
-}
-
-.deck-stat {
-    text-align: center;
-}
-
-.stat-value {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--text-primary);
-    font-feature-settings: "tnum";
-}
-
-.stat-label {
-    font-size: 11px;
-    color: var(--text-secondary);
-    margin-top: 4px;
-}
-
-.combo-collection h4 {
-    font-size: 16px;
-    margin-bottom: 15px;
-    color: var(--text-primary);
-}
-
-.cards-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.combo-card {
-    aspect-ratio: 3/4;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    min-height: 140px;
-    touch-action: manipulation;
-}
-
-.combo-card:active {
-    transform: translateY(-4px) scale(0.95);
-    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
-}
-
-.combo-card.locked {
-    opacity: 0.5;
-}
-
-.combo-card.active .card-frame {
-    box-shadow: 0 6px 25px rgba(139, 92, 246, 0.6);
-    border: 2px solid #8b5cf6;
-}
-
-.card-frame {
-    width: 100%;
-    height: 100%;
-    background: var(--tg-theme-secondary-bg-color, var(--bg-secondary));
-    border-radius: 16px;
-    padding: 15px;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    min-height: 140px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
-}
-
-.combo-card:active .card-frame {
-    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
-}
-
-.card-rarity {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    font-size: 9px;
-    padding: 3px 8px;
-    border-radius: 6px;
-    font-weight: 600;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-}
-
-.card-rarity.common {
-    background: var(--text-secondary);
-    color: var(--bg-primary);
-}
-
-.card-rarity.rare {
-    background: #3498db;
-    color: var(--bg-primary);
-}
-
-.card-rarity.epic {
-    background: #9b59b6;
-    color: var(--bg-primary);
-}
-
-.card-rarity.legendary {
-    background: var(--gradient-gold);
-    color: var(--bg-primary);
-}
-
-.card-rarity.mythic {
-    background: var(--gradient-mythic);
-    color: var(--bg-primary);
-    font-weight: 700;
-}
-
-.card-active-indicator {
+.quest-item.claimed::after {
+    content: '✓';
     position: absolute;
     top: 8px;
     right: 8px;
@@ -1163,267 +80,244 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    color: white;
     font-size: 12px;
     font-weight: bold;
-    color: white;
-    box-shadow: 0 2px 8px rgba(46, 204, 113, 0.6);
-    z-index: 3;
 }
 
-.card-icon {
-    font-size: 32px;
-    margin-bottom: 12px;
-    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3));
-}
-
-.card-name {
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-
-.card-stats {
-    font-size: 10px;
-    color: var(--text-secondary);
-}
-
-/* Анимация для карты Хаос */
-@keyframes chaos-glow {
-    0% { box-shadow: 0 4px 20px rgba(255, 0, 255, 0.6); }
-    25% { box-shadow: 0 4px 20px rgba(0, 255, 255, 0.6); }
-    50% { box-shadow: 0 4px 20px rgba(255, 255, 0, 0.6); }
-    75% { box-shadow: 0 4px 20px rgba(255, 0, 255, 0.6); }
-    100% { box-shadow: 0 4px 20px rgba(0, 255, 255, 0.6); }
-}
-
-.combo-card[data-card-id="10"] .card-frame {
-    animation: chaos-glow 2s ease-in-out infinite;
-}
-
-.combo-info {
-    background: var(--tg-theme-secondary-bg-color, var(--bg-secondary));
-    padding: 18px;
-    border-radius: 16px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.combo-info h4 {
-    font-size: 15px;
-    margin-bottom: 12px;
-    color: var(--text-primary);
-}
-
-.combo-rules {
-    list-style: none;
-    padding: 0;
-}
-
-.combo-rules li {
-    font-size: 13px;
-    color: var(--text-secondary);
-    margin-bottom: 8px;
-    padding-left: 18px;
-    position: relative;
-}
-
-.combo-rules li:before {
-    content: '•';
-    position: absolute;
-    left: 0;
-    color: var(--text-accent);
-    font-size: 16px;
-}
-
-/* Стили для модальных окон */
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.9);
-    z-index: 2000;
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-}
-
-.modal.active {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.modal-content {
-    background: var(--tg-theme-bg-color, var(--bg-primary));
-    border-radius: 20px;
-    max-width: 90%;
-    max-height: 90%;
-    overflow: hidden;
-    animation: modalSlideIn 0.3s ease-out;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-}
-
-@keyframes modalSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-50px) scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    background: var(--tg-theme-secondary-bg-color, var(--bg-secondary));
-}
-
-.modal-header h2 {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin: 0;
-}
-
-.modal-close {
-    background: var(--bg-tertiary);
-    color: var(--text-secondary);
-    font-size: 18px;
-    cursor: pointer;
-    padding: 10px;
-    border-radius: 12px;
-    transition: all 0.3s ease;
-    -webkit-tap-highlight-color: transparent;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    border: none;
-    font-family: inherit;
-}
-
-.modal-close:active {
-    background: var(--gradient-primary);
-    color: white;
-    transform: scale(0.95);
-}
-
-/* Стили для профиля */
-.profile-modal {
-    width: 400px;
-    max-width: 95%;
-}
-
-.profile-content {
-    padding: 20px;
-    overflow-y: auto;
-    max-height: 70vh;
-}
-
-.profile-header {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 25px;
-}
-
-.profile-avatar {
-    position: relative;
-}
-
-.profile-level {
-    position: absolute;
-    bottom: -5px;
-    right: -5px;
-    background: var(--gradient-gold);
-    color: var(--bg-primary);
-    font-size: 12px;
-    font-weight: 700;
-    padding: 4px 8px;
-    border-radius: 12px;
-    min-width: 30px;
-    text-align: center;
-    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
-}
-
-.profile-info {
-    flex: 1;
-}
-
-.profile-info h3 {
-    font-size: 18px;
-    font-weight: 700;
-    margin: 0 0 5px 0;
-    color: var(--text-primary);
-}
-
-.profile-id {
-    font-size: 12px;
-    color: var(--text-secondary);
-    margin-bottom: 8px;
-}
-
-.profile-rank {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: var(--text-accent);
-    font-weight: 600;
-}
-
-.profile-stats {
-    background: var(--tg-theme-secondary-bg-color, var(--bg-secondary));
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.stat-row {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 15px;
-}
-
-.stat-row:last-child {
-    margin-bottom: 0;
-}
-
-.stat-item {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 15px;
-    background: var(--bg-tertiary);
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.stat-icon {
-    font-size: 20px;
-    width: 45px;
-    height: 45px;
+.quest-icon {
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: var(--bg-secondary);
     border-radius: 10px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
-.stat-data {
+.quest-info {
     flex: 1;
 }
 
-.stat-number {
+.quest-title {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 4px;
+    color: var(--text-primary);
+}
+
+.quest-description {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.quest-progress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--bg-secondary);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--gradient-primary);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-size: 11px;
+    color: var(--text-secondary);
+    min-width: 50px;
+    text-align: right;
+}
+
+.claim-btn {
+    background: var(--gradient-success);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 70px;
+}
+
+.claim-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--bg-secondary);
+}
+
+.claim-btn.active {
+    box-shadow: 0 2px 10px rgba(46, 204, 113, 0.4);
+}
+
+.claim-btn:active:not(:disabled) {
+    transform: scale(0.95);
+}
+
+.reward-claimed {
+    width: 30px;
+    height: 30px;
+    background: var(--gradient-success);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}
+
+/* Стили для ивентов */
+.event-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    width: 100%;
+}
+
+.event-icon {
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-secondary);
+    border-radius: 10px;
+}
+
+.event-info {
+    flex: 1;
+}
+
+.event-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.event-description {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.event-time {
+    font-size: 11px;
+    color: var(--text-accent);
+    font-weight: 600;
+    background: var(--bg-secondary);
+    padding: 4px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+
+.event-progress {
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.personal-contribution {
+    font-size: 11px;
+    color: var(--text-accent);
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.claim-event-btn {
+    width: 100%;
+    background: var(--gradient-gold);
+    color: var(--bg-primary);
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.claim-event-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+}
+
+.claim-event-btn.active {
+    box-shadow: 0 2px 12px rgba(255, 215, 0, 0.4);
+}
+
+.claim-event-btn:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.event-active {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-secondary);
+    padding: 10px;
+}
+
+.event-item.completed {
+    border-left: 4px solid var(--gradient-gold);
+}
+
+/* Статистика */
+.quests-stats-section {
+    margin-top: 10px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.stat-card {
+    background: var(--tg-theme-secondary-bg-color, var(--bg-secondary));
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.stat-card:active {
+    transform: scale(0.95);
+}
+
+.stat-icon {
+    font-size: 20px;
+    margin-bottom: 8px;
+}
+
+.stat-value {
     font-size: 18px;
     font-weight: 700;
     color: var(--text-primary);
     margin-bottom: 2px;
-    font-feature-settings: "tnum";
 }
 
 .stat-label {
@@ -1431,444 +325,147 @@ body {
     color: var(--text-secondary);
 }
 
-.profile-achievements {
-    margin-bottom: 20px;
-}
-
-.profile-achievements h4 {
-    font-size: 16px;
-    margin-bottom: 15px;
-    color: var(--text-primary);
-}
-
-.achievements-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.achievement {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 15px;
-    background: var(--tg-theme-secondary-bg-color, var(--bg-secondary));
-    border-radius: 16px;
-    opacity: 0.5;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.achievement.unlocked {
-    opacity: 1;
-    box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
-}
-
-.achievement:active {
-    transform: scale(0.98);
-}
-
-.achievement-icon {
-    font-size: 20px;
-    width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg-tertiary);
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.achievement.unlocked .achievement-icon {
-    background: var(--gradient-gold);
-    color: var(--bg-primary);
-    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
-}
-
-.achievement-info {
-    flex: 1;
-}
-
-.achievement-name {
-    font-weight: 600;
-    font-size: 14px;
-    margin-bottom: 4px;
-    color: var(--text-primary);
-}
-
-.achievement-desc {
-    font-size: 12px;
-    color: var(--text-secondary);
-}
-
-.profile-upgrades {
-    margin-bottom: 20px;
-}
-
-.profile-upgrades h4 {
-    font-size: 16px;
-    margin-bottom: 15px;
-    color: var(--text-primary);
-}
-
-.upgrades-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.profile-upgrade {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px;
-    background: var(--tg-theme-secondary-bg-color, var(--bg-secondary));
-    border-radius: 16px;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.profile-upgrade:active {
-    transform: scale(0.98);
-}
-
-.upgrade-name {
-    font-weight: 600;
-    font-size: 14px;
-    color: var(--text-primary);
-}
-
-.upgrade-level {
-    font-size: 13px;
-    color: var(--text-secondary);
-}
-
-.modal-actions {
-    padding: 20px;
-    background: var(--tg-theme-secondary-bg-color, var(--bg-secondary));
-    display: flex;
-    justify-content: center;
-}
-
-/* Анимация всплывающего текста для критических ударов */
-@keyframes floatUp {
+/* Анимации */
+@keyframes coinFloat {
     0% {
         opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
+        transform: translate(0, 0) scale(1);
     }
     100% {
         opacity: 0;
-        transform: translate(-50%, -150px) scale(1.5);
+        transform: translate(
+            calc(-50% + (var(--random-x) * 100 - 50) * 1px),
+            calc(-50% - (var(--random-y) * 50 + 50) * 1px)
+        ) scale(0.5);
     }
 }
 
-.critical-hit {
+.reward-particle {
     position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 32px;
-    font-weight: bold;
-    color: var(--text-accent);
+    font-size: 20px;
     pointer-events: none;
-    z-index: 20;
-    text-shadow: 
-        0 0 20px rgba(212, 175, 55, 0.8),
-        0 0 40px rgba(212, 175, 55, 0.6);
-    animation: floatUp 2s ease-out forwards;
-    font-feature-settings: "tnum";
+    z-index: 100;
+    animation: coinFloat 1s ease-out forwards;
 }
 
-/* Улучшенная анимация пульсации для уровня */
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.4); }
-    100% { transform: scale(1); }
+.empty-events, .empty-quests {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
 }
 
-.level-badge.pulse {
-    animation: pulse 0.5s ease-in-out;
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    opacity: 0.5;
 }
 
-/* Адаптивность */
+.empty-events h4, .empty-quests h4 {
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+/* Адаптивность для новой вкладки */
 @media (max-width: 768px) {
-    .header {
-        margin: 10px;
-        margin-bottom: 15px;
+    .quests-content {
+        padding: 0 10px;
     }
     
-    .header-main {
+    .quests-section, .events-section {
+        padding: 15px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+    
+    .stat-card {
         padding: 12px;
     }
     
-    .paw-button {
-        width: 220px;
-        height: 220px;
+    .quest-item, .event-item {
+        padding: 12px;
     }
     
-    .paw-icon {
-        font-size: 80px;
+    .event-header {
+        flex-wrap: wrap;
+        gap: 8px;
     }
     
-    .tab-content {
-        padding-bottom: 70px;
-    }
-    
-    .tab-header {
-        flex-direction: column;
-        gap: 10px;
-        align-items: flex-start;
-        margin: 15px;
-        margin-bottom: 20px;
-    }
-    
-    .tab-stats {
-        width: 100%;
-        justify-content: space-between;
-    }
-    
-    .friends-actions {
-        flex-direction: column;
-    }
-    
-    .cards-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-    }
-    
-    .deck-info {
-        flex-direction: column;
-        gap: 20px;
-        text-align: center;
-    }
-    
-    .deck-stats {
-        justify-content: space-around;
-        width: 100%;
-    }
-    
-    .level-indicator {
-        gap: 4px;
-    }
-    
-    .level-circle {
-        width: 40px;
-        height: 40px;
-        font-size: 12px;
-    }
-
-    .profile-modal {
-        width: 95%;
-    }
-    
-    .profile-header {
-        flex-direction: column;
-        text-align: center;
-        gap: 12px;
-    }
-    
-    .stat-row {
-        flex-direction: column;
-        gap: 10px;
-    }
-    
-    .profile-content {
-        padding: 15px;
-    }
-    
-    .modal-header {
-        padding: 15px;
-    }
-    
-    .modal-actions {
-        padding: 15px;
+    .event-time {
+        font-size: 10px;
     }
 }
 
 @media (max-width: 480px) {
-    .paw-button {
-        width: 200px;
-        height: 200px;
-    }
-    
-    .paw-icon {
-        font-size: 70px;
-    }
-    
-    .avatar {
-        width: 45px;
-        height: 45px;
-    }
-    
-    .coin-balance {
-        padding: 8px 12px;
-    }
-    
-    .coin-icon {
-        width: 35px;
-        height: 35px;
-        font-size: 20px;
-    }
-    
-    .coin-amount span {
+    .quests-section h3, .events-section h3 {
         font-size: 16px;
     }
     
-    .username {
-        font-size: 15px;
+    .quest-title {
+        font-size: 13px;
     }
     
-    .level-text {
+    .quest-description, .event-description {
         font-size: 11px;
     }
     
-    .particle {
-        width: 6px;
-        height: 6px;
+    .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
     }
     
-    .cards-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
+    .stat-value {
+        font-size: 16px;
     }
     
-    .friends-content,
-    .levels-content,
-    .combo-content {
-        padding: 0 10px;
-    }
-    
-    .upgrades-section {
-        margin: 20px 10px;
-    }
-    
-    .card-frame {
-        padding: 12px;
-    }
-    
-    .card-icon {
-        font-size: 28px;
-    }
-    
-    .card-name {
-        font-size: 12px;
-    }
-    
-    .card-stats {
-        font-size: 9px;
-    }
-    
-    .upgrade-btn {
-        min-width: 70px;
-        font-size: 12px;
-        padding: 8px 12px;
-    }
-    
-    .power-value {
-        font-size: 32px;
+    .stat-label {
+        font-size: 10px;
     }
 }
 
-@media (max-width: 360px) {
-    .cards-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
+/* Стили для редкостей заданий */
+.quest-item.epic {
+    border-left-color: #9b59b6;
+}
+
+.quest-item.rare {
+    border-left-color: #3498db;
+}
+
+.quest-item.uncommon {
+    border-left-color: #2ecc71;
+}
+
+.quest-item.common {
+    border-left-color: var(--text-secondary);
+}
+
+/* Анимация появления */
+.quest-item, .event-item {
+    animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
     }
-    
-    .card-frame {
-        padding: 10px;
-    }
-    
-    .card-icon {
-        font-size: 24px;
-        margin-bottom: 8px;
-    }
-    
-    .card-name {
-        font-size: 11px;
-        margin-bottom: 6px;
-    }
-    
-    .upgrade-btn {
-        min-width: 65px;
-        font-size: 11px;
-        padding: 6px 10px;
-    }
-    
-    .power-value {
-        font-size: 28px;
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
-/* Анимация появления профиля */
-.profile-modal {
-    animation: modalSlideIn 0.3s ease-out;
-}
-
-/* Специальные эффекты */
-.pulse {
-    animation: pulse 0.3s ease-in-out;
-}
-
-/* Отключение выделения текста */
-button, .clickable, .tab-item, .paw-button {
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    -webkit-touch-callout: none;
-    -webkit-tap-highlight-color: transparent;
-}
-
-/* Принудительное исправление для карточек комбо */
-#cards-grid-container.cards-grid {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-}
-
-/* Telegram Mini Apps специфичные стили */
-.tg-theme-aware {
-    background: var(--tg-theme-bg-color, var(--bg-primary));
-    color: var(--tg-theme-text-color, var(--text-primary));
-}
-
-.tg-background {
-    background: var(--tg-theme-secondary-bg-color, var(--bg-secondary));
-}
-
-.tg-button {
-    background: var(--tg-theme-button-color, var(--gradient-primary));
-    color: var(--tg-theme-button-text-color, white);
-}
-
-/* Дополнительные стили для улучшения читаемости чисел */
-.number-compact {
-    font-feature-settings: "tnum";
-    letter-spacing: -0.5px;
-}
-
-/* Стили для плавных переходов */
-.smooth-transition {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Улучшенная доступность для кнопок */
-button:focus-visible {
-    outline: 2px solid var(--text-accent);
-    outline-offset: 2px;
-}
-
-/* Оптимизация производительности анимаций */
-.particle, .critical-hit, .paw-glow {
-    will-change: transform, opacity;
-}
-
-/* Поддержка reduced-motion */
-@media (prefers-reduced-motion: reduce) {
-    * {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
+/* Индикатор нового дня */
+.daily-refresh-indicator {
+    background: var(--gradient-primary);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 15px;
+    animation: pulse 2s infinite;
 }
