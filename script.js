@@ -157,7 +157,7 @@ class DarkPawsClicker {
     }
 
     disableZoom() {
-        // Запрет масштабирования для всего документа
+        // Запрет масштабирования, но разрешение скролла
         document.addEventListener('touchstart', function(event) {
             if (event.touches.length > 1) {
                 event.preventDefault();
@@ -436,7 +436,7 @@ class DarkPawsClicker {
         // Сбрасываем все стили
         levelCircles.forEach(circle => {
             circle.classList.remove('active', 'completed', 'current');
-            // Восстанавливаем изначальный текст кружочка
+            // Восстанавливаем изначальный текст кружочка из data-level
             const originalLevel = circle.dataset.level;
             if (originalLevel) {
                 circle.textContent = originalLevel;
@@ -448,18 +448,16 @@ class DarkPawsClicker {
         const currentLevel = this.gameState.level;
         
         levelCircles.forEach((circle, index) => {
-            const circleLevel = milestoneLevels[index];
+            const circleLevel = parseInt(circle.dataset.level);
             const isLastCircle = index === levelCircles.length - 1;
-            
-            // Обновляем текст в кружке (всегда показываем изначальный уровень)
-            circle.textContent = circleLevel;
             
             if (currentLevel >= circleLevel) {
                 // Полностью заполненный кружок
                 circle.classList.add('completed');
                 
-                // Если это текущий уровень игрока, добавляем специальный класс
+                // Если это текущий уровень игрока, показываем текущий уровень в кружке
                 if (currentLevel === circleLevel) {
+                    circle.textContent = currentLevel;
                     circle.classList.add('current');
                 }
                 
@@ -481,6 +479,8 @@ class DarkPawsClicker {
                 
                 if (progressInRange > 0) {
                     circle.classList.add('active');
+                    // Показываем текущий уровень в активном кружке
+                    circle.textContent = currentLevel;
                     
                     // Частично заполняем линию
                     const currentLine = levelLines[index];
@@ -489,6 +489,9 @@ class DarkPawsClicker {
                         fill.style.width = `${percentage}%`;
                     }
                     currentLine.classList.add('partial');
+                } else {
+                    // Если прогресса нет, показываем изначальный уровень
+                    circle.textContent = circleLevel;
                 }
             }
         });
@@ -497,6 +500,11 @@ class DarkPawsClicker {
         if (currentLevel >= 100) {
             levelCircles.forEach(circle => {
                 circle.classList.add('completed');
+                // В последнем кружке показываем текущий уровень
+                if (circle.dataset.level === "100") {
+                    circle.textContent = currentLevel;
+                    circle.classList.add('current');
+                }
             });
             levelLines.forEach(line => {
                 const fill = line.querySelector('.level-line-fill');
@@ -1374,9 +1382,9 @@ class DarkPawsClicker {
             earnedScoreElement.id = 'earned-score-display';
             earnedScoreElement.className = 'earned-score-display';
             
-            const progressBar = document.querySelector('.header-progress');
-            if (progressBar) {
-                progressBar.appendChild(earnedScoreElement);
+            const headerProgress = document.querySelector('.header-progress');
+            if (headerProgress) {
+                headerProgress.appendChild(earnedScoreElement);
             }
         }
         
