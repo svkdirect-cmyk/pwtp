@@ -7,7 +7,6 @@
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    touch-action: manipulation;
 }
 
 :root {
@@ -42,15 +41,17 @@ body {
     -webkit-touch-callout: none;
     -webkit-text-size-adjust: none;
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-    /* Запрет масштабирования */
-    touch-action: pan-x pan-y;
-    -webkit-user-drag: none;
+    /* Разрешаем скролл, но запрещаем масштабирование */
+    touch-action: pan-y;
+    height: 100vh;
+    overflow-y: auto;
 }
 
 html {
-    /* Запрет масштабирования для всего документа */
-    touch-action: manipulation;
-    -ms-touch-action: manipulation;
+    /* Запрет масштабирования, но разрешение скролла */
+    touch-action: pan-y;
+    -ms-touch-action: pan-y;
+    height: 100%;
     overflow: hidden;
 }
 
@@ -62,6 +63,9 @@ html {
     user-select: none;
     -webkit-touch-callout: none;
     -webkit-tap-highlight-color: transparent;
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* Шапка */
@@ -166,6 +170,7 @@ html {
     margin-top: 8px;
     font-weight: 500;
     font-feature-settings: "tnum";
+    padding: 0 10px;
 }
 
 .coin-balance {
@@ -491,6 +496,7 @@ html {
     min-height: calc(100vh - 80px);
     padding-bottom: 80px;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .tab-content.active {
@@ -626,6 +632,13 @@ html {
     background: var(--gradient-primary);
     color: white;
     box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+}
+
+.level-circle.current {
+    background: var(--gradient-gold);
+    color: var(--bg-primary);
+    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.5);
+    transform: scale(1.1);
 }
 
 .level-line {
@@ -1014,12 +1027,16 @@ html {
     background: rgba(0, 0, 0, 0.9);
     z-index: 2000;
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .modal.active {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
+    padding-top: 20px;
+    padding-bottom: 20px;
 }
 
 .modal-content {
@@ -1030,6 +1047,7 @@ html {
     overflow: hidden;
     animation: modalSlideIn 0.3s ease-out;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    margin: auto;
 }
 
 @keyframes modalSlideIn {
@@ -1664,4 +1682,10 @@ button:focus-visible {
 button, .paw-button, .tab-item, .upgrade-card, .combo-card, .level-card {
     touch-action: manipulation;
     -webkit-user-drag: none;
+}
+
+/* Восстановление скролла */
+.tab-content, .profile-content, .modal {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
 }
