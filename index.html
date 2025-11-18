@@ -92,78 +92,6 @@
             </div>
         </div>
 
-        <!-- Вкладка друзей -->
-        <div id="friends-tab" class="tab-content">
-            <div class="tab-header">
-                <h2>Друзья</h2>
-                <div class="tab-stats">
-                    <div class="friends-count">Друзей: <span>0</span></div>
-                    <div class="friends-bonus">Бонус: <span>0%</span></div>
-                </div>
-            </div>
-
-            <div class="friends-content">
-                <div class="friends-actions">
-                    <button class="btn-primary" id="invite-friends">
-                        <i class="fas fa-user-plus"></i>
-                        Пригласить друга
-                    </button>
-                    <button class="btn-secondary" id="refresh-friends">
-                        <i class="fas fa-sync-alt"></i>
-                        Обновить
-                    </button>
-                </div>
-
-                <div class="friends-list-section">
-                    <h4>Мои друзья</h4>
-                    <div class="friends-list" id="friends-list-container">
-                        <div class="empty-state">
-                            <div class="empty-icon">👥</div>
-                            <h3>Друзей пока нет</h3>
-                            <p>Пригласите друзей и получайте бонусы за их прогресс</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="friends-bonuses">
-                    <h4>Бонусы за друзей</h4>
-                    <div class="bonus-grid">
-                        <div class="bonus-card">
-                            <div class="bonus-icon">🔥</div>
-                            <div class="bonus-info">
-                                <div class="bonus-name">+1 друг</div>
-                                <div class="bonus-desc">+5% к силе клика</div>
-                            </div>
-                            <div class="bonus-status">Не активно</div>
-                        </div>
-                        <div class="bonus-card">
-                            <div class="bonus-icon">🚀</div>
-                            <div class="bonus-info">
-                                <div class="bonus-name">+3 друга</div>
-                                <div class="bonus-desc">+10% к авто-клику</div>
-                            </div>
-                            <div class="bonus-status">Не активно</div>
-                        </div>
-                        <div class="bonus-card">
-                            <div class="bonus-icon">💎</div>
-                            <div class="bonus-info">
-                                <div class="bonus-name">+5 друзей</div>
-                                <div class="bonus-desc">+15% к шансу крита</div>
-                            </div>
-                            <div class="bonus-status">Не активно</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="leaderboard-section">
-                    <h4>Топ игроков</h4>
-                    <div class="leaderboard" id="leaderboard-container">
-                        <div class="loading">Загрузка...</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Вкладка уровней -->
         <div id="levels-tab" class="tab-content">
             <div class="tab-header">
@@ -308,10 +236,6 @@
             <div class="tab-item active" data-tab="game-tab">
                 <i class="fas fa-paw"></i>
                 <span>Игра</span>
-            </div>
-            <div class="tab-item" data-tab="friends-tab">
-                <i class="fas fa-users"></i>
-                <span>Друзья</span>
             </div>
             <div class="tab-item" data-tab="levels-tab">
                 <i class="fas fa-chart-line"></i>
