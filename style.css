@@ -704,6 +704,7 @@ body {
     font-weight: 600;
     font-size: 14px;
     margin-bottom: 4px;
+    color: var(--text-primary);
 }
 
 .reward-desc {
@@ -812,6 +813,7 @@ body {
 
 .combo-card.locked {
     opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .combo-card.active .card-frame {
@@ -905,6 +907,7 @@ body {
     font-size: 13px;
     font-weight: 600;
     margin-bottom: 8px;
+    color: var(--text-primary);
 }
 
 .card-stats {
@@ -1274,6 +1277,27 @@ body {
     background: var(--tg-theme-secondary-bg-color, var(--bg-secondary));
     display: flex;
     justify-content: center;
+}
+
+.btn-secondary {
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+}
+
+.btn-secondary:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.6);
 }
 
 /* Анимация всплывающего текста для критических ударов */
