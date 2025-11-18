@@ -1559,6 +1559,78 @@ body {
     animation: pulse 0.5s ease-in-out;
 }
 
+/* Стили для реферальной системы */
+.referral-stats h4 {
+    font-size: 16px;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+}
+
+.referral-card {
+    background: var(--bg-secondary);
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.referral-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.referral-count,
+.referral-level,
+.referral-bonus {
+    flex: 1;
+}
+
+.referral-number {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-accent);
+    margin-bottom: 5px;
+}
+
+.referral-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.referral-level-badge {
+    background: var(--gradient-primary);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    display: inline-block;
+}
+
+.bonus-percent {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--success-color);
+    margin-bottom: 5px;
+}
+
+#referral-stats-btn {
+    width: 100%;
+    justify-content: center;
+}
+
+/* Стили для реферальных друзей */
+.referral-friend {
+    opacity: 0.8;
+}
+
+.referral-friend .friend-avatar {
+    background: var(--gradient-primary);
+}
+
 /* Адаптивность */
 @media (max-width: 768px) {
     .header {
@@ -1651,6 +1723,17 @@ body {
     
     .modal-actions {
         padding: 15px;
+    }
+    
+    .referral-info {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .referral-count,
+    .referral-level,
+    .referral-bonus {
+        width: 100%;
     }
 }
 
@@ -1773,81 +1856,4 @@ button, .clickable, .tab-item, .paw-button {
 #cards-grid-container.cards-grid {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
-}
-
-/* Стили для реферальной системы */
-.referral-stats h4 {
-    font-size: 16px;
-    margin-bottom: 15px;
-    color: var(--text-primary);
-}
-
-.referral-card {
-    background: var(--bg-secondary);
-    padding: 20px;
-    border-radius: 16px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.referral-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    text-align: center;
-}
-
-.referral-count,
-.referral-level,
-.referral-bonus {
-    flex: 1;
-}
-
-.referral-number {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--text-accent);
-    margin-bottom: 5px;
-}
-
-.referral-label {
-    font-size: 11px;
-    color: var(--text-secondary);
-}
-
-.referral-level-badge {
-    background: var(--gradient-primary);
-    color: white;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    margin-bottom: 5px;
-    display: inline-block;
-}
-
-.bonus-percent {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--success-color);
-    margin-bottom: 5px;
-}
-
-#referral-stats-btn {
-    width: 100%;
-    justify-content: center;
-}
-
-/* Адаптивность для реферальной системы */
-@media (max-width: 768px) {
-    .referral-info {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    .referral-count,
-    .referral-level,
-    .referral-bonus {
-        width: 100%;
-    }
 }
