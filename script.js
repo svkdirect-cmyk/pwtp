@@ -411,11 +411,6 @@ class DarkPawsClicker {
     }
 
     updateLevelsTab() {
-        const currentLevel = document.querySelector('.current-level span');
-        if (currentLevel) {
-            currentLevel.textContent = this.gameState.level;
-        }
-        
         this.updateLevelsProgress();
         this.updateLevelCards();
     }
@@ -586,15 +581,10 @@ class DarkPawsClicker {
     updateDeckStats() {
         const deckPower = document.querySelector('.power-value');
         const deckStats = document.querySelectorAll('.stat-value');
-        const comboCount = document.querySelector('.combo-count span');
         const deckSize = document.querySelector('.deck-size span');
         
         if (deckPower) {
             deckPower.textContent = this.formatNumberRounded(this.calculateDeckPower());
-        }
-        
-        if (comboCount) {
-            comboCount.textContent = `${this.gameState.activeDeck.length}/4`;
         }
         
         if (deckSize) {
