@@ -7,6 +7,7 @@
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    touch-action: manipulation;
 }
 
 :root {
@@ -41,6 +42,26 @@ body {
     -webkit-touch-callout: none;
     -webkit-text-size-adjust: none;
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    /* Запрет масштабирования */
+    touch-action: pan-x pan-y;
+    -webkit-user-drag: none;
+}
+
+html {
+    /* Запрет масштабирования для всего документа */
+    touch-action: manipulation;
+    -ms-touch-action: manipulation;
+    overflow: hidden;
+}
+
+#app {
+    /* Запрет выделения текста и масштабирования */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 /* Шапка */
@@ -215,7 +236,7 @@ body {
     }
 }
 
-/* Кнопка-лапка */
+/* Кнопка-лапка - оптимизированная для Telegram Mini Apps */
 .paw-button {
     width: 240px;
     height: 240px;
@@ -225,7 +246,7 @@ body {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.15s ease;
     position: relative;
     overflow: hidden;
     box-shadow: 
@@ -235,6 +256,9 @@ body {
     -webkit-tap-highlight-color: transparent;
     animation: paw-pulse 3s ease-in-out infinite;
     touch-action: manipulation;
+    border: none;
+    outline: none;
+    -webkit-appearance: none;
 }
 
 @keyframes paw-pulse {
@@ -261,12 +285,13 @@ body {
         0 0 0 8px rgba(139, 92, 246, 0.4),
         inset 0 2px 15px rgba(255, 255, 255, 0.2);
     animation: none;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
 .paw-icon {
     font-size: 90px;
     color: white;
-    transition: all 0.3s ease;
+    transition: all 0.15s ease;
     text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
 }
@@ -274,6 +299,7 @@ body {
 .paw-button:active .paw-icon {
     transform: scale(0.8) rotate(10deg);
     color: var(--text-accent);
+    transition: transform 0.1s ease;
 }
 
 .paw-glow {
@@ -285,7 +311,7 @@ body {
     background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
     transform: translate(-50%, -50%);
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.15s ease;
 }
 
 .paw-button:active .paw-glow {
@@ -440,6 +466,7 @@ body {
     border: none;
     font-family: inherit;
     font-feature-settings: "tnum";
+    touch-action: manipulation;
 }
 
 .upgrade-btn:active:not(:disabled) {
@@ -524,6 +551,7 @@ body {
     transition: all 0.3s ease;
     opacity: 0.6;
     -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
 }
 
 .tab-item.active {
@@ -1042,6 +1070,7 @@ body {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     border: none;
     font-family: inherit;
+    touch-action: manipulation;
 }
 
 .modal-close:active {
@@ -1306,6 +1335,7 @@ body {
     align-items: center;
     gap: 8px;
     box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+    touch-action: manipulation;
 }
 
 .btn-secondary:active {
@@ -1628,4 +1658,10 @@ button:focus-visible {
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
     }
+}
+
+/* Запрет масштабирования для всех интерактивных элементов */
+button, .paw-button, .tab-item, .upgrade-card, .combo-card, .level-card {
+    touch-action: manipulation;
+    -webkit-user-drag: none;
 }
