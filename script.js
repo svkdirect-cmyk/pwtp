@@ -42,7 +42,8 @@ class DarkPawsClicker {
             referrerId: null,
             referredFriends: [],
             referralBonus: 0,
-            referralLevel: 0
+            referralLevel: 0,
+            hasReceivedWelcomeBonus: false
         };
         
         this.particles = [];
@@ -185,37 +186,38 @@ class DarkPawsClicker {
         }
     }
 
-    // РЕФЕРАЛЬНАЯ СИСТЕМА
+    // РЕФЕРАЛЬНАЯ СИСТЕМА - ИСПРАВЛЕННАЯ
     processReferral() {
         const urlParams = new URLSearchParams(window.location.search);
         const referrerId = urlParams.get('ref');
         
+        console.log('Referral processing:', { referrerId, currentUser: this.user?.id });
+        
+        // Если пользователь зашел по реферальной ссылке И это не его собственная ссылка
         if (referrerId && referrerId != this.user?.id) {
-            this.referralData.referrerId = referrerId;
-            this.saveGameState();
-            console.log(`Реферал от пользователя: ${referrerId}`);
+            console.log('Valid referral detected');
             
-            // Показываем уведомление о успешной регистрации по реферальной ссылке
-            this.showReferralWelcome();
+            // Сохраняем реферера
+            this.referralData.referrerId = referrerId;
+            
+            // Даем бонус новому пользователю (только один раз)
+            if (!this.referralData.hasReceivedWelcomeBonus) {
+                this.referralData.hasReceivedWelcomeBonus = true;
+                this.showReferralWelcome();
+                this.addScore(100, false, true);
+            }
+            
+            this.saveGameState();
+            
+            // В реальном приложении здесь должен быть вызов к серверу
+            // this.notifyServerAboutReferral(referrerId, this.user.id);
         }
         
-        // Проверяем, есть ли рефералы для бонусов
+        // Обновляем бонусы на основе текущих рефералов
         this.updateReferralBonuses();
     }
 
-    showReferralWelcome() {
-        if (this.tg && this.tg.showPopup) {
-            this.tg.showPopup({
-                title: '🎉 Добро пожаловать!',
-                message: 'Вы присоединились по приглашению друга! Получите бонус +100 очков!',
-                buttons: [{ type: 'ok' }]
-            });
-        }
-        
-        // Даем бонус новому пользователю
-        this.addScore(100, false, true);
-    }
-
+    // Метод для симуляции добавления реферала (в реальном приложении вызывается сервером)
     addReferredFriend(friendId) {
         if (!this.referralData.referredFriends.includes(friendId)) {
             this.referralData.referredFriends.push(friendId);
@@ -224,6 +226,8 @@ class DarkPawsClicker {
             
             // Даем бонус за приглашенного друга
             this.giveReferralReward();
+            
+            console.log('New referral added:', friendId);
         }
     }
 
@@ -243,6 +247,8 @@ class DarkPawsClicker {
         
         // Рассчитываем бонус в зависимости от количества друзей
         this.referralData.referralBonus = friendCount * 5; // 5% за каждого друга
+        
+        this.updateReferralUI();
     }
 
     onReferralLevelUp(level) {
@@ -273,6 +279,16 @@ class DarkPawsClicker {
             this.tg.showPopup({
                 title: '🎁 Новый реферал!',
                 message: `Друг присоединился по вашей ссылке! Вы получаете ${reward} очков!`,
+                buttons: [{ type: 'ok' }]
+            });
+        }
+    }
+
+    showReferralWelcome() {
+        if (this.tg && this.tg.showPopup) {
+            this.tg.showPopup({
+                title: '🎉 Добро пожаловать!',
+                message: 'Вы присоединились по приглашению друга! Получите бонус +100 очков!',
                 buttons: [{ type: 'ok' }]
             });
         }
@@ -463,7 +479,7 @@ class DarkPawsClicker {
         const container = document.getElementById('friends-list-container');
         if (!container) return;
         
-        if (this.gameState.friends.length === 0) {
+        if (this.gameState.friends.length === 0 && this.referralData.referredFriends.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
                     <div class="empty-icon">👥</div>
@@ -473,6 +489,8 @@ class DarkPawsClicker {
             `;
         } else {
             let friendsHTML = '';
+            
+            // Показываем обычных друзей
             this.gameState.friends.forEach(friend => {
                 friendsHTML += `
                     <div class="friend-item">
@@ -486,6 +504,22 @@ class DarkPawsClicker {
                     </div>
                 `;
             });
+            
+            // Показываем рефералов
+            this.referralData.referredFriends.forEach(friendId => {
+                friendsHTML += `
+                    <div class="friend-item referral-friend">
+                        <div class="friend-avatar">
+                            👤
+                        </div>
+                        <div class="friend-info">
+                            <div class="friend-name">Реферал #${friendId}</div>
+                            <div class="friend-stats">Приглашенный друг • <span class="friend-score">+5% бонус</span></div>
+                        </div>
+                    </div>
+                `;
+            });
+            
             container.innerHTML = friendsHTML;
         }
     }
@@ -516,15 +550,6 @@ class DarkPawsClicker {
             { first_name: 'Друг 1', level: 5, score: 1500 },
             { first_name: 'Друг 2', level: 3, score: 800 }
         ];
-        
-        // Добавляем рефералов в список друзей
-        this.referralData.referredFriends.forEach(friendId => {
-            this.gameState.friends.push({
-                first_name: `Реферал ${friendId}`,
-                level: 1,
-                score: 100
-            });
-        });
         
         this.updateFriendsTab();
     }
@@ -628,7 +653,6 @@ class DarkPawsClicker {
     }
 
     updateComboTab() {
-        console.log('Updating combo tab...');
         this.updateDeckStats();
         this.updateComboCards();
     }
@@ -685,12 +709,7 @@ class DarkPawsClicker {
         const comboCards = this.getAllCards();
         const cardsGrid = document.getElementById('cards-grid-container');
         
-        if (!cardsGrid) {
-            console.error('cards-grid-container not found!');
-            return;
-        }
-
-        console.log('Found cards grid container, generating cards...');
+        if (!cardsGrid) return;
 
         let cardsHTML = '';
         comboCards.forEach(card => {
@@ -713,14 +732,11 @@ class DarkPawsClicker {
         });
 
         cardsGrid.innerHTML = cardsHTML;
-        console.log(`Generated ${comboCards.length} cards in the grid`);
-
         this.setupComboCardListeners();
     }
 
     setupComboCardListeners() {
         const cards = document.querySelectorAll('.combo-card');
-        console.log(`Setting up listeners for ${cards.length} cards`);
         
         cards.forEach(card => {
             card.addEventListener('click', () => {
@@ -908,9 +924,6 @@ class DarkPawsClicker {
     }
 
     showCardLockedMessage(card) {
-        const cardId = card.dataset.cardId;
-        console.log(`Карта ${cardId} заблокирована`);
-        
         if (this.tg && this.tg.showPopup) {
             this.tg.showPopup({
                 title: '🔒 Карта заблокирована',
@@ -1095,17 +1108,7 @@ class DarkPawsClicker {
             alert('Ссылка скопирована в буфер обмена!\n\n' + shareText);
         }
         
-        // Симуляция добавления реферала для тестирования
-        setTimeout(() => {
-            this.simulateReferral();
-        }, 2000);
-    }
-
-    simulateReferral() {
-        // Для тестирования - добавляем случайного реферала
-        const randomId = Math.floor(Math.random() * 1000);
-        this.addReferredFriend(randomId);
-        this.updateFriendsTab();
+        // УБРАНА СИМУЛЯЦИЯ РЕФЕРАЛА - теперь счетчик увеличивается только при реальных приглашениях
     }
 
     startPlayTimeCounter() {
@@ -1180,8 +1183,6 @@ class DarkPawsClicker {
     }
 
     showAchievementNotification(achievementName) {
-        console.log(`🎉 Достижение разблокировано: ${achievementName}`);
-        
         if (this.tg && this.tg.showPopup) {
             this.tg.showPopup({
                 title: '🎉 Новое достижение!',
@@ -1357,8 +1358,6 @@ class DarkPawsClicker {
             'critical-chance': 'Точность'
         };
         
-        console.log(`🔼 Улучшение куплено: ${upgradeNames[upgradeType]}`);
-        
         if (this.tg && this.tg.showPopup) {
             this.tg.showPopup({
                 title: '✅ Улучшение куплено!',
@@ -1371,8 +1370,6 @@ class DarkPawsClicker {
     }
 
     showInsufficientFundsNotification(cost) {
-        console.log(`❌ Недостаточно очков. Нужно: ${cost}`);
-        
         if (this.tg && this.tg.showPopup) {
             this.tg.showPopup({
                 title: '❌ Недостаточно очков',
