@@ -1631,42 +1631,6 @@ body {
     background: var(--gradient-primary);
 }
 
-/* Дополнительные стили для кнопок шеринга */
-.share-options {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 15px;
-}
-
-.share-option {
-    flex: 1;
-    min-width: 80px;
-    padding: 12px;
-    background: var(--bg-secondary);
-    border-radius: 12px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.share-option:active {
-    transform: scale(0.95);
-    background: var(--bg-tertiary);
-}
-
-.share-icon {
-    font-size: 24px;
-    margin-bottom: 8px;
-}
-
-.share-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
 /* Адаптивность */
 @media (max-width: 768px) {
     .header {
