@@ -18,7 +18,6 @@ class DarkPawsClicker {
                 joinDate: new Date().toISOString(),
                 criticalHits: 0
             },
-            friends: [],
             comboCards: [],
             activeDeck: [],
             cardEffects: {
@@ -222,24 +221,6 @@ class DarkPawsClicker {
             });
         });
 
-        // Друзья
-        const inviteBtn = document.getElementById('invite-friends');
-        if (inviteBtn) {
-            inviteBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.inviteFriends();
-            });
-        }
-
-        const refreshBtn = document.getElementById('refresh-friends');
-        if (refreshBtn) {
-            refreshBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.loadFriendsList();
-                this.loadLeaderboard();
-            });
-        }
-
         // Профиль
         const profileOpener = document.getElementById('profile-opener');
         if (profileOpener) {
@@ -377,9 +358,6 @@ class DarkPawsClicker {
 
     updateTabContent(tabId) {
         switch(tabId) {
-            case 'friends-tab':
-                this.updateFriendsTab();
-                break;
             case 'levels-tab':
                 this.updateLevelsTab();
                 break;
@@ -387,126 +365,6 @@ class DarkPawsClicker {
                 this.updateComboTab();
                 break;
         }
-    }
-
-    updateFriendsTab() {
-        const friendsCount = document.querySelector('.friends-count span');
-        const friendsBonus = document.querySelector('.friends-bonus span');
-        
-        if (friendsCount) {
-            friendsCount.textContent = this.gameState.friends.length;
-        }
-        
-        const friendCount = this.gameState.friends.length;
-        let bonusPercent = 0;
-        
-        if (friendCount >= 5) bonusPercent = 15;
-        else if (friendCount >= 3) bonusPercent = 10;
-        else if (friendCount >= 1) bonusPercent = 5;
-        
-        if (friendsBonus) {
-            friendsBonus.textContent = bonusPercent + '%';
-        }
-        
-        this.updateFriendsList();
-        this.updateFriendsBonuses();
-    }
-
-    updateFriendsList() {
-        const container = document.getElementById('friends-list-container');
-        if (!container) return;
-        
-        if (this.gameState.friends.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-icon">👥</div>
-                    <h3>Друзей пока нет</h3>
-                    <p>Пригласите друзей и получайте бонусы за их прогресс</p>
-                </div>
-            `;
-        } else {
-            let friendsHTML = '';
-            this.gameState.friends.forEach(friend => {
-                friendsHTML += `
-                    <div class="friend-item">
-                        <div class="friend-avatar">
-                            ${friend.first_name ? friend.first_name.charAt(0).toUpperCase() : 'U'}
-                        </div>
-                        <div class="friend-info">
-                            <div class="friend-name">${friend.first_name || 'Unknown'}</div>
-                            <div class="friend-stats">Уровень ${friend.level || 1} • <span class="friend-score">${this.formatNumber(friend.score || 0)} очков</span></div>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = friendsHTML;
-        }
-    }
-
-    updateFriendsBonuses() {
-        const bonusCards = document.querySelectorAll('.bonus-card');
-        const friendCount = this.gameState.friends.length;
-        
-        bonusCards.forEach((card, index) => {
-            const status = card.querySelector('.bonus-status');
-            const requiredFriends = [1, 3, 5][index];
-            
-            if (status) {
-                if (friendCount >= requiredFriends) {
-                    status.textContent = 'Активно';
-                    status.classList.add('active');
-                } else {
-                    status.textContent = 'Не активно';
-                    status.classList.remove('active');
-                }
-            }
-        });
-    }
-
-    loadFriendsList() {
-        // В реальном приложении здесь будет запрос к API Telegram
-        this.gameState.friends = [
-            { first_name: 'Друг 1', level: 5, score: 1500 },
-            { first_name: 'Друг 2', level: 3, score: 800 },
-            { first_name: 'Друг 3', level: 7, score: 12500 },
-            { first_name: 'Друг 4', level: 12, score: 85000 },
-            { first_name: 'Друг 5', level: 15, score: 250000 }
-        ];
-        this.updateFriendsTab();
-    }
-
-    loadLeaderboard() {
-        const container = document.getElementById('leaderboard-container');
-        if (!container) return;
-        
-        const leaderboard = [
-            { first_name: 'Чемпион', score: 5000000 },
-            { first_name: 'Профи', score: 2500000 },
-            { first_name: 'Любитель', score: 1200000 },
-            { first_name: 'Новичок', score: 500000 },
-            { first_name: 'Игрок', score: 150000 }
-        ];
-        
-        let leaderboardHTML = '';
-        leaderboard.forEach((player, index) => {
-            const rank = index + 1;
-            const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank + '.';
-            
-            leaderboardHTML += `
-                <div class="leaderboard-item">
-                    <div class="leaderboard-rank">${rankIcon}</div>
-                    <div class="leaderboard-user">
-                        <div class="leaderboard-avatar">
-                            ${player.first_name ? player.first_name.charAt(0).toUpperCase() : 'U'}
-                        </div>
-                        <div class="leaderboard-name">${player.first_name || 'Unknown'}</div>
-                    </div>
-                    <div class="leaderboard-score">${this.formatNumber(player.score || 0)}</div>
-                </div>
-            `;
-        });
-        
-        container.innerHTML = leaderboardHTML;
     }
 
     updateLevelsTab() {
@@ -763,7 +621,7 @@ class DarkPawsClicker {
                 rarity: 'rare',
                 icon: '🚀',
                 stats: { autoClick: 5 },
-                description: 'Добавляет 5 авто-кликов в секунду',
+                description: 'Добавляет 5 авто-клика в секунду',
                 unlocked: this.gameState.level >= 2
             },
             {
@@ -1025,32 +883,6 @@ class DarkPawsClicker {
             });
         } else {
             alert(shareText);
-        }
-    }
-
-    inviteFriends() {
-        const shareText = `Присоединяйся к Dark Paws Clicker! 🎮\nИграй и прокачивай свою лапу!\n\nСсылка: ${window.location.href}?ref=${this.user.id}`;
-        
-        if (this.isTelegram && this.tg.showPopup) {
-            this.tg.showPopup({
-                title: 'Пригласить друга',
-                message: 'Поделитесь ссылкой с друзьями!',
-                buttons: [{ type: 'ok' }]
-            });
-            
-            // Используем Telegram Share функционал
-            if (this.tg.share) {
-                this.tg.share(shareText);
-            }
-        } else if (navigator.share) {
-            navigator.share({
-                title: 'Dark Paws Clicker',
-                text: shareText,
-                url: window.location.href + `?ref=${this.user.id}`
-            });
-        } else {
-            navigator.clipboard.writeText(window.location.href + `?ref=${this.user.id}`);
-            alert('Ссылка скопирована в буфер обмена! Отправь её другу: ' + shareText);
         }
     }
 
