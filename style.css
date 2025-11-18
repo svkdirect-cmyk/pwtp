@@ -144,6 +144,7 @@ body {
     text-align: center;
     margin-top: 8px;
     font-weight: 500;
+    font-feature-settings: "tnum";
 }
 
 .coin-balance {
@@ -178,6 +179,7 @@ body {
     font-weight: 700;
     color: var(--text-primary);
     line-height: 1;
+    font-feature-settings: "tnum";
 }
 
 /* Прогресс бар под шапкой */
@@ -432,11 +434,12 @@ body {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    min-width: 70px;
+    min-width: 80px;
     -webkit-tap-highlight-color: transparent;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     border: none;
     font-family: inherit;
+    font-feature-settings: "tnum";
 }
 
 .upgrade-btn:active:not(:disabled) {
@@ -625,6 +628,7 @@ body {
 .friend-score {
     font-weight: 600;
     color: var(--text-accent);
+    font-feature-settings: "tnum";
 }
 
 .empty-state {
@@ -829,6 +833,7 @@ body {
     font-weight: 700;
     color: var(--text-accent);
     font-size: 14px;
+    font-feature-settings: "tnum";
 }
 
 .loading {
@@ -939,6 +944,7 @@ body {
     color: var(--text-secondary);
     font-weight: 600;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    font-feature-settings: "tnum";
 }
 
 .level-status.completed {
@@ -1011,6 +1017,7 @@ body {
     color: var(--text-accent);
     line-height: 1;
     text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);
+    font-feature-settings: "tnum";
 }
 
 .power-label {
@@ -1043,6 +1050,7 @@ body {
     font-size: 18px;
     font-weight: 600;
     color: var(--text-primary);
+    font-feature-settings: "tnum";
 }
 
 .stat-label {
@@ -1415,6 +1423,7 @@ body {
     font-weight: 700;
     color: var(--text-primary);
     margin-bottom: 2px;
+    font-feature-settings: "tnum";
 }
 
 .stat-label {
@@ -1568,6 +1577,7 @@ body {
         0 0 20px rgba(212, 175, 55, 0.8),
         0 0 40px rgba(212, 175, 55, 0.6);
     animation: floatUp 2s ease-out forwards;
+    font-feature-settings: "tnum";
 }
 
 /* Улучшенная анимация пульсации для уровня */
@@ -1748,6 +1758,16 @@ body {
     .card-stats {
         font-size: 9px;
     }
+    
+    .upgrade-btn {
+        min-width: 70px;
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+    
+    .power-value {
+        font-size: 32px;
+    }
 }
 
 @media (max-width: 360px) {
@@ -1768,6 +1788,16 @@ body {
     .card-name {
         font-size: 11px;
         margin-bottom: 6px;
+    }
+    
+    .upgrade-btn {
+        min-width: 65px;
+        font-size: 11px;
+        padding: 6px 10px;
+    }
+    
+    .power-value {
+        font-size: 28px;
     }
 }
 
@@ -1810,4 +1840,35 @@ button, .clickable, .tab-item, .paw-button {
 .tg-button {
     background: var(--tg-theme-button-color, var(--gradient-primary));
     color: var(--tg-theme-button-text-color, white);
+}
+
+/* Дополнительные стили для улучшения читаемости чисел */
+.number-compact {
+    font-feature-settings: "tnum";
+    letter-spacing: -0.5px;
+}
+
+/* Стили для плавных переходов */
+.smooth-transition {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Улучшенная доступность для кнопок */
+button:focus-visible {
+    outline: 2px solid var(--text-accent);
+    outline-offset: 2px;
+}
+
+/* Оптимизация производительности анимаций */
+.particle, .critical-hit, .paw-glow {
+    will-change: transform, opacity;
+}
+
+/* Поддержка reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }
