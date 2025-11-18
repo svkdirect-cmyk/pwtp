@@ -379,43 +379,98 @@ class DarkPawsClicker {
 
     updateLevelsProgress() {
         const levelCircles = document.querySelectorAll('.level-circle');
-        levelCircles.forEach((circle, index) => {
-            const levelNumber = index + 1;
-            
-            circle.classList.remove('active');
-            if (levelNumber <= this.gameState.level) {
-                circle.classList.add('active');
-            }
+        const levelLines = document.querySelectorAll('.level-line');
+        
+        // Сбрасываем все стили
+        levelCircles.forEach(circle => {
+            circle.classList.remove('active', 'completed');
         });
+        levelLines.forEach(line => {
+            line.classList.remove('completed', 'partial');
+            line.style.background = '';
+        });
+        
+        let prevLevelValue = 0;
+        
+        levelCircles.forEach((circle, index) => {
+            const circleLevel = parseInt(circle.dataset.level);
+            const isLastCircle = index === levelCircles.length - 1;
+            
+            if (this.gameState.level >= circleLevel) {
+                // Полностью заполненный кружок
+                circle.classList.add('completed');
+                
+                // Заполняем линию до этого кружка (кроме первого)
+                if (index > 0) {
+                    const prevLine = levelLines[index - 1];
+                    prevLine.classList.add('completed');
+                    prevLine.style.background = 'var(--gradient-primary)';
+                }
+            } else if (!isLastCircle) {
+                // Частичное заполнение для текущего уровня
+                const nextCircleLevel = parseInt(levelCircles[index + 1].dataset.level);
+                const currentRange = nextCircleLevel - circleLevel;
+                const progressInRange = Math.max(0, this.gameState.level - circleLevel);
+                const percentage = (progressInRange / currentRange) * 100;
+                
+                if (progressInRange > 0) {
+                    circle.classList.add('active');
+                    
+                    // Частично заполняем линию
+                    const currentLine = levelLines[index];
+                    currentLine.classList.add('partial');
+                    currentLine.style.background = `linear-gradient(90deg, 
+                        var(--gradient-primary) 0% ${percentage}%, 
+                        var(--bg-tertiary) ${percentage}% 100%)`;
+                }
+            }
+            
+            prevLevelValue = circleLevel;
+        });
+        
+        // Особый случай: если уровень выше 100, отмечаем все как завершенные
+        if (this.gameState.level >= 100) {
+            levelCircles.forEach(circle => circle.classList.add('completed'));
+            levelLines.forEach(line => {
+                line.classList.add('completed');
+                line.style.background = 'var(--gradient-primary)';
+            });
+        }
     }
 
     updateLevelCards() {
         const levelCards = document.querySelectorAll('.level-card');
         
+        // Определяем milestone уровни
+        const milestoneLevels = [1, 25, 50, 75, 100];
+        
         levelCards.forEach((card, index) => {
-            const levelNumber = index + 1;
+            const milestoneLevel = milestoneLevels[index];
             const status = card.querySelector('.level-status');
             
             card.classList.remove('active', 'locked', 'completed');
             
-            if (levelNumber < this.gameState.level) {
+            if (milestoneLevel < this.gameState.level) {
                 card.classList.add('completed');
                 if (status) {
                     status.textContent = 'Пройден';
                     status.classList.add('completed');
                 }
-            } else if (levelNumber === this.gameState.level) {
+            } else if (milestoneLevel === this.gameState.level) {
                 card.classList.add('active');
                 
-                const currentLevelScore = this.getRequiredScoreForLevel(this.gameState.level);
-                const nextLevelScore = this.getRequiredScoreForLevel(this.gameState.level + 1);
-                const progress = Math.max(0, this.gameState.totalEarnedScore - currentLevelScore);
-                const totalNeeded = nextLevelScore - currentLevelScore;
-                
                 if (status) {
-                    if (totalNeeded > 0) {
-                        const percentage = Math.min(100, (progress / totalNeeded) * 100);
-                        status.textContent = `${Math.floor(percentage)}%`;
+                    if (milestoneLevel < 100) {
+                        const nextMilestone = milestoneLevels[index + 1];
+                        const currentLevelScore = this.getRequiredScoreForLevel(this.gameState.level);
+                        const nextLevelScore = this.getRequiredScoreForLevel(nextMilestone);
+                        const progress = Math.max(0, this.gameState.totalEarnedScore - currentLevelScore);
+                        const totalNeeded = nextLevelScore - currentLevelScore;
+                        
+                        if (totalNeeded > 0) {
+                            const percentage = Math.min(100, (progress / totalNeeded) * 100);
+                            status.textContent = `${Math.floor(percentage)}%`;
+                        }
                     } else {
                         status.textContent = 'Макс уровень';
                     }
@@ -423,11 +478,17 @@ class DarkPawsClicker {
                 }
             } else {
                 card.classList.add('locked');
-                const requiredScore = this.getRequiredScoreForLevel(levelNumber);
+                const requiredScore = this.getRequiredScoreForLevel(milestoneLevel);
                 if (status) {
                     status.textContent = `${this.formatNumber(requiredScore)} очков`;
                     status.classList.remove('completed');
                 }
+            }
+            
+            // Обновляем номера уровней в карточках
+            const levelNumber = card.querySelector('.level-number');
+            if (levelNumber) {
+                levelNumber.textContent = `Уровень ${milestoneLevel}`;
             }
         });
     }
@@ -1056,7 +1117,19 @@ class DarkPawsClicker {
 
     getRequiredScoreForLevel(level) {
         if (level <= 1) return 0;
-        return Math.pow(level - 1, 2) * 100;
+        
+        // Нелинейная прогрессия для больших уровней
+        if (level <= 10) {
+            return Math.pow(level - 1, 2) * 100;
+        } else if (level <= 25) {
+            return this.getRequiredScoreForLevel(10) + (level - 10) * 5000;
+        } else if (level <= 50) {
+            return this.getRequiredScoreForLevel(25) + (level - 25) * 10000;
+        } else if (level <= 75) {
+            return this.getRequiredScoreForLevel(50) + (level - 50) * 25000;
+        } else {
+            return this.getRequiredScoreForLevel(75) + (level - 75) * 50000;
+        }
     }
 
     showLevelUp() {
