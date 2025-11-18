@@ -458,7 +458,10 @@ class DarkPawsClicker {
                 // Если это текущий уровень игрока, показываем текущий уровень в кружке
                 if (currentLevel === circleLevel) {
                     circle.textContent = currentLevel;
-                    circle.classList.add('current');
+                    circle.classList.add('active');
+                } else {
+                    // Для предыдущих пройденных кружков показываем изначальный уровень
+                    circle.textContent = circleLevel;
                 }
                 
                 // Заполняем линию до этого кружка (кроме первого)
@@ -503,7 +506,10 @@ class DarkPawsClicker {
                 // В последнем кружке показываем текущий уровень
                 if (circle.dataset.level === "100") {
                     circle.textContent = currentLevel;
-                    circle.classList.add('current');
+                    circle.classList.add('active');
+                } else {
+                    // В предыдущих кружках показываем изначальные уровни
+                    circle.textContent = circle.dataset.level;
                 }
             });
             levelLines.forEach(line => {
