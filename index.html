@@ -303,6 +303,61 @@
             </div>
         </div>
 
+        <!-- Вкладка заданий и ивентов -->
+        <div id="quests-tab" class="tab-content">
+            <div class="tab-header">
+                <h2>Задания и Ивенты</h2>
+                <div class="tab-stats">
+                    <div class="daily-streak">Серия: <span>0</span> дн.</div>
+                </div>
+            </div>
+
+            <div class="quests-content">
+                <!-- Ежедневные задания -->
+                <div class="quests-section">
+                    <h3>📅 Ежедневные задания</h3>
+                    <div class="quests-container" id="quests-container">
+                        <!-- Задания будут добавляться через JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Кооперативные ивенты -->
+                <div class="events-section">
+                    <h3>👥 Кооперативные ивенты</h3>
+                    <div class="events-container" id="events-container">
+                        <!-- Ивенты будут добавляться через JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Статистика -->
+                <div class="quests-stats-section">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">🔥</div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="current-streak">0</div>
+                                <div class="stat-label">Текущая серия</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="total-quests">0</div>
+                                <div class="stat-label">Всего заданий</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">👥</div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="events-participated">0</div>
+                                <div class="stat-label">Ивентов</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Нижняя панель вкладок -->
         <div class="bottom-tabs">
             <div class="tab-item active" data-tab="game-tab">
@@ -320,6 +375,10 @@
             <div class="tab-item" data-tab="combo-tab">
                 <i class="fas fa-layer-group"></i>
                 <span>Комбо</span>
+            </div>
+            <div class="tab-item" data-tab="quests-tab">
+                <i class="fas fa-tasks"></i>
+                <span>Задания</span>
             </div>
         </div>
 
