@@ -30,10 +30,6 @@
     --tg-theme-button-color: #8b5cf6;
     --tg-theme-button-text-color: #ffffff;
     --tg-theme-secondary-bg-color: var(--bg-secondary);
-    --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
-    --safe-area-inset-top: env(safe-area-inset-top, 0px);
-    --safe-area-inset-left: env(safe-area-inset-left, 0px);
-    --safe-area-inset-right: env(safe-area-inset-right, 0px);
 }
 
 body {
@@ -44,7 +40,7 @@ body {
     line-height: 1.6;
     -webkit-touch-callout: none;
     -webkit-text-size-adjust: none;
-    padding: var(--safe-area-inset-top) var(--safe-area-inset-right) var(--safe-area-inset-bottom) var(--safe-area-inset-left);
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 /* Шапка */
@@ -465,8 +461,8 @@ body {
 /* Стили для вкладок */
 .tab-content {
     display: none;
-    min-height: calc(100vh - 80px - var(--safe-area-inset-bottom));
-    padding-bottom: calc(80px + var(--safe-area-inset-bottom));
+    min-height: calc(100vh - 80px);
+    padding-bottom: 80px;
     overflow-y: auto;
 }
 
@@ -514,7 +510,7 @@ body {
     padding: 12px 0;
     z-index: 1000;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
-    padding-bottom: calc(12px + var(--safe-area-inset-bottom));
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
 }
 
 .tab-item {
@@ -1248,7 +1244,7 @@ body {
     height: 100%;
     background: rgba(0, 0, 0, 0.9);
     z-index: 2000;
-    padding: var(--safe-area-inset-top) var(--safe-area-inset-right) var(--safe-area-inset-bottom) var(--safe-area-inset-left);
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 .modal.active {
@@ -1595,404 +1591,6 @@ body {
     animation: pulse 0.5s ease-in-out;
 }
 
-/* Стили для заданий и ивентов */
-.quests-content {
-    padding: 0 15px;
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
-    padding-bottom: 20px;
-}
-
-.quests-section, .events-section {
-    background: var(--tg-theme-secondary-bg-color, var(--bg-secondary));
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.quests-section h3, .events-section h3 {
-    font-size: 18px;
-    margin-bottom: 20px;
-    color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.quests-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.quests-stats {
-    display: flex;
-    gap: 15px;
-    font-size: 12px;
-    color: var(--text-secondary);
-}
-
-.quests-list, .events-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.quest-item, .event-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 15px;
-    background: var(--bg-tertiary);
-    border-radius: 12px;
-    transition: all 0.3s ease;
-    position: relative;
-}
-
-.quest-item:active, .event-item:active {
-    transform: scale(0.98);
-}
-
-.quest-item.completed {
-    border-left: 4px solid var(--success-color);
-}
-
-.quest-item.claimed {
-    opacity: 0.7;
-}
-
-.quest-item.claimed::after {
-    content: '✓';
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 20px;
-    height: 20px;
-    background: var(--gradient-success);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-.quest-icon {
-    font-size: 24px;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg-secondary);
-    border-radius: 10px;
-}
-
-.quest-info {
-    flex: 1;
-}
-
-.quest-title {
-    font-weight: 600;
-    font-size: 14px;
-    margin-bottom: 4px;
-    color: var(--text-primary);
-}
-
-.quest-description {
-    font-size: 12px;
-    color: var(--text-secondary);
-    margin-bottom: 8px;
-}
-
-.quest-progress {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.progress-bar {
-    flex: 1;
-    height: 6px;
-    background: var(--bg-secondary);
-    border-radius: 3px;
-    overflow: hidden;
-}
-
-.progress-fill {
-    height: 100%;
-    background: var(--gradient-primary);
-    border-radius: 3px;
-    transition: width 0.3s ease;
-}
-
-.progress-text {
-    font-size: 11px;
-    color: var(--text-secondary);
-    min-width: 50px;
-    text-align: right;
-}
-
-.claim-btn {
-    background: var(--gradient-success);
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    min-width: 70px;
-}
-
-.claim-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background: var(--bg-secondary);
-}
-
-.claim-btn.active {
-    box-shadow: 0 2px 10px rgba(46, 204, 113, 0.4);
-}
-
-.claim-btn:active:not(:disabled) {
-    transform: scale(0.95);
-}
-
-.reward-claimed {
-    width: 30px;
-    height: 30px;
-    background: var(--gradient-success);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
-}
-
-/* Стили для ивентов */
-.event-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
-    width: 100%;
-}
-
-.event-icon {
-    font-size: 24px;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg-secondary);
-    border-radius: 10px;
-}
-
-.event-info {
-    flex: 1;
-}
-
-.event-name {
-    font-weight: 600;
-    font-size: 14px;
-    color: var(--text-primary);
-    margin-bottom: 2px;
-}
-
-.event-description {
-    font-size: 12px;
-    color: var(--text-secondary);
-}
-
-.event-time {
-    font-size: 11px;
-    color: var(--text-accent);
-    font-weight: 600;
-    background: var(--bg-secondary);
-    padding: 4px 8px;
-    border-radius: 6px;
-    white-space: nowrap;
-}
-
-.event-progress {
-    width: 100%;
-    margin-bottom: 8px;
-}
-
-.progress-info {
-    display: flex;
-    justify-content: space-between;
-    font-size: 11px;
-    color: var(--text-secondary);
-    margin-bottom: 6px;
-}
-
-.personal-contribution {
-    font-size: 11px;
-    color: var(--text-accent);
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-
-.claim-event-btn {
-    width: 100%;
-    background: var(--gradient-gold);
-    color: var(--bg-primary);
-    border: none;
-    padding: 10px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.claim-event-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background: var(--bg-secondary);
-    color: var(--text-secondary);
-}
-
-.claim-event-btn.active {
-    box-shadow: 0 2px 12px rgba(255, 215, 0, 0.4);
-}
-
-.claim-event-btn:active:not(:disabled) {
-    transform: scale(0.98);
-}
-
-.event-active {
-    text-align: center;
-    font-size: 12px;
-    color: var(--text-secondary);
-    padding: 10px;
-}
-
-.event-item.completed {
-    border-left: 4px solid var(--gradient-gold);
-}
-
-/* Статистика */
-.quests-stats-section {
-    margin-top: 10px;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-}
-
-.stat-card {
-    background: var(--tg-theme-secondary-bg-color, var(--bg-secondary));
-    padding: 15px;
-    border-radius: 12px;
-    text-align: center;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
-}
-
-.stat-card:active {
-    transform: scale(0.95);
-}
-
-.stat-icon {
-    font-size: 20px;
-    margin-bottom: 8px;
-}
-
-.stat-value {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 2px;
-}
-
-.stat-label {
-    font-size: 11px;
-    color: var(--text-secondary);
-}
-
-/* Анимации */
-@keyframes coinFloat {
-    0% {
-        opacity: 1;
-        transform: translate(0, 0) scale(1);
-    }
-    100% {
-        opacity: 0;
-        transform: translate(
-            calc(-50% + (var(--random-x) * 100 - 50) * 1px),
-            calc(-50% - (var(--random-y) * 50 + 50) * 1px)
-        ) scale(0.5);
-    }
-}
-
-.reward-particle {
-    position: absolute;
-    font-size: 20px;
-    pointer-events: none;
-    z-index: 100;
-    animation: coinFloat 1s ease-out forwards;
-}
-
-.empty-events, .empty-quests {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--text-secondary);
-}
-
-.empty-icon {
-    font-size: 48px;
-    margin-bottom: 12px;
-    opacity: 0.5;
-}
-
-.empty-events h4, .empty-quests h4 {
-    margin-bottom: 8px;
-    color: var(--text-primary);
-}
-
-/* Стили для редкостей заданий */
-.quest-item.epic {
-    border-left-color: #9b59b6;
-}
-
-.quest-item.rare {
-    border-left-color: #3498db;
-}
-
-.quest-item.uncommon {
-    border-left-color: #2ecc71;
-}
-
-.quest-item.common {
-    border-left-color: var(--text-secondary);
-}
-
-/* Анимация появления */
-.quest-item, .event-item {
-    animation: slideInUp 0.3s ease-out;
-}
-
-@keyframes slideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
 /* Адаптивность */
 @media (max-width: 768px) {
     .header {
@@ -2014,8 +1612,7 @@ body {
     }
     
     .tab-content {
-        padding-bottom: calc(70px + var(--safe-area-inset-bottom));
-        min-height: calc(100vh - 70px - var(--safe-area-inset-bottom));
+        padding-bottom: 70px;
     }
     
     .tab-header {
@@ -2086,36 +1683,6 @@ body {
     
     .modal-actions {
         padding: 15px;
-    }
-    
-    .quests-content {
-        padding: 0 10px;
-    }
-    
-    .quests-section, .events-section {
-        padding: 15px;
-    }
-    
-    .stats-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-    }
-    
-    .stat-card {
-        padding: 12px;
-    }
-    
-    .quest-item, .event-item {
-        padding: 12px;
-    }
-    
-    .event-header {
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-    
-    .event-time {
-        font-size: 10px;
     }
 }
 
@@ -2200,30 +1767,6 @@ body {
     
     .power-value {
         font-size: 32px;
-    }
-    
-    .quests-section h3, .events-section h3 {
-        font-size: 16px;
-    }
-    
-    .quest-title {
-        font-size: 13px;
-    }
-    
-    .quest-description, .event-description {
-        font-size: 11px;
-    }
-    
-    .stats-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-    
-    .stat-value {
-        font-size: 16px;
-    }
-    
-    .stat-label {
-        font-size: 10px;
     }
 }
 
@@ -2327,16 +1870,5 @@ button:focus-visible {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
-    }
-}
-
-/* iPhone X и новее с "челкой" */
-@supports(padding: max(0px)) {
-    .bottom-tabs {
-        padding-bottom: max(12px, var(--safe-area-inset-bottom));
-    }
-    
-    .tab-content {
-        padding-bottom: max(80px, calc(80px + var(--safe-area-inset-bottom)));
     }
 }
