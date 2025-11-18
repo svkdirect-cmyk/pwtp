@@ -383,7 +383,7 @@ class DarkPawsClicker {
         
         // Сбрасываем все стили
         levelCircles.forEach(circle => {
-            circle.classList.remove('active', 'completed');
+            circle.classList.remove('active', 'completed', 'current');
         });
         levelLines.forEach(line => {
             line.classList.remove('completed', 'partial');
@@ -394,9 +394,21 @@ class DarkPawsClicker {
             const circleLevel = parseInt(circle.dataset.level);
             const isLastCircle = index === levelCircles.length - 1;
             
+            // Обновляем текст в кружке - показываем текущий уровень игрока
+            if (this.gameState.level >= circleLevel) {
+                circle.textContent = this.gameState.level;
+            } else {
+                circle.textContent = circleLevel;
+            }
+            
             if (this.gameState.level >= circleLevel) {
                 // Полностью заполненный кружок
                 circle.classList.add('completed');
+                
+                // Если это текущий уровень игрока, добавляем специальный класс
+                if (this.gameState.level === circleLevel) {
+                    circle.classList.add('current');
+                }
                 
                 // Заполняем линию до этого кружка (кроме первого)
                 if (index > 0) {
@@ -426,7 +438,10 @@ class DarkPawsClicker {
         
         // Особый случай: если уровень выше 100, отмечаем все как завершенные
         if (this.gameState.level >= 100) {
-            levelCircles.forEach(circle => circle.classList.add('completed'));
+            levelCircles.forEach(circle => {
+                circle.classList.add('completed');
+                circle.textContent = this.gameState.level;
+            });
             levelLines.forEach(line => {
                 line.classList.add('completed');
                 line.style.background = 'var(--gradient-primary)';
@@ -1261,6 +1276,11 @@ class DarkPawsClicker {
         this.updateUpgradeButtons();
         this.updateUserInfo();
         this.updateEarnedScoreDisplay();
+        
+        // Обновляем вкладку уровней если она активна
+        if (this.currentTab === 'levels-tab') {
+            this.updateLevelsTab();
+        }
     }
 
     updateHeaderProgressBar() {
