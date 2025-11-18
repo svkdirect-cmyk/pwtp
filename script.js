@@ -427,7 +427,6 @@ class DarkPawsClicker {
 
     loadFriendsList() {
         // Заглушка для загрузки друзей
-        // В реальном приложении здесь был бы API запрос
         this.gameState.friends = [
             { first_name: 'Друг 1', level: 5, score: 1500 },
             { first_name: 'Друг 2', level: 3, score: 800 },
@@ -1561,9 +1560,10 @@ class DarkPawsClicker {
                 first_name: this.user.first_name,
                 username: this.user.username,
                 photo_url: this.user.photo_url,
-                gameState: this.gameState,
+                gameState: { ...this.gameState },
                 lastActive: new Date().toISOString(),
-                joinDate: this.gameState.stats.joinDate
+                joinDate: this.gameState.stats.joinDate,
+                totalPlayTime: this.gameState.stats.playTime
             };
             
             if (existingUserIndex !== -1) {
@@ -1573,9 +1573,88 @@ class DarkPawsClicker {
             }
             
             localStorage.setItem('darkPawsClicker_users', JSON.stringify(users));
+            console.log('User data saved to admin:', userData.id);
         } catch (error) {
             console.error('Error saving user to admin:', error);
         }
+    }
+
+    // Методы для админки
+    getGameDataForAdmin() {
+        return {
+            users: this.getUsersData(),
+            upgrades: this.getUpgradesData(),
+            cards: this.getAllCards(),
+            levels: this.getLevelsData(),
+            settings: this.getGameSettings(),
+            version: '1.0'
+        };
+    }
+
+    getUsersData() {
+        try {
+            const usersData = localStorage.getItem('darkPawsClicker_users');
+            return usersData ? JSON.parse(usersData) : [];
+        } catch (error) {
+            console.error('Error getting users data:', error);
+            return [];
+        }
+    }
+
+    getUpgradesData() {
+        return {
+            'click-power': {
+                name: 'Сила лапы',
+                baseCost: 10,
+                currentLevel: this.gameState.upgrades.clickPower,
+                multiplier: 2
+            },
+            'auto-click': {
+                name: 'Авто-клик',
+                baseCost: 50,
+                currentLevel: this.gameState.upgrades.autoClick,
+                multiplier: 2
+            },
+            'critical-chance': {
+                name: 'Точность',
+                baseCost: 25,
+                currentLevel: this.gameState.upgrades.criticalChance,
+                multiplier: 2
+            }
+        };
+    }
+
+    getLevelsData() {
+        const levels = {};
+        for (let i = 1; i <= 10; i++) {
+            levels[i] = {
+                requiredScore: this.getRequiredScoreForLevel(i),
+                rewards: this.getLevelRewards(i)
+            };
+        }
+        return levels;
+    }
+
+    getLevelRewards(level) {
+        const rewards = {
+            1: { type: 'clickPower', value: 10, description: '+10 к силе клика' },
+            2: { type: 'autoClick', value: 1, description: '+1 авто-клик/сек' },
+            3: { type: 'criticalChance', value: 10, description: '+10% шанс крита' },
+            4: { type: 'multiplier', value: 2, description: 'x2 все бонусы' },
+            5: { type: 'card', value: 'diamond-paw', description: 'Карта Алмазная лапа' }
+        };
+        return rewards[level] || { type: 'score', value: level * 100, description: 'Бонусные очки' };
+    }
+
+    getGameSettings() {
+        return {
+            baseCost: 10,
+            costMultiplier: 2,
+            baseExp: 100,
+            maxLevel: 100,
+            autoSaveInterval: 30,
+            maxFriends: 50
+        };
     }
 
     loadGameState() {
@@ -1644,30 +1723,3 @@ document.addEventListener('visibilitychange', () => {
         window.clickerGame.saveGameState();
     }
 });
-
-// Добавляем CSS для новых анимаций
-const additionalStyles = `
-    .current-user {
-        background: rgba(212, 175, 55, 0.1) !important;
-        border: 1px solid var(--text-accent) !important;
-    }
-    
-    .leaderboard-item.current-user .leaderboard-rank {
-        color: var(--text-accent) !important;
-        font-weight: bold;
-    }
-    
-    @keyframes achievement-pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-        100% { transform: scale(1); }
-    }
-    
-    .achievement.unlocked {
-        animation: achievement-pulse 0.5s ease-in-out;
-    }
-`;
-
-const styleSheet = document.createElement('style');
-styleSheet.textContent = additionalStyles;
-document.head.appendChild(styleSheet);
