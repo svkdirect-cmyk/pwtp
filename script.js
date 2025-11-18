@@ -141,6 +141,9 @@ class DarkPawsClicker {
             
             // Установка цветовой схемы Telegram
             this.applyTelegramTheme();
+            
+            // Запрет масштабирования в Telegram Mini Apps
+            this.disableZoom();
         }
         
         this.setupEventListeners();
@@ -151,6 +154,36 @@ class DarkPawsClicker {
         this.setupTabs();
         this.startPlayTimeCounter();
         this.updateComboTab();
+    }
+
+    disableZoom() {
+        // Запрет масштабирования для всего документа
+        document.addEventListener('touchstart', function(event) {
+            if (event.touches.length > 1) {
+                event.preventDefault();
+            }
+        }, { passive: false });
+
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+
+        document.addEventListener('gesturestart', function(event) {
+            event.preventDefault();
+        });
+
+        document.addEventListener('gesturechange', function(event) {
+            event.preventDefault();
+        });
+
+        document.addEventListener('gestureend', function(event) {
+            event.preventDefault();
+        });
     }
 
     applyTelegramTheme() {
@@ -167,22 +200,13 @@ class DarkPawsClicker {
     setupEventListeners() {
         const pawButton = document.getElementById('paw-button');
         if (pawButton) {
-            // Улучшенная обработка кликов для мобильных устройств
+            // Оптимизированная обработка кликов для Telegram Mini Apps
             pawButton.addEventListener('click', (e) => {
+                e.preventDefault();
                 this.handleClick(e);
             });
             
-            pawButton.addEventListener('mousedown', () => {
-                pawButton.classList.add('click-animation');
-            });
-            
-            pawButton.addEventListener('mouseup', () => {
-                setTimeout(() => {
-                    pawButton.classList.remove('click-animation');
-                }, 150);
-            });
-            
-            // Оптимизированные touch события
+            // Улучшенные touch события для мобильных устройств
             pawButton.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 pawButton.classList.add('click-animation');
@@ -207,6 +231,12 @@ class DarkPawsClicker {
                     this.lastTouch = null;
                 }
             }, { passive: false });
+            
+            // Предотвращение контекстного меню на долгий тап
+            pawButton.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                return false;
+            });
         }
 
         // Улучшения
@@ -265,6 +295,19 @@ class DarkPawsClicker {
         // Обработка ухода со страницы
         window.addEventListener('beforeunload', () => {
             this.saveGameState();
+        });
+        
+        // Запрет масштабирования на всем документе
+        document.addEventListener('gesturestart', (e) => {
+            e.preventDefault();
+        });
+        
+        document.addEventListener('gesturechange', (e) => {
+            e.preventDefault();
+        });
+        
+        document.addEventListener('gestureend', (e) => {
+            e.preventDefault();
         });
     }
 
@@ -393,6 +436,11 @@ class DarkPawsClicker {
         // Сбрасываем все стили
         levelCircles.forEach(circle => {
             circle.classList.remove('active', 'completed', 'current');
+            // Восстанавливаем изначальный текст кружочка
+            const originalLevel = circle.dataset.level;
+            if (originalLevel) {
+                circle.textContent = originalLevel;
+            }
         });
         
         // Определяем milestone уровни
@@ -403,7 +451,7 @@ class DarkPawsClicker {
             const circleLevel = milestoneLevels[index];
             const isLastCircle = index === levelCircles.length - 1;
             
-            // Обновляем текст в кружке
+            // Обновляем текст в кружке (всегда показываем изначальный уровень)
             circle.textContent = circleLevel;
             
             if (currentLevel >= circleLevel) {
