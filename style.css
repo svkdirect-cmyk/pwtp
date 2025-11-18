@@ -1774,3 +1774,79 @@ button, .clickable, .tab-item, .paw-button {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
 }
+
+/* Дополнительные стили для админки */
+.current-user {
+    background: rgba(212, 175, 55, 0.1) !important;
+    border: 1px solid var(--text-accent) !important;
+}
+
+.leaderboard-item.current-user .leaderboard-rank {
+    color: var(--text-accent) !important;
+    font-weight: bold;
+}
+
+@keyframes achievement-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.achievement.unlocked {
+    animation: achievement-pulse 0.5s ease-in-out;
+}
+
+/* Стили для уведомлений */
+.admin-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    max-width: 300px;
+    animation: slideInRight 0.3s ease;
+}
+
+.admin-notification-success {
+    background: var(--success-color);
+    color: white;
+}
+
+.admin-notification-error {
+    background: var(--danger-color);
+    color: white;
+}
+
+.admin-notification-warning {
+    background: #f39c12;
+    color: white;
+}
+
+.admin-notification-info {
+    background: #3498db;
+    color: white;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
