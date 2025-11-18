@@ -390,8 +390,6 @@ class DarkPawsClicker {
             line.style.background = '';
         });
         
-        let prevLevelValue = 0;
-        
         levelCircles.forEach((circle, index) => {
             const circleLevel = parseInt(circle.dataset.level);
             const isLastCircle = index === levelCircles.length - 1;
@@ -424,8 +422,6 @@ class DarkPawsClicker {
                         var(--bg-tertiary) ${percentage}% 100%)`;
                 }
             }
-            
-            prevLevelValue = circleLevel;
         });
         
         // Особый случай: если уровень выше 100, отмечаем все как завершенные
@@ -1092,12 +1088,15 @@ class DarkPawsClicker {
         let leveledUp = false;
         const maxLevel = this.getMaxLevel();
         
-        while (this.gameState.level < maxLevel && 
-               this.gameState.totalEarnedScore >= this.getRequiredScoreForLevel(this.gameState.level + 1)) {
-            this.gameState.level++;
-            leveledUp = true;
-            
-            if (this.gameState.level >= maxLevel) break;
+        // Проверяем повышение уровня
+        while (this.gameState.level < maxLevel) {
+            const requiredScore = this.getRequiredScoreForLevel(this.gameState.level + 1);
+            if (this.gameState.totalEarnedScore >= requiredScore) {
+                this.gameState.level++;
+                leveledUp = true;
+            } else {
+                break;
+            }
         }
         
         this.updateUI();
@@ -1143,6 +1142,8 @@ class DarkPawsClicker {
         if (levelText) {
             levelText.textContent = `Уровень ${this.gameState.level}`;
         }
+        
+        console.log(`🎉 Уровень повышен до ${this.gameState.level}!`);
         
         this.saveGameState();
     }
@@ -1282,6 +1283,7 @@ class DarkPawsClicker {
         
         if (progressFillHeader) {
             progressFillHeader.style.width = `${percentage}%`;
+            console.log(`Прогресс уровня: ${percentage}% (${progress}/${totalNeeded})`);
         }
     }
 
@@ -1364,6 +1366,7 @@ class DarkPawsClicker {
                 lastSave: Date.now()
             };
             localStorage.setItem('darkPawsClicker_save', JSON.stringify(saveData));
+            console.log('Game state saved');
         } catch (error) {
             console.error('Local storage save error:', error);
         }
@@ -1375,6 +1378,7 @@ class DarkPawsClicker {
             if (saved) {
                 const saveData = JSON.parse(saved);
                 
+                // Миграция старых сохранений
                 if (!saveData.totalEarnedScore) {
                     saveData.totalEarnedScore = saveData.score || 0;
                 }
@@ -1398,6 +1402,7 @@ class DarkPawsClicker {
                     this.gameState = { ...this.gameState, ...saveData };
                     this.applyCardEffects();
                     console.log('Game state loaded from localStorage');
+                    console.log(`Уровень: ${this.gameState.level}, Очки: ${this.gameState.score}, Всего заработано: ${this.gameState.totalEarnedScore}`);
                 }
             }
         } catch (error) {
