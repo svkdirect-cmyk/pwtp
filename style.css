@@ -1775,78 +1775,79 @@ button, .clickable, .tab-item, .paw-button {
     grid-template-columns: repeat(2, 1fr) !important;
 }
 
-/* Дополнительные стили для админки */
-.current-user {
-    background: rgba(212, 175, 55, 0.1) !important;
-    border: 1px solid var(--text-accent) !important;
+/* Стили для реферальной системы */
+.referral-stats h4 {
+    font-size: 16px;
+    margin-bottom: 15px;
+    color: var(--text-primary);
 }
 
-.leaderboard-item.current-user .leaderboard-rank {
-    color: var(--text-accent) !important;
-    font-weight: bold;
+.referral-card {
+    background: var(--bg-secondary);
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
-@keyframes achievement-pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
+.referral-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    text-align: center;
 }
 
-.achievement.unlocked {
-    animation: achievement-pulse 0.5s ease-in-out;
+.referral-count,
+.referral-level,
+.referral-bonus {
+    flex: 1;
 }
 
-/* Стили для уведомлений */
-.admin-notification {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 15px 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    z-index: 10000;
-    max-width: 300px;
-    animation: slideInRight 0.3s ease;
+.referral-number {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-accent);
+    margin-bottom: 5px;
 }
 
-.admin-notification-success {
-    background: var(--success-color);
+.referral-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.referral-level-badge {
+    background: var(--gradient-primary);
     color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    display: inline-block;
 }
 
-.admin-notification-error {
-    background: var(--danger-color);
-    color: white;
+.bonus-percent {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--success-color);
+    margin-bottom: 5px;
 }
 
-.admin-notification-warning {
-    background: #f39c12;
-    color: white;
+#referral-stats-btn {
+    width: 100%;
+    justify-content: center;
 }
 
-.admin-notification-info {
-    background: #3498db;
-    color: white;
-}
-
-@keyframes slideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(100%);
+/* Адаптивность для реферальной системы */
+@media (max-width: 768px) {
+    .referral-info {
+        flex-direction: column;
+        gap: 15px;
     }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-@keyframes slideOutRight {
-    from {
-        opacity: 1;
-        transform: translateX(0);
-    }
-    to {
-        opacity: 0;
-        transform: translateX(100%);
+    
+    .referral-count,
+    .referral-level,
+    .referral-bonus {
+        width: 100%;
     }
 }
