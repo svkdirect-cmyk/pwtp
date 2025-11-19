@@ -1588,7 +1588,6 @@ button, .clickable, .tab-item, .paw-button {
     -webkit-tap-highlight-color: transparent;
 }
 
-
 /* Адаптивность для очень маленьких экранов */
 @media (max-width: 360px) {
     .bottom-tabs {
@@ -1686,4 +1685,66 @@ button, .paw-button, .tab-item, .upgrade-card, .combo-card, .level-card {
 .tab-content, .profile-content, .modal {
     -webkit-overflow-scrolling: touch;
     overflow-y: auto;
+}
+
+/* Стили для синхронизации */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+@keyframes pulseSync {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.sync-indicator {
+    animation: pulseSync 2s ease-in-out infinite;
+}
+
+.sync-indicator-immediate {
+    background: rgba(46, 204, 113, 0.9) !important;
+    border-color: rgba(46, 204, 113, 0.5) !important;
+}
+
+.sync-indicator-high {
+    background: rgba(52, 152, 219, 0.9) !important;
+    border-color: rgba(52, 152, 219, 0.5) !important;
+}
+
+.sync-indicator-medium {
+    background: rgba(155, 89, 182, 0.9) !important;
+    border-color: rgba(155, 89, 182, 0.5) !important;
+}
+
+.sync-indicator-low {
+    background: rgba(149, 165, 166, 0.9) !important;
+    border-color: rgba(149, 165, 166, 0.5) !important;
+}
+
+@media (max-width: 768px) {
+    #cloud-sync-indicator {
+        top: 5px;
+        right: 5px;
+        font-size: 11px;
+        padding: 6px 10px;
+    }
 }
