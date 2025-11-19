@@ -518,10 +518,11 @@ html {
     right: 0;
     background: var(--tg-theme-secondary-bg-color, var(--bg-secondary));
     display: flex;
-    padding: 12px 0;
+    padding: 8px 0; /* Уменьшил padding */
     z-index: 1000;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
-    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+    box-shadow: 0 -2px 15px rgba(0, 0, 0, 0.3); /* Уменьшил тень */
+    padding-bottom: calc(8px + env(safe-area-inset-bottom)); /* Уменьшил нижний отступ */
+    min-height: 60px; /* Минимальная высота */
 }
 
 .tab-item {
@@ -529,8 +530,8 @@ html {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
-    padding: 8px 0;
+    gap: 4px; /* Уменьшил расстояние между иконкой и текстом */
+    padding: 6px 0; /* Уменьшил padding */
     cursor: pointer;
     transition: all 0.3s ease;
     opacity: 0.6;
@@ -541,24 +542,24 @@ html {
 .tab-item.active {
     opacity: 1;
     color: var(--text-accent);
-    transform: translateY(-2px);
+    transform: translateY(-1px); /* Уменьшил подъем при активации */
 }
 
 .tab-item i {
-    font-size: 20px;
-    margin-bottom: 2px;
+    font-size: 18px; /* Уменьшил размер иконок */
+    margin-bottom: 1px; /* Уменьшил отступ */
     transition: all 0.3s ease;
 }
 
 .tab-item.active i {
-    transform: scale(1.1);
+    transform: scale(1.05); /* Уменьшил масштаб при активации */
 }
 
 .tab-item span {
-    font-size: 11px;
+    font-size: 10px; /* Уменьшил размер текста */
     font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px; /* Уменьшил межбуквенный интервал */
 }
 
 /* Стили для вкладки уровней */
@@ -1585,6 +1586,42 @@ button, .clickable, .tab-item, .paw-button {
     user-select: none;
     -webkit-touch-callout: none;
     -webkit-tap-highlight-color: transparent;
+}
+
+
+/* Адаптивность для очень маленьких экранов */
+@media (max-width: 360px) {
+    .bottom-tabs {
+        padding: 6px 0;
+        padding-bottom: calc(6px + env(safe-area-inset-bottom));
+        min-height: 55px;
+    }
+    
+    .tab-item i {
+        font-size: 16px;
+    }
+    
+    .tab-item span {
+        font-size: 9px;
+        letter-spacing: 0.2px;
+    }
+}
+
+/* Для планшетов и больших экранов */
+@media (min-width: 768px) {
+    .bottom-tabs {
+        padding: 10px 0;
+        padding-bottom: calc(10px + env(safe-area-inset-bottom));
+        min-height: 70px;
+    }
+    
+    .tab-item i {
+        font-size: 20px;
+    }
+    
+    .tab-item span {
+        font-size: 11px;
+    }
 }
 
 /* Принудительное исправление для карточек комбо */
