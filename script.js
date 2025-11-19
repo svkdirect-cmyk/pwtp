@@ -43,6 +43,12 @@ class DarkPawsClicker {
         this.lastTouch = null;
         this.isTelegram = false;
         
+        // Новые свойства для облачного сохранения
+        this.cloudSaveEnabled = false;
+        this.saveInProgress = false;
+        this.lastCloudSave = 0;
+        this.cloudSaveInterval = 30000; // 30 секунд
+        
         this.init();
     }
 
@@ -129,7 +135,7 @@ class DarkPawsClicker {
         }
     }
 
-    init() {
+    async init() {
         console.log('Initializing Dark Paws Clicker for Telegram Mini Apps...');
         
         // Инициализация Telegram Web App
@@ -144,17 +150,240 @@ class DarkPawsClicker {
             
             // Запрет масштабирования в Telegram Mini Apps
             this.disableZoom();
+            
+            // Инициализируем облачное хранилище
+            await this.initCloudStorage();
         }
         
         this.setupEventListeners();
         this.initTelegramAuth();
-        this.loadGameState();
+        await this.loadGameState(); // Делаем загрузку асинхронной
         this.updateUI();
         this.startAutoClicker();
         this.setupTabs();
         this.startPlayTimeCounter();
         this.updateComboTab();
+        
+        // Показываем уведомление о синхронизации
+        this.showSyncNotification();
     }
+
+    // НОВЫЕ МЕТОДЫ ДЛЯ ОБЛАЧНОГО СОХРАНЕНИЯ
+
+    async initCloudStorage() {
+        if (this.tg && this.tg.CloudStorage) {
+            try {
+                this.cloudSaveEnabled = true;
+                console.log('Cloud storage enabled');
+                
+                // Проверяем доступность CloudStorage
+                await this.tg.CloudStorage.getItem('test');
+                console.log('Cloud storage is available');
+                
+            } catch (error) {
+                console.warn('Cloud storage not available:', error);
+                this.cloudSaveEnabled = false;
+            }
+        } else {
+            console.log('Cloud storage not supported in this environment');
+            this.cloudSaveEnabled = false;
+        }
+    }
+
+    async saveToCloud() {
+        if (!this.cloudSaveEnabled || this.saveInProgress) return;
+        
+        this.saveInProgress = true;
+        try {
+            const saveData = {
+                version: '1.1',
+                gameState: this.gameState,
+                lastSave: Date.now(),
+                deviceId: this.getDeviceId(),
+                userId: this.user?.id
+            };
+            
+            const saveString = JSON.stringify(saveData);
+            
+            if (this.tg && this.tg.CloudStorage) {
+                // Сохраняем в CloudStorage Telegram
+                await this.tg.CloudStorage.setItem('darkPawsSave', saveString);
+                this.lastCloudSave = Date.now();
+                console.log('Game saved to cloud');
+            }
+        } catch (error) {
+            console.error('Cloud save error:', error);
+            this.cloudSaveEnabled = false; // Отключаем облачное сохранение при ошибке
+        } finally {
+            this.saveInProgress = false;
+        }
+    }
+
+    async loadFromCloud() {
+        if (!this.cloudSaveEnabled) return null;
+        
+        try {
+            if (this.tg && this.tg.CloudStorage) {
+                const saved = await this.tg.CloudStorage.getItem('darkPawsSave');
+                if (saved) {
+                    const saveData = JSON.parse(saved);
+                    
+                    // Проверяем версию и валидность данных
+                    if (this.validateCloudSave(saveData)) {
+                        console.log('Game loaded from cloud');
+                        return saveData;
+                    } else {
+                        console.warn('Invalid cloud save data');
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Cloud load error:', error);
+        }
+        
+        return null;
+    }
+
+    validateCloudSave(saveData) {
+        if (!saveData || !saveData.gameState) return false;
+        
+        // Проверяем необходимые поля
+        const required = ['score', 'level', 'upgrades', 'stats', 'totalEarnedScore'];
+        const hasRequired = required.every(field => field in saveData.gameState);
+        
+        // Проверяем версию
+        const versionValid = saveData.version && parseFloat(saveData.version) >= 1.0;
+        
+        return hasRequired && versionValid;
+    }
+
+    getDeviceId() {
+        let deviceId = localStorage.getItem('deviceId');
+        if (!deviceId) {
+            deviceId = 'device_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+            localStorage.setItem('deviceId', deviceId);
+        }
+        return deviceId;
+    }
+
+    async showSyncNotification() {
+        if (this.cloudSaveEnabled) {
+            console.log('🔗 Синхронизация с облаком активна');
+            
+            // Показываем краткое уведомление в консоли
+            if (this.isTelegram && this.tg.showPopup) {
+                // Можно показать всплывающее окно при первом запуске
+                const firstSync = localStorage.getItem('firstCloudSync');
+                if (!firstSync) {
+                    this.tg.showPopup({
+                        title: '🔗 Облачное сохранение',
+                        message: 'Ваш прогресс теперь сохраняется в облаке! Вы можете продолжить игру на любом устройстве.',
+                        buttons: [{ type: 'ok' }]
+                    });
+                    localStorage.setItem('firstCloudSync', 'true');
+                }
+            }
+        } else {
+            console.log('⚠️ Синхронизация с облаком недоступна');
+        }
+    }
+
+    // ОБНОВЛЕННЫЕ МЕТОДЫ СОХРАНЕНИЯ/ЗАГРУЗКИ
+
+    async saveGameState() {
+        try {
+            const saveData = {
+                ...this.gameState,
+                userId: this.user?.id,
+                lastSave: Date.now()
+            };
+            
+            // Всегда сохраняем локально
+            localStorage.setItem('darkPawsClicker_save', JSON.stringify(saveData));
+            
+            // Сохраняем в облако (с ограничением частоты)
+            const now = Date.now();
+            if (now - this.lastCloudSave > this.cloudSaveInterval) {
+                await this.saveToCloud();
+            }
+            
+            console.log('Game state saved');
+        } catch (error) {
+            console.error('Save error:', error);
+        }
+    }
+
+    async loadGameState() {
+        try {
+            // Сначала пробуем загрузить из облака
+            const cloudData = await this.loadFromCloud();
+            
+            if (cloudData && this.shouldUseCloudSave(cloudData)) {
+                // Используем данные из облака
+                this.gameState = { ...this.gameState, ...cloudData.gameState };
+                this.applyCardEffects();
+                console.log('Using cloud save data');
+            } else {
+                // Используем локальные данные
+                const saved = localStorage.getItem('darkPawsClicker_save');
+                if (saved) {
+                    const saveData = JSON.parse(saved);
+                    
+                    // Миграция старых сохранений
+                    if (!saveData.totalEarnedScore) {
+                        saveData.totalEarnedScore = saveData.score || 0;
+                    }
+                    
+                    if (!saveData.activeDeck) {
+                        saveData.activeDeck = [];
+                    }
+                    
+                    if (!saveData.cardEffects) {
+                        saveData.cardEffects = {
+                            clickPower: 1,
+                            autoClick: 0,
+                            criticalChance: 0,
+                            criticalMultiplier: 1,
+                            multiplier: 1,
+                            chaos: false
+                        };
+                    }
+                    
+                    if (!this.user || saveData.userId === this.user.id) {
+                        this.gameState = { ...this.gameState, ...saveData };
+                        this.applyCardEffects();
+                        console.log('Game state loaded from localStorage');
+                    }
+                }
+            }
+            
+            console.log(`Уровень: ${this.gameState.level}, Очки: ${this.gameState.score}, Всего заработано: ${this.gameState.totalEarnedScore}`);
+            
+        } catch (error) {
+            console.error('Error loading game state:', error);
+        }
+    }
+
+    shouldUseCloudSave(cloudData) {
+        if (!cloudData || !cloudData.gameState) return false;
+        
+        // Сравниваем время последнего сохранения
+        const localSave = localStorage.getItem('darkPawsClicker_save');
+        if (!localSave) return true; // Если локальных данных нет, используем облако
+        
+        try {
+            const localData = JSON.parse(localSave);
+            const cloudTime = cloudData.lastSave || 0;
+            const localTime = localData.lastSave || 0;
+            
+            // Используем более свежее сохранение
+            return cloudTime > localTime;
+        } catch (error) {
+            return true; // При ошибке используем облако
+        }
+    }
+
+    // ОСТАЛЬНЫЕ МЕТОДЫ ОСТАЮТСЯ БЕЗ ИЗМЕНЕНИЙ (но с добавлением await к saveGameState)
 
     disableZoom() {
         // Запрет масштабирования, но разрешение скролла
@@ -187,15 +416,15 @@ class DarkPawsClicker {
     }
 
     applyTelegramTheme() {
-    // Принудительно устанавливаем темные цвета
-    document.documentElement.style.setProperty('--tg-theme-bg-color', '#0a0a0a');
-    document.documentElement.style.setProperty('--tg-theme-text-color', '#e0e0e0');
-    document.documentElement.style.setProperty('--tg-theme-hint-color', '#888');
-    document.documentElement.style.setProperty('--tg-theme-link-color', '#8b5cf6');
-    document.documentElement.style.setProperty('--tg-theme-button-color', '#8b5cf6');
-    document.documentElement.style.setProperty('--tg-theme-button-text-color', '#ffffff');
-    document.documentElement.style.setProperty('--tg-theme-secondary-bg-color', '#1a1a1a');
-}
+        // Принудительно устанавливаем темные цвета
+        document.documentElement.style.setProperty('--tg-theme-bg-color', '#0a0a0a');
+        document.documentElement.style.setProperty('--tg-theme-text-color', '#e0e0e0');
+        document.documentElement.style.setProperty('--tg-theme-hint-color', '#888');
+        document.documentElement.style.setProperty('--tg-theme-link-color', '#8b5cf6');
+        document.documentElement.style.setProperty('--tg-theme-button-color', '#8b5cf6');
+        document.documentElement.style.setProperty('--tg-theme-button-text-color', '#ffffff');
+        document.documentElement.style.setProperty('--tg-theme-secondary-bg-color', '#1a1a1a');
+    }
 
     setupEventListeners() {
         const pawButton = document.getElementById('paw-button');
@@ -241,12 +470,12 @@ class DarkPawsClicker {
 
         // Улучшения
         document.querySelectorAll('.upgrade-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', async (e) => { // Добавляем async
                 e.preventDefault();
                 const upgradeCard = e.target.closest('.upgrade-card');
                 if (upgradeCard) {
                     const upgradeType = upgradeCard.dataset.upgrade;
-                    this.buyUpgrade(upgradeType);
+                    await this.buyUpgrade(upgradeType); // Добавляем await
                 }
             });
         });
@@ -286,15 +515,15 @@ class DarkPawsClicker {
         }
 
         // Обработка видимости приложения
-        document.addEventListener('visibilitychange', () => {
+        document.addEventListener('visibilitychange', async () => { // Добавляем async
             if (document.hidden) {
-                this.saveGameState();
+                await this.saveGameState(); // Добавляем await
             }
         });
 
         // Обработка ухода со страницы
-        window.addEventListener('beforeunload', () => {
-            this.saveGameState();
+        window.addEventListener('beforeunload', async () => { // Добавляем async
+            await this.saveGameState(); // Добавляем await
         });
         
         // Запрет масштабирования на всем документе
@@ -671,17 +900,17 @@ class DarkPawsClicker {
         console.log(`Setting up listeners for ${cards.length} cards`);
         
         cards.forEach(card => {
-            card.addEventListener('click', () => {
+            card.addEventListener('click', async () => { // Добавляем async
                 if (card.classList.contains('locked')) {
                     this.showCardLockedMessage(card);
                 } else {
-                    this.toggleCardInDeck(card);
+                    await this.toggleCardInDeck(card); // Добавляем await
                 }
             });
         });
     }
 
-    toggleCardInDeck(card) {
+    async toggleCardInDeck(card) { // Добавляем async
         const cardId = parseInt(card.dataset.cardId);
         const cardIndex = this.gameState.activeDeck.indexOf(cardId);
         const cardData = this.getCardData(cardId);
@@ -703,7 +932,7 @@ class DarkPawsClicker {
         }
         
         this.updateDeckStats();
-        this.saveGameState();
+        await this.saveGameState(); // Добавляем await
     }
 
     getCardData(cardId) {
@@ -1038,7 +1267,7 @@ class DarkPawsClicker {
         }, 1000);
     }
 
-    handleClick(event) {
+    async handleClick(event) { // Добавляем async
         this.gameState.stats.totalClicks++;
         
         if (this.gameState.cardEffects.chaos) {
@@ -1064,7 +1293,7 @@ class DarkPawsClicker {
         this.createParticles(event);
         
         if (this.gameState.stats.totalClicks % 10 === 0) {
-            this.saveGameState();
+            await this.saveGameState(); // Добавляем await
         }
         
         this.checkAchievements();
@@ -1167,7 +1396,7 @@ class DarkPawsClicker {
         }
     }
 
-    addScore(points, isCritical = false) {
+    async addScore(points, isCritical = false) { // Добавляем async
         this.gameState.score += points;
         this.gameState.totalEarnedScore += points;
         
@@ -1193,6 +1422,11 @@ class DarkPawsClicker {
         
         if (isCritical) {
             this.showCriticalEffect(points);
+        }
+        
+        // Сохраняем при значительных изменениях
+        if (leveledUp || points > 100) {
+            await this.saveGameState(); // Добавляем await
         }
     }
 
@@ -1251,7 +1485,7 @@ class DarkPawsClicker {
         }, 1500);
     }
 
-    buyUpgrade(upgradeType) {
+    async buyUpgrade(upgradeType) { // Добавляем async
         const costs = {
             'click-power': 10 * Math.pow(2, this.gameState.upgrades.clickPower - 1),
             'auto-click': this.gameState.upgrades.autoClick === 0 ? 50 : 50 * Math.pow(2, this.gameState.upgrades.autoClick),
@@ -1276,7 +1510,7 @@ class DarkPawsClicker {
             }
             
             this.updateUI();
-            this.saveGameState();
+            await this.saveGameState(); // Добавляем await
             
             this.showUpgradeNotification(upgradeType);
         } else {
@@ -1448,58 +1682,6 @@ class DarkPawsClicker {
             }
         });
     }
-
-    saveGameState() {
-        try {
-            const saveData = {
-                ...this.gameState,
-                userId: this.user?.id,
-                lastSave: Date.now()
-            };
-            localStorage.setItem('darkPawsClicker_save', JSON.stringify(saveData));
-            console.log('Game state saved');
-        } catch (error) {
-            console.error('Local storage save error:', error);
-        }
-    }
-
-    loadGameState() {
-        try {
-            const saved = localStorage.getItem('darkPawsClicker_save');
-            if (saved) {
-                const saveData = JSON.parse(saved);
-                
-                // Миграция старых сохранений
-                if (!saveData.totalEarnedScore) {
-                    saveData.totalEarnedScore = saveData.score || 0;
-                }
-                
-                if (!saveData.activeDeck) {
-                    saveData.activeDeck = [];
-                }
-                
-                if (!saveData.cardEffects) {
-                    saveData.cardEffects = {
-                        clickPower: 1,
-                        autoClick: 0,
-                        criticalChance: 0,
-                        criticalMultiplier: 1,
-                        multiplier: 1,
-                        chaos: false
-                    };
-                }
-                
-                if (!this.user || saveData.userId === this.user.id) {
-                    this.gameState = { ...this.gameState, ...saveData };
-                    this.applyCardEffects();
-                    console.log('Game state loaded from localStorage');
-                    console.log(`Уровень: ${this.gameState.level}, Очки: ${this.gameState.score}, Всего заработано: ${this.gameState.totalEarnedScore}`);
-                }
-            }
-        } catch (error) {
-            console.error('Error loading game state from localStorage:', error);
-        }
-    }
 }
 
 // Инициализация приложения
@@ -1508,15 +1690,15 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Обработка видимости страницы
-document.addEventListener('visibilitychange', () => {
+document.addEventListener('visibilitychange', async () => {
     if (document.hidden && window.clickerGame) {
-        window.clickerGame.saveGameState();
+        await window.clickerGame.saveGameState();
     }
 });
 
 // Обработка закрытия страницы
-window.addEventListener('beforeunload', () => {
+window.addEventListener('beforeunload', async () => {
     if (window.clickerGame) {
-        window.clickerGame.saveGameState();
+        await window.clickerGame.saveGameState();
     }
 });
