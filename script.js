@@ -468,27 +468,35 @@ class DarkPawsClicker {
                     }
                     prevLine.classList.add('completed');
                 }
-            } else if (!isLastCircle) {
-                // Частичное заполнение для текущего уровня
-                const nextCircleLevel = milestoneLevels[index + 1];
-                const currentRange = nextCircleLevel - circleLevel;
-                const progressInRange = Math.max(0, currentLevel - circleLevel);
-                const percentage = (progressInRange / currentRange) * 100;
-                
-                if (progressInRange > 0) {
-                    circle.classList.add('active');
-                    // Показываем текущий уровень в активном кружке
-                    circle.textContent = currentLevel;
+            } else {
+                // Для незавершенных уровней
+                if (index > 0) {
+                    const prevCircleLevel = milestoneLevels[index - 1];
                     
-                    // Частично заполняем линию
-                    const currentLine = levelLines[index];
-                    const fill = currentLine.querySelector('.level-line-fill');
-                    if (fill) {
-                        fill.style.width = `${percentage}%`;
+                    // Если текущий уровень находится между предыдущим и текущим кружком
+                    if (currentLevel > prevCircleLevel && currentLevel < circleLevel) {
+                        // Показываем текущий уровень в этом кружке
+                        circle.textContent = currentLevel;
+                        circle.classList.add('active');
+                        
+                        // Рассчитываем прогресс для линии
+                        const progressInRange = currentLevel - prevCircleLevel;
+                        const totalRange = circleLevel - prevCircleLevel;
+                        const percentage = (progressInRange / totalRange) * 100;
+                        
+                        // Частично заполняем предыдущую линию
+                        const prevLine = levelLines[index - 1];
+                        const fill = prevLine.querySelector('.level-line-fill');
+                        if (fill) {
+                            fill.style.width = `${percentage}%`;
+                        }
+                        prevLine.classList.add('partial');
+                    } else {
+                        // Если прогресса нет, показываем изначальный уровень
+                        circle.textContent = circleLevel;
                     }
-                    currentLine.classList.add('partial');
                 } else {
-                    // Если прогресса нет, показываем изначальный уровень
+                    // Для первого кружка (уровень 1)
                     circle.textContent = circleLevel;
                 }
             }
