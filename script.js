@@ -187,15 +187,15 @@ class DarkPawsClicker {
     }
 
     applyTelegramTheme() {
-        // Используем CSS переменные для поддержки тем Telegram
-        document.documentElement.style.setProperty('--tg-theme-bg-color', this.tg.themeParams.bg_color || '#0a0a0a');
-        document.documentElement.style.setProperty('--tg-theme-text-color', this.tg.themeParams.text_color || '#e0e0e0');
-        document.documentElement.style.setProperty('--tg-theme-hint-color', this.tg.themeParams.hint_color || '#888');
-        document.documentElement.style.setProperty('--tg-theme-link-color', this.tg.themeParams.link_color || '#8b5cf6');
-        document.documentElement.style.setProperty('--tg-theme-button-color', this.tg.themeParams.button_color || '#8b5cf6');
-        document.documentElement.style.setProperty('--tg-theme-button-text-color', this.tg.themeParams.button_text_color || '#ffffff');
-        document.documentElement.style.setProperty('--tg-theme-secondary-bg-color', this.tg.themeParams.secondary_bg_color || '#1a1a1a');
-    }
+    // Принудительно устанавливаем темные цвета
+    document.documentElement.style.setProperty('--tg-theme-bg-color', '#0a0a0a');
+    document.documentElement.style.setProperty('--tg-theme-text-color', '#e0e0e0');
+    document.documentElement.style.setProperty('--tg-theme-hint-color', '#888');
+    document.documentElement.style.setProperty('--tg-theme-link-color', '#8b5cf6');
+    document.documentElement.style.setProperty('--tg-theme-button-color', '#8b5cf6');
+    document.documentElement.style.setProperty('--tg-theme-button-text-color', '#ffffff');
+    document.documentElement.style.setProperty('--tg-theme-secondary-bg-color', '#1a1a1a');
+}
 
     setupEventListeners() {
         const pawButton = document.getElementById('paw-button');
