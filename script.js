@@ -43,11 +43,52 @@ class DarkPawsClicker {
         this.lastTouch = null;
         this.isTelegram = false;
         
-        // Новые свойства для облачного сохранения
+        // ОПТИМАЛЬНЫЕ НАСТРОЙКИ СОХРАНЕНИЯ
         this.cloudSaveEnabled = false;
         this.saveInProgress = false;
         this.lastCloudSave = 0;
-        this.cloudSaveInterval = 30000; // 30 секунд
+        
+        // ВАШИ ИНТЕРВАЛЫ СОХРАНЕНИЯ
+        this.saveIntervals = {
+            IMMEDIATE: 0,      // Мгновенное сохранение
+            HIGH_PRIORITY: 500,    // 0.5 секунды
+            MEDIUM_PRIORITY: 2000, // 2 секунды  
+            LOW_PRIORITY: 5000,    // 5 секунд
+            AUTO_SAVE: 15000       // 15 секунд
+        };
+        
+        // ПРИОРИТЕТЫ СОБЫТИЙ
+        this.savePriorities = {
+            // ВЫСОКИЙ ПРИОРИТЕТ (0.5 секунды)
+            levelUp: 'IMMEDIATE',
+            upgrade: 'HIGH_PRIORITY', 
+            achievement: 'HIGH_PRIORITY',
+            cardChange: 'HIGH_PRIORITY',
+            bigScore: 'HIGH_PRIORITY',
+            manualSync: 'IMMEDIATE',
+            
+            // СРЕДНИЙ ПРИОРИТЕТ (2 секунды)
+            clickBatch: 'MEDIUM_PRIORITY',
+            tabSwitch: 'MEDIUM_PRIORITY',
+            profileOpen: 'MEDIUM_PRIORITY',
+            
+            // НИЗКИЙ ПРИОРИТЕТ (5 секунд)
+            autoTimerFast: 'LOW_PRIORITY',
+            autoTimerFull: 'AUTO_SAVE',
+            visibilityChange: 'LOW_PRIORITY'
+        };
+        
+        // ОЧЕРЕДЬ СОХРАНЕНИЙ
+        this.saveQueue = [];
+        this.isProcessingQueue = false;
+        
+        // СТАТИСТИКА СИНХРОНИЗАЦИИ
+        this.syncStats = {
+            totalSaves: 0,
+            cloudSaves: 0,
+            failedSaves: 0,
+            lastSyncTime: 0
+        };
         
         this.init();
     }
@@ -157,7 +198,7 @@ class DarkPawsClicker {
         
         this.setupEventListeners();
         this.initTelegramAuth();
-        await this.loadGameState(); // Делаем загрузку асинхронной
+        await this.loadGameState();
         this.updateUI();
         this.startAutoClicker();
         this.setupTabs();
@@ -190,71 +231,168 @@ class DarkPawsClicker {
         }
     }
 
-    async saveToCloud() {
+    // ОСНОВНОЙ МЕТОД СОХРАНЕНИЯ
+    async saveGameState(priority = 'MEDIUM_PRIORITY', reason = 'auto') {
+        try {
+            const saveData = {
+                ...this.gameState,
+                userId: this.user?.id,
+                lastSave: Date.now(),
+                saveReason: reason,
+                priority: priority
+            };
+            
+            // Мгновенное локальное сохранение
+            localStorage.setItem('darkPawsClicker_save', JSON.stringify(saveData));
+            
+            // Добавляем в очередь облачного сохранения
+            this.addToSaveQueue(saveData, priority, reason);
+            
+        } catch (error) {
+            console.error('Save error:', error);
+        }
+    }
+
+    // СИСТЕМА ОЧЕРЕДИ
+    addToSaveQueue(saveData, priority, reason) {
+        const queueItem = {
+            saveData,
+            priority,
+            reason,
+            timestamp: Date.now(),
+            priorityLevel: this.getPriorityLevel(priority)
+        };
+        
+        // Вставляем в очередь согласно приоритету
+        const index = this.saveQueue.findIndex(item => 
+            item.priorityLevel <= queueItem.priorityLevel
+        );
+        
+        if (index === -1) {
+            this.saveQueue.push(queueItem);
+        } else {
+            this.saveQueue.splice(index, 0, queueItem);
+        }
+        
+        // Запускаем обработку очереди
+        if (!this.isProcessingQueue) {
+            this.processSaveQueue();
+        }
+        
+        // Ограничиваем размер очереди
+        if (this.saveQueue.length > 15) {
+            this.saveQueue = this.saveQueue.slice(0, 10);
+        }
+    }
+
+    // ОБРАБОТКА ОЧЕРЕДИ
+    async processSaveQueue() {
+        if (this.isProcessingQueue || this.saveQueue.length === 0) return;
+        
+        this.isProcessingQueue = true;
+        
+        while (this.saveQueue.length > 0) {
+            const queueItem = this.saveQueue.shift();
+            const delay = this.calculateSaveDelay(queueItem);
+            
+            if (delay > 0) {
+                await this.delay(delay);
+            }
+            
+            if (Date.now() - queueItem.timestamp < 30000) {
+                await this.executeCloudSave(queueItem);
+            }
+            
+            await this.delay(50); // Минимальная пауза между сохранениями
+        }
+        
+        this.isProcessingQueue = false;
+    }
+
+    // ВЫПОЛНЕНИЕ ОБЛАЧНОГО СОХРАНЕНИЯ
+    async executeCloudSave(queueItem) {
         if (!this.cloudSaveEnabled || this.saveInProgress) return;
         
         this.saveInProgress = true;
         try {
-            const saveData = {
-                version: '1.1',
-                gameState: this.gameState,
-                lastSave: Date.now(),
+            const cloudSaveData = {
+                ...queueItem.saveData,
+                version: '1.2',
                 deviceId: this.getDeviceId(),
-                userId: this.user?.id
+                saveReason: queueItem.reason,
+                priority: queueItem.priority,
+                timestamp: Date.now()
             };
             
-            const saveString = JSON.stringify(saveData);
+            const saveString = JSON.stringify(cloudSaveData);
             
             if (this.tg && this.tg.CloudStorage) {
-                // Сохраняем в CloudStorage Telegram
                 await this.tg.CloudStorage.setItem('darkPawsSave', saveString);
+                
                 this.lastCloudSave = Date.now();
-                console.log('Game saved to cloud');
+                this.syncStats.cloudSaves++;
+                this.syncStats.totalSaves++;
+                this.syncStats.lastSyncTime = Date.now();
+                
+                console.log(`✅ Cloud: ${queueItem.reason} (${queueItem.priority})`);
+                
+                if (this.shouldShowSyncIndicator(queueItem)) {
+                    this.showSyncIndicator(queueItem.reason, queueItem.priority);
+                }
             }
         } catch (error) {
-            console.error('Cloud save error:', error);
-            this.cloudSaveEnabled = false; // Отключаем облачное сохранение при ошибке
+            console.error('❌ Cloud save failed:', error);
+            this.syncStats.failedSaves++;
+            
+            if (this.isHighPriority(queueItem.priority)) {
+                this.retrySave(queueItem);
+            }
         } finally {
             this.saveInProgress = false;
         }
     }
 
-    async loadFromCloud() {
-        if (!this.cloudSaveEnabled) return null;
+    // ПОВТОРНАЯ ПОПЫТКА ДЛЯ ВАЖНЫХ СОХРАНЕНИЙ
+    retrySave(queueItem, attempt = 1) {
+        if (attempt > 2) return;
         
-        try {
-            if (this.tg && this.tg.CloudStorage) {
-                const saved = await this.tg.CloudStorage.getItem('darkPawsSave');
-                if (saved) {
-                    const saveData = JSON.parse(saved);
-                    
-                    // Проверяем версию и валидность данных
-                    if (this.validateCloudSave(saveData)) {
-                        console.log('Game loaded from cloud');
-                        return saveData;
-                    } else {
-                        console.warn('Invalid cloud save data');
-                    }
-                }
-            }
-        } catch (error) {
-            console.error('Cloud load error:', error);
-        }
-        
-        return null;
+        setTimeout(async () => {
+            console.log(`🔄 Retry ${queueItem.reason} (attempt ${attempt})`);
+            await this.executeCloudSave(queueItem);
+        }, 1000 * attempt);
     }
 
-    validateCloudSave(saveData) {
-        if (!saveData || !saveData.gameState) return false;
+    // ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ
+    getPriorityLevel(priority) {
+        const levels = {
+            'IMMEDIATE': 0,
+            'HIGH_PRIORITY': 1,
+            'MEDIUM_PRIORITY': 2, 
+            'LOW_PRIORITY': 3,
+            'AUTO_SAVE': 4
+        };
+        return levels[priority] || 2;
+    }
+
+    calculateSaveDelay(queueItem) {
+        const now = Date.now();
+        const timeSinceLastSave = now - this.lastCloudSave;
+        const minInterval = this.saveIntervals[queueItem.priority] || 2000;
         
-        // Проверяем необходимые поля
-        const required = ['score', 'level', 'upgrades', 'stats', 'totalEarnedScore'];
-        const hasRequired = required.every(field => field in saveData.gameState);
-        
-        // Проверяем версию
-        const versionValid = saveData.version && parseFloat(saveData.version) >= 1.0;
-        
-        return hasRequired && versionValid;
+        return Math.max(0, minInterval - timeSinceLastSave);
+    }
+
+    isHighPriority(priority) {
+        return priority === 'IMMEDIATE' || priority === 'HIGH_PRIORITY';
+    }
+
+    shouldShowSyncIndicator(queueItem) {
+        const showForReasons = ['levelUp', 'upgrade', 'achievement', 'cardChange', 'manualSync'];
+        return showForReasons.includes(queueItem.reason);
+    }
+
+    delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     getDeviceId() {
@@ -269,50 +407,73 @@ class DarkPawsClicker {
     async showSyncNotification() {
         if (this.cloudSaveEnabled) {
             console.log('🔗 Синхронизация с облаком активна');
-            
-            // Показываем краткое уведомление в консоли
-            if (this.isTelegram && this.tg.showPopup) {
-                // Можно показать всплывающее окно при первом запуске
-                const firstSync = localStorage.getItem('firstCloudSync');
-                if (!firstSync) {
-                    this.tg.showPopup({
-                        title: '🔗 Облачное сохранение',
-                        message: 'Ваш прогресс теперь сохраняется в облаке! Вы можете продолжить игру на любом устройстве.',
-                        buttons: [{ type: 'ok' }]
-                    });
-                    localStorage.setItem('firstCloudSync', 'true');
-                }
-            }
         } else {
             console.log('⚠️ Синхронизация с облаком недоступна');
         }
     }
 
-    // ОБНОВЛЕННЫЕ МЕТОДЫ СОХРАНЕНИЯ/ЗАГРУЗКИ
-
-    async saveGameState() {
-        try {
-            const saveData = {
-                ...this.gameState,
-                userId: this.user?.id,
-                lastSave: Date.now()
-            };
-            
-            // Всегда сохраняем локально
-            localStorage.setItem('darkPawsClicker_save', JSON.stringify(saveData));
-            
-            // Сохраняем в облако (с ограничением частоты)
-            const now = Date.now();
-            if (now - this.lastCloudSave > this.cloudSaveInterval) {
-                await this.saveToCloud();
-            }
-            
-            console.log('Game state saved');
-        } catch (error) {
-            console.error('Save error:', error);
+    // УЛУЧШЕННЫЙ ИНДИКАТОР СИНХРОНИЗАЦИИ
+    showSyncIndicator(reason, priority) {
+        const existingIndicator = document.getElementById('cloud-sync-indicator');
+        if (existingIndicator) {
+            existingIndicator.remove();
         }
+        
+        const priorityClass = this.getPriorityClass(priority);
+        const reasonText = this.getReasonText(reason);
+        
+        const indicator = document.createElement('div');
+        indicator.id = 'cloud-sync-indicator';
+        indicator.className = `sync-indicator ${priorityClass}`;
+        indicator.innerHTML = `🔗 ${reasonText}`;
+        indicator.style.cssText = `
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(139, 92, 246, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 10000;
+            animation: slideInRight 0.3s ease-out;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        `;
+        
+        document.body.appendChild(indicator);
+        
+        setTimeout(() => {
+            indicator.style.animation = 'slideOutRight 0.3s ease-in forwards';
+            setTimeout(() => indicator.remove(), 300);
+        }, 2000);
     }
 
+    getPriorityClass(priority) {
+        const classes = {
+            'IMMEDIATE': 'sync-indicator-immediate',
+            'HIGH_PRIORITY': 'sync-indicator-high', 
+            'MEDIUM_PRIORITY': 'sync-indicator-medium',
+            'LOW_PRIORITY': 'sync-indicator-low'
+        };
+        return classes[priority] || 'sync-indicator-medium';
+    }
+
+    getReasonText(reason) {
+        const texts = {
+            'levelUp': 'Уровень повышен!',
+            'upgrade': 'Улучшение куплено!',
+            'achievement': 'Достижение получено!',
+            'cardChange': 'Колода изменена!',
+            'manualSync': 'Синхронизировано',
+            'bigScore': 'Большой результат!'
+        };
+        return texts[reason] || 'Сохранено';
+    }
+
+    // ОБНОВЛЕННЫЕ МЕТОДЫ ЗАГРУЗКИ
     async loadGameState() {
         try {
             // Сначала пробуем загрузить из облака
@@ -364,6 +525,44 @@ class DarkPawsClicker {
         }
     }
 
+    async loadFromCloud() {
+        if (!this.cloudSaveEnabled) return null;
+        
+        try {
+            if (this.tg && this.tg.CloudStorage) {
+                const saved = await this.tg.CloudStorage.getItem('darkPawsSave');
+                if (saved) {
+                    const saveData = JSON.parse(saved);
+                    
+                    // Проверяем версию и валидность данных
+                    if (this.validateCloudSave(saveData)) {
+                        console.log('Game loaded from cloud');
+                        return saveData;
+                    } else {
+                        console.warn('Invalid cloud save data');
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Cloud load error:', error);
+        }
+        
+        return null;
+    }
+
+    validateCloudSave(saveData) {
+        if (!saveData || !saveData.gameState) return false;
+        
+        // Проверяем необходимые поля
+        const required = ['score', 'level', 'upgrades', 'stats', 'totalEarnedScore'];
+        const hasRequired = required.every(field => field in saveData.gameState);
+        
+        // Проверяем версию
+        const versionValid = saveData.version && parseFloat(saveData.version) >= 1.0;
+        
+        return hasRequired && versionValid;
+    }
+
     shouldUseCloudSave(cloudData) {
         if (!cloudData || !cloudData.gameState) return false;
         
@@ -383,7 +582,7 @@ class DarkPawsClicker {
         }
     }
 
-    // ОСТАЛЬНЫЕ МЕТОДЫ ОСТАЮТСЯ БЕЗ ИЗМЕНЕНИЙ (но с добавлением await к saveGameState)
+    // ОСТАЛЬНЫЕ МЕТОДЫ
 
     disableZoom() {
         // Запрет масштабирования, но разрешение скролла
@@ -470,12 +669,12 @@ class DarkPawsClicker {
 
         // Улучшения
         document.querySelectorAll('.upgrade-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => { // Добавляем async
+            btn.addEventListener('click', async (e) => {
                 e.preventDefault();
                 const upgradeCard = e.target.closest('.upgrade-card');
                 if (upgradeCard) {
                     const upgradeType = upgradeCard.dataset.upgrade;
-                    await this.buyUpgrade(upgradeType); // Добавляем await
+                    await this.buyUpgrade(upgradeType);
                 }
             });
         });
@@ -515,15 +714,15 @@ class DarkPawsClicker {
         }
 
         // Обработка видимости приложения
-        document.addEventListener('visibilitychange', async () => { // Добавляем async
+        document.addEventListener('visibilitychange', async () => {
             if (document.hidden) {
-                await this.saveGameState(); // Добавляем await
+                await this.saveGameState('LOW_PRIORITY', 'visibilityChange');
             }
         });
 
         // Обработка ухода со страницы
-        window.addEventListener('beforeunload', async () => { // Добавляем async
-            await this.saveGameState(); // Добавляем await
+        window.addEventListener('beforeunload', async () => {
+            await this.saveGameState('HIGH_PRIORITY', 'pageUnload');
         });
         
         // Запрет масштабирования на всем документе
@@ -900,17 +1099,17 @@ class DarkPawsClicker {
         console.log(`Setting up listeners for ${cards.length} cards`);
         
         cards.forEach(card => {
-            card.addEventListener('click', async () => { // Добавляем async
+            card.addEventListener('click', async () => {
                 if (card.classList.contains('locked')) {
                     this.showCardLockedMessage(card);
                 } else {
-                    await this.toggleCardInDeck(card); // Добавляем await
+                    await this.toggleCardInDeck(card);
                 }
             });
         });
     }
 
-    async toggleCardInDeck(card) { // Добавляем async
+    async toggleCardInDeck(card) {
         const cardId = parseInt(card.dataset.cardId);
         const cardIndex = this.gameState.activeDeck.indexOf(cardId);
         const cardData = this.getCardData(cardId);
@@ -932,7 +1131,7 @@ class DarkPawsClicker {
         }
         
         this.updateDeckStats();
-        await this.saveGameState(); // Добавляем await
+        await this.saveGameState('HIGH_PRIORITY', 'cardChange');
     }
 
     getCardData(cardId) {
@@ -1258,16 +1457,8 @@ class DarkPawsClicker {
         }
     }
 
-    startPlayTimeCounter() {
-        setInterval(() => {
-            this.gameState.stats.playTime += 1000;
-            if (this.gameState.stats.playTime % 60000 === 0) {
-                this.saveGameState();
-            }
-        }, 1000);
-    }
-
-    async handleClick(event) { // Добавляем async
+    // ОБНОВЛЕННЫЕ МЕТОДЫ ИГРЫ
+    async handleClick(event) {
         this.gameState.stats.totalClicks++;
         
         if (this.gameState.cardEffects.chaos) {
@@ -1289,11 +1480,12 @@ class DarkPawsClicker {
             this.gameState.stats.criticalHits++;
         }
         
-        this.addScore(points, isCritical);
+        await this.addScore(points, isCritical);
         this.createParticles(event);
         
-        if (this.gameState.stats.totalClicks % 10 === 0) {
-            await this.saveGameState(); // Добавляем await
+        // Сохраняем каждые 3 клика с средним приоритетом
+        if (this.gameState.stats.totalClicks % 3 === 0) {
+            await this.saveGameState('MEDIUM_PRIORITY', 'clickBatch');
         }
         
         this.checkAchievements();
@@ -1307,6 +1499,85 @@ class DarkPawsClicker {
                 this.gameState.cardEffects.clickPower /= 1.5;
             }, 3000);
         }
+    }
+
+    async addScore(points, isCritical = false) {
+        this.gameState.score += points;
+        this.gameState.totalEarnedScore += points;
+        
+        let leveledUp = false;
+        const maxLevel = this.getMaxLevel();
+        
+        while (this.gameState.level < maxLevel) {
+            const requiredScore = this.getRequiredScoreForLevel(this.gameState.level + 1);
+            if (this.gameState.totalEarnedScore >= requiredScore) {
+                this.gameState.level++;
+                leveledUp = true;
+            } else {
+                break;
+            }
+        }
+        
+        this.updateUI();
+        
+        if (leveledUp) {
+            await this.showLevelUp();
+        }
+        
+        if (isCritical) {
+            this.showCriticalEffect(points);
+        }
+        
+        // Определяем приоритет сохранения на основе размера очков
+        let savePriority = 'MEDIUM_PRIORITY';
+        let reason = 'score';
+        
+        if (leveledUp) {
+            savePriority = 'IMMEDIATE';
+            reason = 'levelUp';
+        } else if (points > 100) {
+            savePriority = 'HIGH_PRIORITY';
+            reason = 'bigScore';
+        } else if (points > 50) {
+            savePriority = 'MEDIUM_PRIORITY';
+            reason = 'score';
+        }
+        
+        if (leveledUp || points > 20) {
+            await this.saveGameState(savePriority, reason);
+        }
+    }
+
+    async showLevelUp() {
+        const levelBadge = document.querySelector('.level-badge');
+        const levelText = document.querySelector('.level-text');
+        if (levelBadge) {
+            levelBadge.textContent = this.gameState.level;
+            levelBadge.classList.add('pulse');
+            setTimeout(() => levelBadge.classList.remove('pulse'), 1000);
+        }
+        if (levelText) {
+            levelText.textContent = `Уровень ${this.gameState.level}`;
+        }
+        
+        console.log(`🎉 Уровень повышен до ${this.gameState.level}!`);
+    }
+
+    showCriticalEffect(points) {
+        const container = document.getElementById('particles-container');
+        if (!container) return;
+        
+        const critText = document.createElement('div');
+        critText.className = 'critical-hit';
+        critText.textContent = `CRIT! +${this.formatNumberRounded(points)}`;
+        
+        container.appendChild(critText);
+        
+        setTimeout(() => {
+            if (critText.parentNode === container) {
+                container.removeChild(critText);
+            }
+        }, 1500);
     }
 
     checkAchievements() {
@@ -1332,6 +1603,7 @@ class DarkPawsClicker {
 
     showAchievementNotification(achievementName) {
         console.log(`🎉 Достижение разблокировано: ${achievementName}`);
+        this.saveGameState('HIGH_PRIORITY', 'achievement');
         
         if (this.isTelegram && this.tg.showPopup) {
             this.tg.showPopup({
@@ -1342,8 +1614,6 @@ class DarkPawsClicker {
         } else {
             alert(`🎉 Новое достижение: ${achievementName}`);
         }
-        
-        this.saveGameState();
     }
 
     createParticles(event) {
@@ -1396,40 +1666,6 @@ class DarkPawsClicker {
         }
     }
 
-    async addScore(points, isCritical = false) { // Добавляем async
-        this.gameState.score += points;
-        this.gameState.totalEarnedScore += points;
-        
-        let leveledUp = false;
-        const maxLevel = this.getMaxLevel();
-        
-        // Проверяем повышение уровня
-        while (this.gameState.level < maxLevel) {
-            const requiredScore = this.getRequiredScoreForLevel(this.gameState.level + 1);
-            if (this.gameState.totalEarnedScore >= requiredScore) {
-                this.gameState.level++;
-                leveledUp = true;
-            } else {
-                break;
-            }
-        }
-        
-        this.updateUI();
-        
-        if (leveledUp) {
-            this.showLevelUp();
-        }
-        
-        if (isCritical) {
-            this.showCriticalEffect(points);
-        }
-        
-        // Сохраняем при значительных изменениях
-        if (leveledUp || points > 100) {
-            await this.saveGameState(); // Добавляем await
-        }
-    }
-
     getMaxLevel() {
         return 100;
     }
@@ -1451,41 +1687,7 @@ class DarkPawsClicker {
         }
     }
 
-    showLevelUp() {
-        const levelBadge = document.querySelector('.level-badge');
-        const levelText = document.querySelector('.level-text');
-        if (levelBadge) {
-            levelBadge.textContent = this.gameState.level;
-            levelBadge.classList.add('pulse');
-            setTimeout(() => levelBadge.classList.remove('pulse'), 1000);
-        }
-        if (levelText) {
-            levelText.textContent = `Уровень ${this.gameState.level}`;
-        }
-        
-        console.log(`🎉 Уровень повышен до ${this.gameState.level}!`);
-        
-        this.saveGameState();
-    }
-
-    showCriticalEffect(points) {
-        const container = document.getElementById('particles-container');
-        if (!container) return;
-        
-        const critText = document.createElement('div');
-        critText.className = 'critical-hit';
-        critText.textContent = `CRIT! +${this.formatNumberRounded(points)}`;
-        
-        container.appendChild(critText);
-        
-        setTimeout(() => {
-            if (critText.parentNode === container) {
-                container.removeChild(critText);
-            }
-        }, 1500);
-    }
-
-    async buyUpgrade(upgradeType) { // Добавляем async
+    async buyUpgrade(upgradeType) {
         const costs = {
             'click-power': 10 * Math.pow(2, this.gameState.upgrades.clickPower - 1),
             'auto-click': this.gameState.upgrades.autoClick === 0 ? 50 : 50 * Math.pow(2, this.gameState.upgrades.autoClick),
@@ -1510,7 +1712,7 @@ class DarkPawsClicker {
             }
             
             this.updateUI();
-            await this.saveGameState(); // Добавляем await
+            await this.saveGameState('HIGH_PRIORITY', 'upgrade');
             
             this.showUpgradeNotification(upgradeType);
         } else {
@@ -1568,6 +1770,23 @@ class DarkPawsClicker {
         }, 1000);
     }
 
+    // АВТОСОХРАНЕНИЕ С ВАШИМИ ИНТЕРВАЛАМИ
+    startPlayTimeCounter() {
+        setInterval(async () => {
+            this.gameState.stats.playTime += 1000;
+            
+            // Быстрое автосохранение каждые 15 секунд
+            if (this.gameState.stats.playTime % 15000 === 0) {
+                await this.saveGameState('LOW_PRIORITY', 'autoTimerFast');
+            }
+            
+            // Полное автосохранение каждые 30 секунд
+            if (this.gameState.stats.playTime % 30000 === 0) {
+                await this.saveGameState('AUTO_SAVE', 'autoTimerFull');
+            }
+        }, 1000);
+    }
+
     updateUI() {
         const scoreElement = document.getElementById('score');
         const levelBadge = document.querySelector('.level-badge');
@@ -1608,7 +1827,6 @@ class DarkPawsClicker {
         
         if (progressFillHeader) {
             progressFillHeader.style.width = `${percentage}%`;
-            console.log(`Прогресс уровня: ${percentage}% (${progress}/${totalNeeded})`);
         }
     }
 
@@ -1682,6 +1900,28 @@ class DarkPawsClicker {
             }
         });
     }
+
+    // ПРИНУДИТЕЛЬНАЯ СИНХРОНИЗАЦИЯ
+    async forceSync() {
+        console.log('🔄 Принудительная синхронизация...');
+        await this.saveGameState('IMMEDIATE', 'manualSync');
+    }
+
+    // СТАТИСТИКА
+    getSyncStats() {
+        const successRate = this.syncStats.totalSaves > 0 
+            ? (this.syncStats.cloudSaves / this.syncStats.totalSaves * 100).toFixed(1)
+            : 0;
+            
+        return {
+            ...this.syncStats,
+            successRate: `${successRate}%`,
+            queueLength: this.saveQueue.length,
+            cloudEnabled: this.cloudSaveEnabled,
+            lastSync: this.syncStats.lastSyncTime ? 
+                new Date(this.syncStats.lastSyncTime).toLocaleTimeString() : 'Никогда'
+        };
+    }
 }
 
 // Инициализация приложения
@@ -1692,13 +1932,13 @@ document.addEventListener('DOMContentLoaded', () => {
 // Обработка видимости страницы
 document.addEventListener('visibilitychange', async () => {
     if (document.hidden && window.clickerGame) {
-        await window.clickerGame.saveGameState();
+        await window.clickerGame.saveGameState('LOW_PRIORITY', 'visibilityChange');
     }
 });
 
 // Обработка закрытия страницы
 window.addEventListener('beforeunload', async () => {
     if (window.clickerGame) {
-        await window.clickerGame.saveGameState();
+        await window.clickerGame.saveGameState('HIGH_PRIORITY', 'pageUnload');
     }
 });
