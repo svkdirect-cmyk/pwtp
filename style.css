@@ -23,13 +23,15 @@
     --gradient-gold: linear-gradient(135deg, #ffd700, #ff6b00);
     --gradient-success: linear-gradient(135deg, #2ecc71, #27ae60);
     --gradient-mythic: linear-gradient(135deg, #ff00ff, #00ffff, #ffff00);
-    --tg-theme-bg-color: var(--bg-primary);
-    --tg-theme-text-color: var(--text-primary);
-    --tg-theme-hint-color: var(--text-secondary);
+    
+    /* ФИКСИРОВАННЫЕ темные значения для Telegram */
+    --tg-theme-bg-color: #0a0a0a;
+    --tg-theme-text-color: #e0e0e0;
+    --tg-theme-hint-color: #888;
     --tg-theme-link-color: #8b5cf6;
     --tg-theme-button-color: #8b5cf6;
     --tg-theme-button-text-color: #ffffff;
-    --tg-theme-secondary-bg-color: var(--bg-secondary);
+    --tg-theme-secondary-bg-color: #1a1a1a;
 }
 
 body {
