@@ -42,6 +42,7 @@ class DarkPawsClicker {
         this.startTime = Date.now();
         this.lastTouch = null;
         this.isTelegram = false;
+        this.pawButton = document.getElementById('paw-button');
         
         // ОПТИМАЛЬНЫЕ НАСТРОЙКИ СОХРАНЕНИЯ
         this.cloudSaveEnabled = false;
@@ -50,29 +51,24 @@ class DarkPawsClicker {
         
         // ВАШИ ИНТЕРВАЛЫ СОХРАНЕНИЯ
         this.saveIntervals = {
-            IMMEDIATE: 0,      // Мгновенное сохранение
-            HIGH_PRIORITY: 500,    // 0.5 секунды
-            MEDIUM_PRIORITY: 2000, // 2 секунды  
-            LOW_PRIORITY: 5000,    // 5 секунд
-            AUTO_SAVE: 15000       // 15 секунд
+            IMMEDIATE: 0,
+            HIGH_PRIORITY: 500,
+            MEDIUM_PRIORITY: 2000,
+            LOW_PRIORITY: 5000,
+            AUTO_SAVE: 15000
         };
         
         // ПРИОРИТЕТЫ СОБЫТИЙ
         this.savePriorities = {
-            // ВЫСОКИЙ ПРИОРИТЕТ (0.5 секунды)
             levelUp: 'IMMEDIATE',
-            upgrade: 'HIGH_PRIORITY', 
+            upgrade: 'HIGH_PRIORITY',
             achievement: 'HIGH_PRIORITY',
             cardChange: 'HIGH_PRIORITY',
             bigScore: 'HIGH_PRIORITY',
             manualSync: 'IMMEDIATE',
-            
-            // СРЕДНИЙ ПРИОРИТЕТ (2 секунды)
             clickBatch: 'MEDIUM_PRIORITY',
             tabSwitch: 'MEDIUM_PRIORITY',
             profileOpen: 'MEDIUM_PRIORITY',
-            
-            // НИЗКИЙ ПРИОРИТЕТ (5 секунд)
             autoTimerFast: 'LOW_PRIORITY',
             autoTimerFull: 'AUTO_SAVE',
             visibilityChange: 'LOW_PRIORITY'
@@ -93,106 +89,17 @@ class DarkPawsClicker {
         this.init();
     }
 
-    // Добавляем функцию форматирования чисел
-    formatNumber(number) {
-        if (number < 1000) {
-            return Math.floor(number).toString();
-        }
-        
-        const suffixes = ['', 'K', 'M', 'B', 'T'];
-        const tier = Math.floor(Math.log10(Math.abs(number)) / 3);
-        
-        if (tier >= suffixes.length) {
-            return Math.floor(number).toLocaleString();
-        }
-        
-        const suffix = suffixes[tier];
-        const scale = Math.pow(10, tier * 3);
-        const scaled = number / scale;
-        
-        // Форматируем с 1-2 знаками после запятой для больших чисел
-        if (tier > 0) {
-            if (scaled < 10) {
-                return scaled.toFixed(2) + suffix;
-            } else if (scaled < 100) {
-                return scaled.toFixed(1) + suffix;
-            } else {
-                return Math.floor(scaled) + suffix;
-            }
-        }
-        
-        return Math.floor(number).toLocaleString();
-    }
-
-    // Функция для форматирования с округлением до целых
-    formatNumberRounded(number) {
-        if (number < 1000) {
-            return Math.floor(number).toString();
-        }
-        
-        const suffixes = ['', 'K', 'M', 'B', 'T'];
-        const tier = Math.floor(Math.log10(Math.abs(number)) / 3);
-        
-        if (tier >= suffixes.length) {
-            return Math.floor(number).toLocaleString();
-        }
-        
-        const suffix = suffixes[tier];
-        const scale = Math.pow(10, tier * 3);
-        const scaled = number / scale;
-        
-        return Math.floor(scaled) + suffix;
-    }
-
-    // Функция для точного форматирования (для улучшений)
-    formatNumberPrecise(number) {
-        if (number < 1000) {
-            return Math.floor(number).toString();
-        }
-        
-        const suffixes = ['', 'K', 'M', 'B', 'T'];
-        const tier = Math.floor(Math.log10(Math.abs(number)) / 3);
-        
-        if (tier >= suffixes.length) {
-            return Math.floor(number).toLocaleString();
-        }
-        
-        const suffix = suffixes[tier];
-        const scale = Math.pow(10, tier * 3);
-        const scaled = number / scale;
-        
-        // Для очень больших чисел показываем без десятичных
-        if (scaled >= 1000) {
-            return this.formatNumberPrecise(scaled) + suffix;
-        }
-        
-        // Определяем количество знаков после запятой
-        if (scaled < 10) {
-            return scaled.toFixed(2) + suffix;
-        } else if (scaled < 100) {
-            return scaled.toFixed(1) + suffix;
-        } else {
-            return Math.floor(scaled) + suffix;
-        }
-    }
-
     async init() {
         console.log('Initializing Dark Paws Clicker for Telegram Mini Apps...');
         
-        // Инициализация Telegram Web App
         if (this.tg) {
             this.isTelegram = true;
             this.tg.expand();
             this.tg.enableClosingConfirmation();
             this.tg.BackButton.hide();
             
-            // Установка цветовой схемы Telegram
             this.applyTelegramTheme();
-            
-            // Запрет масштабирования в Telegram Mini Apps
             this.disableZoom();
-            
-            // Инициализируем облачное хранилище
             await this.initCloudStorage();
         }
         
@@ -205,22 +112,230 @@ class DarkPawsClicker {
         this.startPlayTimeCounter();
         this.updateComboTab();
         
-        // Показываем уведомление о синхронизации
+        // Инициализация эффектов кнопки
+        this.setupFloatingParticles();
+        this.setupHapticFeedback();
+        
         this.showSyncNotification();
     }
 
-    // НОВЫЕ МЕТОДЫ ДЛЯ ОБЛАЧНОГО СОХРАНЕНИЯ
+    /* ⭐ ПАРЯЩИЕ ЧАСТИЦЫ ВОКРУГ КНОПКИ */
+    setupFloatingParticles() {
+        const container = document.getElementById('floating-particles');
+        if (!container) return;
+
+        for (let i = 0; i < 15; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'floating-particle';
+            
+            const startX = (Math.random() - 0.5) * 200;
+            const startY = (Math.random() - 0.5) * 200;
+            const midX = (Math.random() - 0.5) * 250;
+            const midY = (Math.random() - 0.5) * 250;
+            const endX = (Math.random() - 0.5) * 180;
+            const endY = (Math.random() - 0.5) * 180;
+            
+            particle.style.setProperty('--start-x', startX);
+            particle.style.setProperty('--start-y', startY);
+            particle.style.setProperty('--mid-x', midX);
+            particle.style.setProperty('--mid-y', midY);
+            particle.style.setProperty('--end-x', endX);
+            particle.style.setProperty('--end-y', endY);
+            
+            particle.style.animationDelay = `${Math.random() * 4}s`;
+            
+            const colors = ['#ffd700', '#ff6b00', '#ff0000', '#00ff00', '#0080ff'];
+            particle.style.background = `radial-gradient(circle, ${colors[Math.floor(Math.random() * colors.length)]}, transparent)`;
+            
+            container.appendChild(particle);
+        }
+    }
+
+    /* 🎆 ВЗРЫВ ЧАСТИЦ ПРИ КЛИКЕ */
+    createExplosion(isCritical = false) {
+        const explosionContainer = document.getElementById('click-explosion');
+        if (!explosionContainer) return;
+
+        explosionContainer.innerHTML = '';
+
+        const particleCount = isCritical ? 30 : 15;
+        const colors = isCritical 
+            ? ['#ff0000', '#ff8000', '#ffff00', '#ffffff']
+            : ['#ffd700', '#ffffff', '#00ffff', '#ff00ff'];
+
+        for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'explosion-particle';
+            
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 100 + Math.random() * 100;
+            const explodeX = Math.cos(angle) * distance;
+            const explodeY = Math.sin(angle) * distance;
+            
+            particle.style.setProperty('--explode-x', explodeX);
+            particle.style.setProperty('--explode-y', explodeY);
+            
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            particle.style.background = `radial-gradient(circle, ${color}, transparent)`;
+            particle.style.color = color;
+            
+            const size = 4 + Math.random() * 8;
+            particle.style.width = `${size}px`;
+            particle.style.height = `${size}px`;
+            
+            particle.style.animationDelay = `${Math.random() * 0.3}s`;
+            
+            explosionContainer.appendChild(particle);
+        }
+
+        setTimeout(() => {
+            explosionContainer.innerHTML = '';
+        }, 1500);
+    }
+
+    /* 🎮 ТАКТИЛЬНАЯ ОТДАЧА */
+    setupHapticFeedback() {
+        if (!this.pawButton) return;
+
+        let longPressTimer;
+        let isLongPress = false;
+
+        this.pawButton.addEventListener('touchstart', (e) => {
+            longPressTimer = setTimeout(() => {
+                isLongPress = true;
+                this.triggerHapticFeedback('long');
+                this.createLongPressEffect();
+            }, 500);
+        });
+
+        this.pawButton.addEventListener('touchend', () => {
+            clearTimeout(longPressTimer);
+            if (isLongPress) {
+                isLongPress = false;
+            }
+        });
+
+        this.pawButton.addEventListener('touchstart', (e) => {
+            setTimeout(() => {
+                if (!isLongPress) {
+                    this.triggerHapticFeedback('light');
+                }
+            }, 50);
+        });
+    }
+
+    triggerHapticFeedback(type) {
+        if (navigator.vibrate) {
+            const patterns = {
+                'light': [50],
+                'medium': [100],
+                'heavy': [150],
+                'long': [200, 50, 200]
+            };
+            navigator.vibrate(patterns[type] || [50]);
+        }
+    }
+
+    createLongPressEffect() {
+        const button = document.getElementById('paw-button');
+        button.classList.add('critical-mode');
+        
+        setTimeout(() => {
+            button.classList.remove('critical-mode');
+        }, 1000);
+    }
+
+    /* 🔥 КРИТИЧЕСКИЕ ЭФФЕКТЫ */
+    showCriticalEffect(points) {
+        const button = document.getElementById('paw-button');
+        button.classList.add('critical-mode');
+        
+        const critExplosion = document.createElement('div');
+        critExplosion.className = 'explosion-particle critical-explosion';
+        critExplosion.style.cssText = `
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+        `;
+        
+        button.appendChild(critExplosion);
+        
+        setTimeout(() => {
+            button.classList.remove('critical-mode');
+            if (critExplosion.parentNode) {
+                critExplosion.remove();
+            }
+        }, 800);
+    }
+
+    // ОСТАЛЬНЫЕ МЕТОДЫ КЛАССА (сохранены из предыдущей версии)
+    formatNumber(number) {
+        if (number < 1000) return Math.floor(number).toString();
+        
+        const suffixes = ['', 'K', 'M', 'B', 'T'];
+        const tier = Math.floor(Math.log10(Math.abs(number)) / 3);
+        
+        if (tier >= suffixes.length) return Math.floor(number).toLocaleString();
+        
+        const suffix = suffixes[tier];
+        const scale = Math.pow(10, tier * 3);
+        const scaled = number / scale;
+        
+        if (tier > 0) {
+            if (scaled < 10) return scaled.toFixed(2) + suffix;
+            else if (scaled < 100) return scaled.toFixed(1) + suffix;
+            else return Math.floor(scaled) + suffix;
+        }
+        
+        return Math.floor(number).toLocaleString();
+    }
+
+    formatNumberRounded(number) {
+        if (number < 1000) return Math.floor(number).toString();
+        
+        const suffixes = ['', 'K', 'M', 'B', 'T'];
+        const tier = Math.floor(Math.log10(Math.abs(number)) / 3);
+        
+        if (tier >= suffixes.length) return Math.floor(number).toLocaleString();
+        
+        const suffix = suffixes[tier];
+        const scale = Math.pow(10, tier * 3);
+        const scaled = number / scale;
+        
+        return Math.floor(scaled) + suffix;
+    }
+
+    formatNumberPrecise(number) {
+        if (number < 1000) return Math.floor(number).toString();
+        
+        const suffixes = ['', 'K', 'M', 'B', 'T'];
+        const tier = Math.floor(Math.log10(Math.abs(number)) / 3);
+        
+        if (tier >= suffixes.length) return Math.floor(number).toLocaleString();
+        
+        const suffix = suffixes[tier];
+        const scale = Math.pow(10, tier * 3);
+        const scaled = number / scale;
+        
+        if (scaled >= 1000) return this.formatNumberPrecise(scaled) + suffix;
+        
+        if (scaled < 10) return scaled.toFixed(2) + suffix;
+        else if (scaled < 100) return scaled.toFixed(1) + suffix;
+        else return Math.floor(scaled) + suffix;
+    }
 
     async initCloudStorage() {
         if (this.tg && this.tg.CloudStorage) {
             try {
                 this.cloudSaveEnabled = true;
                 console.log('Cloud storage enabled');
-                
-                // Проверяем доступность CloudStorage
                 await this.tg.CloudStorage.getItem('test');
                 console.log('Cloud storage is available');
-                
             } catch (error) {
                 console.warn('Cloud storage not available:', error);
                 this.cloudSaveEnabled = false;
@@ -231,7 +346,6 @@ class DarkPawsClicker {
         }
     }
 
-    // ОСНОВНОЙ МЕТОД СОХРАНЕНИЯ
     async saveGameState(priority = 'MEDIUM_PRIORITY', reason = 'auto') {
         try {
             const saveData = {
@@ -242,10 +356,7 @@ class DarkPawsClicker {
                 priority: priority
             };
             
-            // Мгновенное локальное сохранение
             localStorage.setItem('darkPawsClicker_save', JSON.stringify(saveData));
-            
-            // Добавляем в очередь облачного сохранения
             this.addToSaveQueue(saveData, priority, reason);
             
         } catch (error) {
@@ -253,7 +364,6 @@ class DarkPawsClicker {
         }
     }
 
-    // СИСТЕМА ОЧЕРЕДИ
     addToSaveQueue(saveData, priority, reason) {
         const queueItem = {
             saveData,
@@ -263,29 +373,18 @@ class DarkPawsClicker {
             priorityLevel: this.getPriorityLevel(priority)
         };
         
-        // Вставляем в очередь согласно приоритету
         const index = this.saveQueue.findIndex(item => 
             item.priorityLevel <= queueItem.priorityLevel
         );
         
-        if (index === -1) {
-            this.saveQueue.push(queueItem);
-        } else {
-            this.saveQueue.splice(index, 0, queueItem);
-        }
+        if (index === -1) this.saveQueue.push(queueItem);
+        else this.saveQueue.splice(index, 0, queueItem);
         
-        // Запускаем обработку очереди
-        if (!this.isProcessingQueue) {
-            this.processSaveQueue();
-        }
+        if (!this.isProcessingQueue) this.processSaveQueue();
         
-        // Ограничиваем размер очереди
-        if (this.saveQueue.length > 15) {
-            this.saveQueue = this.saveQueue.slice(0, 10);
-        }
+        if (this.saveQueue.length > 15) this.saveQueue = this.saveQueue.slice(0, 10);
     }
 
-    // ОБРАБОТКА ОЧЕРЕДИ
     async processSaveQueue() {
         if (this.isProcessingQueue || this.saveQueue.length === 0) return;
         
@@ -295,21 +394,18 @@ class DarkPawsClicker {
             const queueItem = this.saveQueue.shift();
             const delay = this.calculateSaveDelay(queueItem);
             
-            if (delay > 0) {
-                await this.delay(delay);
-            }
+            if (delay > 0) await this.delay(delay);
             
             if (Date.now() - queueItem.timestamp < 30000) {
                 await this.executeCloudSave(queueItem);
             }
             
-            await this.delay(50); // Минимальная пауза между сохранениями
+            await this.delay(50);
         }
         
         this.isProcessingQueue = false;
     }
 
-    // ВЫПОЛНЕНИЕ ОБЛАЧНОГО СОХРАНЕНИЯ
     async executeCloudSave(queueItem) {
         if (!this.cloudSaveEnabled || this.saveInProgress) return;
         
@@ -344,15 +440,12 @@ class DarkPawsClicker {
             console.error('❌ Cloud save failed:', error);
             this.syncStats.failedSaves++;
             
-            if (this.isHighPriority(queueItem.priority)) {
-                this.retrySave(queueItem);
-            }
+            if (this.isHighPriority(queueItem.priority)) this.retrySave(queueItem);
         } finally {
             this.saveInProgress = false;
         }
     }
 
-    // ПОВТОРНАЯ ПОПЫТКА ДЛЯ ВАЖНЫХ СОХРАНЕНИЙ
     retrySave(queueItem, attempt = 1) {
         if (attempt > 2) return;
         
@@ -362,12 +455,11 @@ class DarkPawsClicker {
         }, 1000 * attempt);
     }
 
-    // ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ
     getPriorityLevel(priority) {
         const levels = {
             'IMMEDIATE': 0,
             'HIGH_PRIORITY': 1,
-            'MEDIUM_PRIORITY': 2, 
+            'MEDIUM_PRIORITY': 2,
             'LOW_PRIORITY': 3,
             'AUTO_SAVE': 4
         };
@@ -378,7 +470,6 @@ class DarkPawsClicker {
         const now = Date.now();
         const timeSinceLastSave = now - this.lastCloudSave;
         const minInterval = this.saveIntervals[queueItem.priority] || 2000;
-        
         return Math.max(0, minInterval - timeSinceLastSave);
     }
 
@@ -405,19 +496,13 @@ class DarkPawsClicker {
     }
 
     async showSyncNotification() {
-        if (this.cloudSaveEnabled) {
-            console.log('🔗 Синхронизация с облаком активна');
-        } else {
-            console.log('⚠️ Синхронизация с облаком недоступна');
-        }
+        if (this.cloudSaveEnabled) console.log('🔗 Синхронизация с облаком активна');
+        else console.log('⚠️ Синхронизация с облаком недоступна');
     }
 
-    // УЛУЧШЕННЫЙ ИНДИКАТОР СИНХРОНИЗАЦИИ
     showSyncIndicator(reason, priority) {
         const existingIndicator = document.getElementById('cloud-sync-indicator');
-        if (existingIndicator) {
-            existingIndicator.remove();
-        }
+        if (existingIndicator) existingIndicator.remove();
         
         const priorityClass = this.getPriorityClass(priority);
         const reasonText = this.getReasonText(reason);
@@ -454,7 +539,7 @@ class DarkPawsClicker {
     getPriorityClass(priority) {
         const classes = {
             'IMMEDIATE': 'sync-indicator-immediate',
-            'HIGH_PRIORITY': 'sync-indicator-high', 
+            'HIGH_PRIORITY': 'sync-indicator-high',
             'MEDIUM_PRIORITY': 'sync-indicator-medium',
             'LOW_PRIORITY': 'sync-indicator-low'
         };
@@ -473,42 +558,29 @@ class DarkPawsClicker {
         return texts[reason] || 'Сохранено';
     }
 
-    // ОБНОВЛЕННЫЕ МЕТОДЫ ЗАГРУЗКИ
     async loadGameState() {
         try {
-            // Сначала пробуем загрузить из облака
             const cloudData = await this.loadFromCloud();
             
             if (cloudData && this.shouldUseCloudSave(cloudData)) {
-                // Используем данные из облака
                 this.gameState = { ...this.gameState, ...cloudData.gameState };
                 this.applyCardEffects();
                 console.log('Using cloud save data');
             } else {
-                // Используем локальные данные
                 const saved = localStorage.getItem('darkPawsClicker_save');
                 if (saved) {
                     const saveData = JSON.parse(saved);
                     
-                    // Миграция старых сохранений
-                    if (!saveData.totalEarnedScore) {
-                        saveData.totalEarnedScore = saveData.score || 0;
-                    }
-                    
-                    if (!saveData.activeDeck) {
-                        saveData.activeDeck = [];
-                    }
-                    
-                    if (!saveData.cardEffects) {
-                        saveData.cardEffects = {
-                            clickPower: 1,
-                            autoClick: 0,
-                            criticalChance: 0,
-                            criticalMultiplier: 1,
-                            multiplier: 1,
-                            chaos: false
-                        };
-                    }
+                    if (!saveData.totalEarnedScore) saveData.totalEarnedScore = saveData.score || 0;
+                    if (!saveData.activeDeck) saveData.activeDeck = [];
+                    if (!saveData.cardEffects) saveData.cardEffects = {
+                        clickPower: 1,
+                        autoClick: 0,
+                        criticalChance: 0,
+                        criticalMultiplier: 1,
+                        multiplier: 1,
+                        chaos: false
+                    };
                     
                     if (!this.user || saveData.userId === this.user.id) {
                         this.gameState = { ...this.gameState, ...saveData };
@@ -533,14 +605,10 @@ class DarkPawsClicker {
                 const saved = await this.tg.CloudStorage.getItem('darkPawsSave');
                 if (saved) {
                     const saveData = JSON.parse(saved);
-                    
-                    // Проверяем версию и валидность данных
                     if (this.validateCloudSave(saveData)) {
                         console.log('Game loaded from cloud');
                         return saveData;
-                    } else {
-                        console.warn('Invalid cloud save data');
-                    }
+                    } else console.warn('Invalid cloud save data');
                 }
             }
         } catch (error) {
@@ -552,70 +620,45 @@ class DarkPawsClicker {
 
     validateCloudSave(saveData) {
         if (!saveData || !saveData.gameState) return false;
-        
-        // Проверяем необходимые поля
         const required = ['score', 'level', 'upgrades', 'stats', 'totalEarnedScore'];
         const hasRequired = required.every(field => field in saveData.gameState);
-        
-        // Проверяем версию
         const versionValid = saveData.version && parseFloat(saveData.version) >= 1.0;
-        
         return hasRequired && versionValid;
     }
 
     shouldUseCloudSave(cloudData) {
         if (!cloudData || !cloudData.gameState) return false;
-        
-        // Сравниваем время последнего сохранения
         const localSave = localStorage.getItem('darkPawsClicker_save');
-        if (!localSave) return true; // Если локальных данных нет, используем облако
+        if (!localSave) return true;
         
         try {
             const localData = JSON.parse(localSave);
             const cloudTime = cloudData.lastSave || 0;
             const localTime = localData.lastSave || 0;
-            
-            // Используем более свежее сохранение
             return cloudTime > localTime;
         } catch (error) {
-            return true; // При ошибке используем облако
+            return true;
         }
     }
 
-    // ОСТАЛЬНЫЕ МЕТОДЫ
-
     disableZoom() {
-        // Запрет масштабирования, но разрешение скролла
         document.addEventListener('touchstart', function(event) {
-            if (event.touches.length > 1) {
-                event.preventDefault();
-            }
+            if (event.touches.length > 1) event.preventDefault();
         }, { passive: false });
 
         let lastTouchEnd = 0;
         document.addEventListener('touchend', function(event) {
             const now = (new Date()).getTime();
-            if (now - lastTouchEnd <= 300) {
-                event.preventDefault();
-            }
+            if (now - lastTouchEnd <= 300) event.preventDefault();
             lastTouchEnd = now;
         }, false);
 
-        document.addEventListener('gesturestart', function(event) {
-            event.preventDefault();
-        });
-
-        document.addEventListener('gesturechange', function(event) {
-            event.preventDefault();
-        });
-
-        document.addEventListener('gestureend', function(event) {
-            event.preventDefault();
-        });
+        document.addEventListener('gesturestart', function(event) { event.preventDefault(); });
+        document.addEventListener('gesturechange', function(event) { event.preventDefault(); });
+        document.addEventListener('gestureend', function(event) { event.preventDefault(); });
     }
 
     applyTelegramTheme() {
-        // Принудительно устанавливаем темные цвета
         document.documentElement.style.setProperty('--tg-theme-bg-color', '#0a0a0a');
         document.documentElement.style.setProperty('--tg-theme-text-color', '#e0e0e0');
         document.documentElement.style.setProperty('--tg-theme-hint-color', '#888');
@@ -628,16 +671,13 @@ class DarkPawsClicker {
     setupEventListeners() {
         const pawButton = document.getElementById('paw-button');
         if (pawButton) {
-            // Оптимизированная обработка кликов для Telegram Mini Apps
             pawButton.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.handleClick(e);
             });
             
-            // Улучшенные touch события для мобильных устройств
             pawButton.addEventListener('touchstart', (e) => {
                 e.preventDefault();
-                pawButton.classList.add('click-animation');
                 this.lastTouch = {
                     clientX: e.touches[0].clientX,
                     clientY: e.touches[0].clientY
@@ -646,10 +686,6 @@ class DarkPawsClicker {
             
             pawButton.addEventListener('touchend', (e) => {
                 e.preventDefault();
-                setTimeout(() => {
-                    pawButton.classList.remove('click-animation');
-                }, 150);
-                
                 if (this.lastTouch) {
                     const touchEvent = {
                         clientX: this.lastTouch.clientX,
@@ -660,14 +696,12 @@ class DarkPawsClicker {
                 }
             }, { passive: false });
             
-            // Предотвращение контекстного меню на долгий тап
             pawButton.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
                 return false;
             });
         }
 
-        // Улучшения
         document.querySelectorAll('.upgrade-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 e.preventDefault();
@@ -679,7 +713,6 @@ class DarkPawsClicker {
             });
         });
 
-        // Профиль
         const profileOpener = document.getElementById('profile-opener');
         if (profileOpener) {
             profileOpener.addEventListener('click', (e) => {
@@ -699,9 +732,7 @@ class DarkPawsClicker {
         const profileModal = document.getElementById('profile-modal');
         if (profileModal) {
             profileModal.addEventListener('click', (e) => {
-                if (e.target === profileModal) {
-                    this.closeProfile();
-                }
+                if (e.target === profileModal) this.closeProfile();
             });
         }
 
@@ -713,30 +744,17 @@ class DarkPawsClicker {
             });
         }
 
-        // Обработка видимости приложения
         document.addEventListener('visibilitychange', async () => {
-            if (document.hidden) {
-                await this.saveGameState('LOW_PRIORITY', 'visibilityChange');
-            }
+            if (document.hidden) await this.saveGameState('LOW_PRIORITY', 'visibilityChange');
         });
 
-        // Обработка ухода со страницы
         window.addEventListener('beforeunload', async () => {
             await this.saveGameState('HIGH_PRIORITY', 'pageUnload');
         });
         
-        // Запрет масштабирования на всем документе
-        document.addEventListener('gesturestart', (e) => {
-            e.preventDefault();
-        });
-        
-        document.addEventListener('gesturechange', (e) => {
-            e.preventDefault();
-        });
-        
-        document.addEventListener('gestureend', (e) => {
-            e.preventDefault();
-        });
+        document.addEventListener('gesturestart', (e) => e.preventDefault());
+        document.addEventListener('gesturechange', (e) => e.preventDefault());
+        document.addEventListener('gestureend', (e) => e.preventDefault());
     }
 
     initTelegramAuth() {
@@ -786,18 +804,13 @@ class DarkPawsClicker {
                 }
             }
             
-            if (username) {
-                username.textContent = this.user.first_name || 'Player';
-            }
-            if (levelText) {
-                levelText.textContent = `Уровень ${this.gameState.level}`;
-            }
+            if (username) username.textContent = this.user.first_name || 'Player';
+            if (levelText) levelText.textContent = `Уровень ${this.gameState.level}`;
         }
     }
 
     setupTabs() {
         const tabItems = document.querySelectorAll('.tab-item');
-        
         tabItems.forEach(tab => {
             tab.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -808,13 +821,8 @@ class DarkPawsClicker {
     }
 
     switchTab(tabId) {
-        document.querySelectorAll('.tab-content').forEach(content => {
-            content.classList.remove('active');
-        });
-        
-        document.querySelectorAll('.tab-item').forEach(tab => {
-            tab.classList.remove('active');
-        });
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        document.querySelectorAll('.tab-item').forEach(tab => tab.classList.remove('active'));
         
         const targetTab = document.getElementById(tabId);
         const targetTabButton = document.querySelector(`[data-tab="${tabId}"]`);
@@ -829,12 +837,8 @@ class DarkPawsClicker {
 
     updateTabContent(tabId) {
         switch(tabId) {
-            case 'levels-tab':
-                this.updateLevelsTab();
-                break;
-            case 'combo-tab':
-                this.updateComboTab();
-                break;
+            case 'levels-tab': this.updateLevelsTab(); break;
+            case 'combo-tab': this.updateComboTab(); break;
         }
     }
 
@@ -847,7 +851,6 @@ class DarkPawsClicker {
         const levelCircles = document.querySelectorAll('.level-circle');
         const levelLines = document.querySelectorAll('.level-line');
         
-        // Создаем элементы для заполнения линий если их нет
         levelLines.forEach(line => {
             if (!line.querySelector('.level-line-fill')) {
                 const fill = document.createElement('div');
@@ -856,17 +859,12 @@ class DarkPawsClicker {
             }
         });
         
-        // Сбрасываем все стили
         levelCircles.forEach(circle => {
             circle.classList.remove('active', 'completed', 'current');
-            // Восстанавливаем изначальный текст кружочка из data-level
             const originalLevel = circle.dataset.level;
-            if (originalLevel) {
-                circle.textContent = originalLevel;
-            }
+            if (originalLevel) circle.textContent = originalLevel;
         });
         
-        // Определяем milestone уровни
         const milestoneLevels = [1, 25, 50, 75, 100];
         const currentLevel = this.gameState.level;
         
@@ -875,79 +873,49 @@ class DarkPawsClicker {
             const isLastCircle = index === levelCircles.length - 1;
             
             if (currentLevel >= circleLevel) {
-                // Полностью заполненный кружок
                 circle.classList.add('completed');
-                
-                // Если это текущий уровень игрока, показываем текущий уровень в кружке
                 if (currentLevel === circleLevel) {
                     circle.textContent = currentLevel;
                     circle.classList.add('active');
-                } else {
-                    // Для предыдущих пройденных кружков показываем изначальный уровень
-                    circle.textContent = circleLevel;
-                }
+                } else circle.textContent = circleLevel;
                 
-                // Заполняем линию до этого кружка (кроме первого)
                 if (index > 0) {
                     const prevLine = levelLines[index - 1];
                     const fill = prevLine.querySelector('.level-line-fill');
-                    if (fill) {
-                        fill.style.width = '100%';
-                    }
+                    if (fill) fill.style.width = '100%';
                     prevLine.classList.add('completed');
                 }
             } else {
-                // Для незавершенных уровней
                 if (index > 0) {
                     const prevCircleLevel = milestoneLevels[index - 1];
-                    
-                    // Если текущий уровень находится между предыдущим и текущим кружком
                     if (currentLevel > prevCircleLevel && currentLevel < circleLevel) {
-                        // Показываем текущий уровень в этом кружке
                         circle.textContent = currentLevel;
                         circle.classList.add('active');
                         
-                        // Рассчитываем прогресс для линии
                         const progressInRange = currentLevel - prevCircleLevel;
                         const totalRange = circleLevel - prevCircleLevel;
                         const percentage = (progressInRange / totalRange) * 100;
                         
-                        // Частично заполняем предыдущую линию
                         const prevLine = levelLines[index - 1];
                         const fill = prevLine.querySelector('.level-line-fill');
-                        if (fill) {
-                            fill.style.width = `${percentage}%`;
-                        }
+                        if (fill) fill.style.width = `${percentage}%`;
                         prevLine.classList.add('partial');
-                    } else {
-                        // Если прогресса нет, показываем изначальный уровень
-                        circle.textContent = circleLevel;
-                    }
-                } else {
-                    // Для первого кружка (уровень 1)
-                    circle.textContent = circleLevel;
-                }
+                    } else circle.textContent = circleLevel;
+                } else circle.textContent = circleLevel;
             }
         });
         
-        // Особый случай: если уровень выше 100, отмечаем все как завершенные
         if (currentLevel >= 100) {
             levelCircles.forEach(circle => {
                 circle.classList.add('completed');
-                // В последнем кружке показываем текущий уровень
                 if (circle.dataset.level === "100") {
                     circle.textContent = currentLevel;
                     circle.classList.add('active');
-                } else {
-                    // В предыдущих кружках показываем изначальные уровни
-                    circle.textContent = circle.dataset.level;
-                }
+                } else circle.textContent = circle.dataset.level;
             });
             levelLines.forEach(line => {
                 const fill = line.querySelector('.level-line-fill');
-                if (fill) {
-                    fill.style.width = '100%';
-                }
+                if (fill) fill.style.width = '100%';
                 line.classList.add('completed');
             });
         }
@@ -955,8 +923,6 @@ class DarkPawsClicker {
 
     updateLevelCards() {
         const levelCards = document.querySelectorAll('.level-card');
-        
-        // Определяем milestone уровни
         const milestoneLevels = [1, 25, 50, 75, 100];
         
         levelCards.forEach((card, index) => {
@@ -973,7 +939,6 @@ class DarkPawsClicker {
                 }
             } else if (milestoneLevel === this.gameState.level) {
                 card.classList.add('active');
-                
                 if (status) {
                     if (milestoneLevel < 100) {
                         const nextMilestone = milestoneLevels[index + 1];
@@ -986,9 +951,7 @@ class DarkPawsClicker {
                             const percentage = Math.min(100, (progress / totalNeeded) * 100);
                             status.textContent = `${Math.floor(percentage)}%`;
                         }
-                    } else {
-                        status.textContent = 'Макс уровень';
-                    }
+                    } else status.textContent = 'Макс уровень';
                     status.classList.remove('completed');
                 }
             } else {
@@ -1000,11 +963,8 @@ class DarkPawsClicker {
                 }
             }
             
-            // Обновляем номера уровней в карточках
             const levelNumber = card.querySelector('.level-number');
-            if (levelNumber) {
-                levelNumber.textContent = `Уровень ${milestoneLevel}`;
-            }
+            if (levelNumber) levelNumber.textContent = `Уровень ${milestoneLevel}`;
         });
     }
 
@@ -1019,13 +979,8 @@ class DarkPawsClicker {
         const deckStats = document.querySelectorAll('.stat-value');
         const deckSize = document.querySelector('.deck-size span');
         
-        if (deckPower) {
-            deckPower.textContent = this.formatNumberRounded(this.calculateDeckPower());
-        }
-        
-        if (deckSize) {
-            deckSize.textContent = `${this.gameState.activeDeck.length}/4`;
-        }
+        if (deckPower) deckPower.textContent = this.formatNumberRounded(this.calculateDeckPower());
+        if (deckSize) deckSize.textContent = `${this.gameState.activeDeck.length}/4`;
         
         const clickBonus = ((this.gameState.cardEffects.clickPower - 1) * 100).toFixed(0);
         const autoBonus = this.gameState.cardEffects.autoClick;
@@ -1090,7 +1045,6 @@ class DarkPawsClicker {
 
         cardsGrid.innerHTML = cardsHTML;
         console.log(`Generated ${comboCards.length} cards in the grid`);
-
         this.setupComboCardListeners();
     }
 
@@ -1100,11 +1054,8 @@ class DarkPawsClicker {
         
         cards.forEach(card => {
             card.addEventListener('click', async () => {
-                if (card.classList.contains('locked')) {
-                    this.showCardLockedMessage(card);
-                } else {
-                    await this.toggleCardInDeck(card);
-                }
+                if (card.classList.contains('locked')) this.showCardLockedMessage(card);
+                else await this.toggleCardInDeck(card);
             });
         });
     }
@@ -1120,9 +1071,7 @@ class DarkPawsClicker {
                 card.classList.add('active');
                 this.applyCardEffects();
                 this.showCardNotification('Карта добавлена в колоду', cardData);
-            } else {
-                this.showCardNotification('Колода полна! Максимум 4 карты', cardData);
-            }
+            } else this.showCardNotification('Колода полна! Максимум 4 карты', cardData);
         } else {
             this.gameState.activeDeck.splice(cardIndex, 1);
             card.classList.remove('active');
@@ -1254,14 +1203,9 @@ class DarkPawsClicker {
             
             Object.keys(card.stats).forEach(stat => {
                 if (typeof card.stats[stat] === 'number') {
-                    if (stat === 'clickPower' || stat === 'multiplier') {
-                        this.gameState.cardEffects[stat] *= card.stats[stat];
-                    } else {
-                        this.gameState.cardEffects[stat] += card.stats[stat];
-                    }
-                } else {
-                    this.gameState.cardEffects[stat] = card.stats[stat];
-                }
+                    if (stat === 'clickPower' || stat === 'multiplier') this.gameState.cardEffects[stat] *= card.stats[stat];
+                    else this.gameState.cardEffects[stat] += card.stats[stat];
+                } else this.gameState.cardEffects[stat] = card.stats[stat];
             });
         });
         
@@ -1293,9 +1237,7 @@ class DarkPawsClicker {
                 message: 'Эта карта будет доступна на более высоких уровнях',
                 buttons: [{ type: 'ok' }]
             });
-        } else {
-            alert('Эта карта будет доступна на более высоких уровнях');
-        }
+        } else alert('Эта карта будет доступна на более высоких уровнях');
     }
 
     showCardNotification(message, cardData) {
@@ -1305,9 +1247,7 @@ class DarkPawsClicker {
                 message: `${message}\n\n${cardData.description}`,
                 buttons: [{ type: 'ok' }]
             });
-        } else {
-            alert(`🎴 ${cardData.name}\n${message}\n\n${cardData.description}`);
-        }
+        } else alert(`🎴 ${cardData.name}\n${message}\n\n${cardData.description}`);
     }
 
     openProfile() {
@@ -1317,12 +1257,9 @@ class DarkPawsClicker {
             profileModal.classList.add('active');
             document.body.style.overflow = 'hidden';
             
-            // Показать кнопку "Назад" в Telegram
             if (this.isTelegram) {
                 this.tg.BackButton.show();
-                this.tg.BackButton.onClick(() => {
-                    this.closeProfile();
-                });
+                this.tg.BackButton.onClick(() => this.closeProfile());
             }
         }
     }
@@ -1333,10 +1270,7 @@ class DarkPawsClicker {
             profileModal.classList.remove('active');
             document.body.style.overflow = 'auto';
             
-            // Скрыть кнопку "Назад" в Telegram
-            if (this.isTelegram) {
-                this.tg.BackButton.hide();
-            }
+            if (this.isTelegram) this.tg.BackButton.hide();
         }
     }
 
@@ -1346,18 +1280,10 @@ class DarkPawsClicker {
         const profileId = document.getElementById('profile-id');
         const profileRank = document.getElementById('profile-rank');
 
-        if (profileName) {
-            profileName.textContent = this.user ? this.user.first_name : 'Player';
-        }
-        if (profileLevel) {
-            profileLevel.textContent = this.gameState.level;
-        }
-        if (profileId) {
-            profileId.textContent = this.user ? this.user.id : '0000';
-        }
-        if (profileRank) {
-            profileRank.textContent = this.getPlayerRank();
-        }
+        if (profileName) profileName.textContent = this.user ? this.user.first_name : 'Player';
+        if (profileLevel) profileLevel.textContent = this.gameState.level;
+        if (profileId) profileId.textContent = this.user ? this.user.id : '0000';
+        if (profileRank) profileRank.textContent = this.getPlayerRank();
 
         this.updateProfileStats();
         this.updateProfileAchievements();
@@ -1370,37 +1296,27 @@ class DarkPawsClicker {
         const totalScore = document.getElementById('profile-total-score');
         const joinDate = document.getElementById('profile-join-date');
 
-        if (totalClicks) {
-            totalClicks.textContent = this.formatNumber(this.gameState.stats.totalClicks);
-        }
+        if (totalClicks) totalClicks.textContent = this.formatNumber(this.gameState.stats.totalClicks);
         if (playTime) {
             const hours = Math.floor(this.gameState.stats.playTime / 3600000);
             playTime.textContent = `${hours}ч`;
         }
-        if (totalScore) {
-            totalScore.textContent = this.formatNumber(this.gameState.totalEarnedScore);
-        }
+        if (totalScore) totalScore.textContent = this.formatNumber(this.gameState.totalEarnedScore);
         if (joinDate) {
             const joinDateObj = new Date(this.gameState.stats.joinDate);
             const now = new Date();
             const diffTime = Math.abs(now - joinDateObj);
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             
-            if (diffDays === 1) {
-                joinDate.textContent = 'Сегодня';
-            } else if (diffDays === 2) {
-                joinDate.textContent = 'Вчера';
-            } else if (diffDays <= 7) {
-                joinDate.textContent = `${diffDays} дней назад`;
-            } else {
-                joinDate.textContent = joinDateObj.toLocaleDateString('ru-RU');
-            }
+            if (diffDays === 1) joinDate.textContent = 'Сегодня';
+            else if (diffDays === 2) joinDate.textContent = 'Вчера';
+            else if (diffDays <= 7) joinDate.textContent = `${diffDays} дней назад`;
+            else joinDate.textContent = joinDateObj.toLocaleDateString('ru-RU');
         }
     }
 
     updateProfileAchievements() {
         const achievements = document.querySelectorAll('.achievement');
-        
         if (achievements.length >= 4) {
             achievements[0].classList.toggle('unlocked', this.gameState.achievements.firstSteps);
             achievements[1].classList.toggle('unlocked', this.gameState.achievements.hardWorker);
@@ -1414,15 +1330,9 @@ class DarkPawsClicker {
         const autoClick = document.getElementById('profile-auto-click');
         const critical = document.getElementById('profile-critical');
 
-        if (clickPower) {
-            clickPower.textContent = this.gameState.upgrades.clickPower;
-        }
-        if (autoClick) {
-            autoClick.textContent = this.gameState.upgrades.autoClick;
-        }
-        if (critical) {
-            critical.textContent = this.gameState.upgrades.criticalChance;
-        }
+        if (clickPower) clickPower.textContent = this.gameState.upgrades.clickPower;
+        if (autoClick) autoClick.textContent = this.gameState.upgrades.autoClick;
+        if (critical) critical.textContent = this.gameState.upgrades.criticalChance;
     }
 
     getPlayerRank() {
@@ -1452,18 +1362,14 @@ class DarkPawsClicker {
                 text: shareText,
                 url: window.location.href
             });
-        } else {
-            alert(shareText);
-        }
+        } else alert(shareText);
     }
 
-    // ОБНОВЛЕННЫЕ МЕТОДЫ ИГРЫ
+    /* 🎮 ОБНОВЛЕННЫЙ МЕТОД КЛИКА С ЭФФЕКТАМИ */
     async handleClick(event) {
         this.gameState.stats.totalClicks++;
         
-        if (this.gameState.cardEffects.chaos) {
-            this.applyChaosEffect();
-        }
+        if (this.gameState.cardEffects.chaos) this.applyChaosEffect();
         
         let points = this.gameState.upgrades.clickPower;
         let isCritical = false;
@@ -1482,8 +1388,10 @@ class DarkPawsClicker {
         
         await this.addScore(points, isCritical);
         this.createParticles(event);
+        this.createExplosion(isCritical); // 🎆 Взрыв частиц
         
-        // Сохраняем каждые 3 клика с средним приоритетом
+        if (isCritical) this.showCriticalEffect(points); // 🔥 Критический эффект
+        
         if (this.gameState.stats.totalClicks % 3 === 0) {
             await this.saveGameState('MEDIUM_PRIORITY', 'clickBatch');
         }
@@ -1495,9 +1403,7 @@ class DarkPawsClicker {
         const randomEffect = Math.random();
         if (randomEffect < 0.3) {
             this.gameState.cardEffects.clickPower *= 1.5;
-            setTimeout(() => {
-                this.gameState.cardEffects.clickPower /= 1.5;
-            }, 3000);
+            setTimeout(() => this.gameState.cardEffects.clickPower /= 1.5, 3000);
         }
     }
 
@@ -1513,22 +1419,14 @@ class DarkPawsClicker {
             if (this.gameState.totalEarnedScore >= requiredScore) {
                 this.gameState.level++;
                 leveledUp = true;
-            } else {
-                break;
-            }
+            } else break;
         }
         
         this.updateUI();
         
-        if (leveledUp) {
-            await this.showLevelUp();
-        }
+        if (leveledUp) await this.showLevelUp();
+        if (isCritical) this.showCriticalEffect(points);
         
-        if (isCritical) {
-            this.showCriticalEffect(points);
-        }
-        
-        // Определяем приоритет сохранения на основе размера очков
         let savePriority = 'MEDIUM_PRIORITY';
         let reason = 'score';
         
@@ -1543,9 +1441,7 @@ class DarkPawsClicker {
             reason = 'score';
         }
         
-        if (leveledUp || points > 20) {
-            await this.saveGameState(savePriority, reason);
-        }
+        if (leveledUp || points > 20) await this.saveGameState(savePriority, reason);
     }
 
     async showLevelUp() {
@@ -1556,9 +1452,7 @@ class DarkPawsClicker {
             levelBadge.classList.add('pulse');
             setTimeout(() => levelBadge.classList.remove('pulse'), 1000);
         }
-        if (levelText) {
-            levelText.textContent = `Уровень ${this.gameState.level}`;
-        }
+        if (levelText) levelText.textContent = `Уровень ${this.gameState.level}`;
         
         console.log(`🎉 Уровень повышен до ${this.gameState.level}!`);
     }
@@ -1574,9 +1468,7 @@ class DarkPawsClicker {
         container.appendChild(critText);
         
         setTimeout(() => {
-            if (critText.parentNode === container) {
-                container.removeChild(critText);
-            }
+            if (critText.parentNode === container) container.removeChild(critText);
         }, 1500);
     }
 
@@ -1611,9 +1503,7 @@ class DarkPawsClicker {
                 message: `Вы получили достижение: "${achievementName}"`,
                 buttons: [{ type: 'ok' }]
             });
-        } else {
-            alert(`🎉 Новое достижение: ${achievementName}`);
-        }
+        } else alert(`🎉 Новое достижение: ${achievementName}`);
     }
 
     createParticles(event) {
@@ -1659,9 +1549,7 @@ class DarkPawsClicker {
             container.appendChild(particle);
             
             setTimeout(() => {
-                if (particle.parentNode === container) {
-                    container.removeChild(particle);
-                }
+                if (particle.parentNode === container) container.removeChild(particle);
             }, 1000);
         }
     }
@@ -1673,18 +1561,11 @@ class DarkPawsClicker {
     getRequiredScoreForLevel(level) {
         if (level <= 1) return 0;
         
-        // Нелинейная прогрессия для больших уровней
-        if (level <= 10) {
-            return Math.pow(level - 1, 2) * 100;
-        } else if (level <= 25) {
-            return this.getRequiredScoreForLevel(10) + (level - 10) * 5000;
-        } else if (level <= 50) {
-            return this.getRequiredScoreForLevel(25) + (level - 25) * 10000;
-        } else if (level <= 75) {
-            return this.getRequiredScoreForLevel(50) + (level - 50) * 25000;
-        } else {
-            return this.getRequiredScoreForLevel(75) + (level - 75) * 50000;
-        }
+        if (level <= 10) return Math.pow(level - 1, 2) * 100;
+        else if (level <= 25) return this.getRequiredScoreForLevel(10) + (level - 10) * 5000;
+        else if (level <= 50) return this.getRequiredScoreForLevel(25) + (level - 25) * 10000;
+        else if (level <= 75) return this.getRequiredScoreForLevel(50) + (level - 50) * 25000;
+        else return this.getRequiredScoreForLevel(75) + (level - 75) * 50000;
     }
 
     async buyUpgrade(upgradeType) {
@@ -1700,30 +1581,21 @@ class DarkPawsClicker {
             this.gameState.score -= cost;
             
             switch(upgradeType) {
-                case 'click-power':
-                    this.gameState.upgrades.clickPower++;
-                    break;
-                case 'auto-click':
-                    this.gameState.upgrades.autoClick++;
-                    break;
-                case 'critical-chance':
-                    this.gameState.upgrades.criticalChance++;
-                    break;
+                case 'click-power': this.gameState.upgrades.clickPower++; break;
+                case 'auto-click': this.gameState.upgrades.autoClick++; break;
+                case 'critical-chance': this.gameState.upgrades.criticalChance++; break;
             }
             
             this.updateUI();
             await this.saveGameState('HIGH_PRIORITY', 'upgrade');
-            
             this.showUpgradeNotification(upgradeType);
-        } else {
-            this.showInsufficientFundsNotification(cost);
-        }
+        } else this.showInsufficientFundsNotification(cost);
     }
 
     showUpgradeNotification(upgradeType) {
         const upgradeNames = {
             'click-power': 'Сила лапы',
-            'auto-click': 'Авто-клик', 
+            'auto-click': 'Авто-клик',
             'critical-chance': 'Точность'
         };
         
@@ -1735,9 +1607,7 @@ class DarkPawsClicker {
                 message: `Вы улучшили: ${upgradeNames[upgradeType]}`,
                 buttons: [{ type: 'ok' }]
             });
-        } else {
-            alert(`✅ Улучшение куплено: ${upgradeNames[upgradeType]}`);
-        }
+        } else alert(`✅ Улучшение куплено: ${upgradeNames[upgradeType]}`);
     }
 
     showInsufficientFundsNotification(cost) {
@@ -1750,9 +1620,7 @@ class DarkPawsClicker {
                 message: `Для покупки нужно: ${formattedCost} очков`,
                 buttons: [{ type: 'ok' }]
             });
-        } else {
-            alert(`❌ Недостаточно очков. Нужно: ${formattedCost}`);
-        }
+        } else alert(`❌ Недостаточно очков. Нужно: ${formattedCost}`);
     }
 
     startAutoClicker() {
@@ -1770,17 +1638,14 @@ class DarkPawsClicker {
         }, 1000);
     }
 
-    // АВТОСОХРАНЕНИЕ С ВАШИМИ ИНТЕРВАЛАМИ
     startPlayTimeCounter() {
         setInterval(async () => {
             this.gameState.stats.playTime += 1000;
             
-            // Быстрое автосохранение каждые 15 секунд
             if (this.gameState.stats.playTime % 15000 === 0) {
                 await this.saveGameState('LOW_PRIORITY', 'autoTimerFast');
             }
             
-            // Полное автосохранение каждые 30 секунд
             if (this.gameState.stats.playTime % 30000 === 0) {
                 await this.saveGameState('AUTO_SAVE', 'autoTimerFull');
             }
@@ -1801,10 +1666,7 @@ class DarkPawsClicker {
         this.updateUserInfo();
         this.updateEarnedScoreDisplay();
         
-        // Обновляем вкладку уровней если она активна
-        if (this.currentTab === 'levels-tab') {
-            this.updateLevelsTab();
-        }
+        if (this.currentTab === 'levels-tab') this.updateLevelsTab();
     }
 
     updateHeaderProgressBar() {
@@ -1815,19 +1677,13 @@ class DarkPawsClicker {
         const totalNeeded = nextLevelScore - currentLevelScore;
         
         let percentage = 0;
-        if (totalNeeded > 0) {
-            percentage = (progress / totalNeeded) * 100;
-        } else {
-            percentage = 100;
-        }
+        if (totalNeeded > 0) percentage = (progress / totalNeeded) * 100;
+        else percentage = 100;
         
         percentage = Math.max(0, Math.min(100, percentage));
         
         const progressFillHeader = document.getElementById('level-progress-header');
-        
-        if (progressFillHeader) {
-            progressFillHeader.style.width = `${percentage}%`;
-        }
+        if (progressFillHeader) progressFillHeader.style.width = `${percentage}%`;
     }
 
     updateEarnedScoreDisplay() {
@@ -1839,9 +1695,7 @@ class DarkPawsClicker {
             earnedScoreElement.className = 'earned-score-display';
             
             const headerProgress = document.querySelector('.header-progress');
-            if (headerProgress) {
-                headerProgress.appendChild(earnedScoreElement);
-            }
+            if (headerProgress) headerProgress.appendChild(earnedScoreElement);
         }
         
         const currentLevelScore = this.getRequiredScoreForLevel(this.gameState.level);
@@ -1851,9 +1705,7 @@ class DarkPawsClicker {
         
         if (totalNeeded > 0) {
             earnedScoreElement.textContent = `${this.formatNumber(progress)} / ${this.formatNumber(totalNeeded)} очков до уровня ${this.gameState.level + 1}`;
-        } else {
-            earnedScoreElement.textContent = 'Максимальный уровень достигнут!';
-        }
+        } else earnedScoreElement.textContent = 'Максимальный уровень достигнут!';
     }
 
     updateUpgradeButtons() {
@@ -1901,13 +1753,11 @@ class DarkPawsClicker {
         });
     }
 
-    // ПРИНУДИТЕЛЬНАЯ СИНХРОНИЗАЦИЯ
     async forceSync() {
         console.log('🔄 Принудительная синхронизация...');
         await this.saveGameState('IMMEDIATE', 'manualSync');
     }
 
-    // СТАТИСТИКА
     getSyncStats() {
         const successRate = this.syncStats.totalSaves > 0 
             ? (this.syncStats.cloudSaves / this.syncStats.totalSaves * 100).toFixed(1)
