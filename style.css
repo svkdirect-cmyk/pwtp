@@ -243,103 +243,395 @@ html {
     }
 }
 
-/* Кнопка-лапка - оптимизированная для Telegram Mini Apps */
+/* 🌈 СУПЕР-ЭФФЕКТНАЯ КНОПКА-ЛАПКА */
 .paw-button {
-    width: 240px;
-    height: 240px;
-    background: var(--gradient-primary);
+    width: 280px;
+    height: 280px;
+    background: linear-gradient(
+        45deg,
+        #ff0000, #ff8000, #ffff00, #80ff00,
+        #00ff00, #00ff80, #00ffff, #0080ff,
+        #0000ff, #8000ff, #ff00ff, #ff0080
+    );
+    background-size: 300% 300%;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.15s ease;
     position: relative;
     overflow: hidden;
     box-shadow: 
-        0 8px 32px rgba(139, 92, 246, 0.4),
-        0 0 0 4px rgba(139, 92, 246, 0.2),
-        inset 0 2px 20px rgba(255, 255, 255, 0.1);
-    -webkit-tap-highlight-color: transparent;
-    animation: paw-pulse 3s ease-in-out infinite;
+        0 20px 60px rgba(0, 0, 0, 0.6),
+        0 0 0 8px rgba(255, 255, 255, 0.1),
+        0 0 0 16px rgba(139, 92, 246, 0.2),
+        inset 0 8px 40px rgba(255, 255, 255, 0.2),
+        inset 0 -8px 30px rgba(0, 0, 0, 0.4);
+    animation: 
+        rainbow-rotate 4s linear infinite,
+        pulse-glow 3s ease-in-out infinite,
+        float-animation 6s ease-in-out infinite;
     touch-action: manipulation;
     border: none;
     outline: none;
     -webkit-appearance: none;
+    transform-style: preserve-3d;
+    perspective: 1000px;
 }
 
-@keyframes paw-pulse {
+/* 🌈 ВРАЩАЮЩИЙСЯ ГРАДИЕНТ */
+@keyframes rainbow-rotate {
+    0% {
+        background-position: 0% 50%;
+        filter: hue-rotate(0deg);
+    }
+    50% {
+        background-position: 100% 50%;
+        filter: hue-rotate(180deg);
+    }
+    100% {
+        background-position: 0% 50%;
+        filter: hue-rotate(360deg);
+    }
+}
+
+/* ✨ ПУЛЬСИРУЮЩЕЕ СВЕЧЕНИЕ */
+@keyframes pulse-glow {
     0%, 100% {
         box-shadow: 
-            0 8px 32px rgba(139, 92, 246, 0.4),
-            0 0 0 4px rgba(139, 92, 246, 0.2),
-            inset 0 2px 20px rgba(255, 255, 255, 0.1);
-        transform: scale(1);
+            0 20px 60px rgba(0, 0, 0, 0.6),
+            0 0 0 8px rgba(255, 255, 255, 0.1),
+            0 0 0 16px rgba(139, 92, 246, 0.2),
+            0 0 0 24px rgba(255, 215, 0, 0.1),
+            inset 0 8px 40px rgba(255, 255, 255, 0.2),
+            inset 0 -8px 30px rgba(0, 0, 0, 0.4);
     }
     50% {
         box-shadow: 
-            0 12px 40px rgba(139, 92, 246, 0.6),
-            0 0 0 6px rgba(139, 92, 246, 0.3),
-            inset 0 2px 25px rgba(255, 255, 255, 0.15);
-        transform: scale(1.02);
+            0 25px 80px rgba(0, 0, 0, 0.8),
+            0 0 0 12px rgba(255, 255, 255, 0.2),
+            0 0 0 20px rgba(139, 92, 246, 0.4),
+            0 0 0 30px rgba(255, 215, 0, 0.2),
+            inset 0 12px 50px rgba(255, 255, 255, 0.3),
+            inset 0 -8px 35px rgba(0, 0, 0, 0.5);
     }
 }
 
-.paw-button:active {
-    transform: scale(0.85);
-    box-shadow: 
-        0 4px 20px rgba(139, 92, 246, 0.6),
-        0 0 0 8px rgba(139, 92, 246, 0.4),
-        inset 0 2px 15px rgba(255, 255, 255, 0.2);
-    animation: none;
-    transition: transform 0.1s ease, box-shadow 0.1s ease;
+/* 💫 ПЛАВАЮЩАЯ АНИМАЦИЯ */
+@keyframes float-animation {
+    0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+    33% {
+        transform: translateY(-10px) rotate(1deg);
+    }
+    66% {
+        transform: translateY(5px) rotate(-1deg);
+    }
 }
 
+/* ⭐ ПАРЯЩИЕ ЧАСТИЦЫ ВОКРУГ КНОПКИ */
+.floating-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.floating-particle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: radial-gradient(circle, #ffd700, #ff6b00);
+    border-radius: 50%;
+    animation: float-particle 4s ease-in-out infinite;
+    box-shadow: 0 0 15px #ffd700;
+}
+
+@keyframes float-particle {
+    0%, 100% {
+        transform: 
+            translate(calc(var(--start-x) * 1px), calc(var(--start-y) * 1px))
+            scale(0.8)
+            rotate(0deg);
+        opacity: 0;
+    }
+    25% {
+        opacity: 1;
+        transform: 
+            translate(calc(var(--mid-x) * 1px), calc(var(--mid-y) * 1px))
+            scale(1.2)
+            rotate(90deg);
+    }
+    50% {
+        opacity: 0.8;
+        transform: 
+            translate(calc(var(--end-x) * 1px), calc(var(--end-y) * 1px))
+            scale(0.9)
+            rotate(180deg);
+    }
+    75% {
+        opacity: 0.5;
+        transform: 
+            translate(calc(var(--mid-x) * 1px), calc(var(--mid-y) * 1px))
+            scale(1.1)
+            rotate(270deg);
+    }
+}
+
+/* ОСНОВНАЯ ИКОНКА ЛАПЫ */
 .paw-icon {
-    font-size: 90px;
+    font-size: 110px;
     color: white;
-    transition: all 0.15s ease;
-    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    text-shadow: 
+        0 0 30px rgba(255, 255, 255, 0.8),
+        0 0 60px rgba(255, 215, 0, 0.6),
+        0 0 90px rgba(255, 107, 0, 0.4);
+    filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.5));
+    position: relative;
+    z-index: 3;
+    transition: all 0.3s ease;
+    animation: icon-pulse 2s ease-in-out infinite;
+}
+
+@keyframes icon-pulse {
+    0%, 100% {
+        transform: scale(1);
+        text-shadow: 
+            0 0 30px rgba(255, 255, 255, 0.8),
+            0 0 60px rgba(255, 215, 0, 0.6);
+    }
+    50% {
+        transform: scale(1.1);
+        text-shadow: 
+            0 0 40px rgba(255, 255, 255, 1),
+            0 0 80px rgba(255, 215, 0, 0.8),
+            0 0 120px rgba(255, 107, 0, 0.6);
+    }
+}
+
+/* АКТИВНОЕ СОСТОЯНИЕ КНОПКИ */
+.paw-button:active {
+    animation: 
+        click-squash 0.3s ease-out,
+        rainbow-rotate 4s linear infinite,
+        pulse-glow 3s ease-in-out infinite;
+    transform: scale(0.85) rotate(5deg);
+}
+
+@keyframes click-squash {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(0.8) rotate(-5deg);
+    }
+    100% {
+        transform: scale(0.85) rotate(5deg);
+    }
 }
 
 .paw-button:active .paw-icon {
-    transform: scale(0.8) rotate(10deg);
-    color: var(--text-accent);
-    transition: transform 0.1s ease;
+    transform: scale(1.3) rotate(15deg);
+    color: #ffd700;
+    text-shadow: 
+        0 0 50px rgba(255, 215, 0, 1),
+        0 0 100px rgba(255, 107, 0, 0.8),
+        0 0 150px rgba(255, 41, 0, 0.6);
+    animation: none;
 }
 
-.paw-glow {
+/* 💫 ЭФФЕКТ РЯБИ ПРИ КЛИКЕ */
+.ripple-effect {
     position: absolute;
     top: 50%;
     left: 50%;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
-    transform: translate(-50%, -50%);
+    border: 4px solid rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
     opacity: 0;
-    transition: opacity 0.15s ease;
+    pointer-events: none;
+    z-index: 2;
 }
 
-.paw-button:active .paw-glow {
-    opacity: 1;
+.paw-button:active .ripple-effect {
+    animation: ripple-expand 0.8s ease-out;
 }
 
-/* Анимации для кнопки */
-.paw-button.click-animation {
-    animation: paw-shake 0.15s ease-in-out, paw-press 0.3s ease-out;
+@keyframes ripple-expand {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0.8;
+        border-width: 4px;
+    }
+    50% {
+        opacity: 0.4;
+        border-width: 2px;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 0;
+        border-width: 1px;
+    }
 }
 
-@keyframes paw-shake {
-    0%, 100% { transform: translateX(0) scale(0.85); }
-    25% { transform: translateX(-3px) scale(0.85); }
-    75% { transform: translateX(3px) scale(0.85); }
+/* 🎆 ВЗРЫВ ЧАСТИЦ ПРИ НАЖАТИИ */
+.click-explosion {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 4;
 }
 
-@keyframes paw-press {
-    0% { transform: scale(1); }
-    50% { transform: scale(0.85); }
-    100% { transform: scale(0.85); }
+.explosion-particle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: explosion-animation 1.2s ease-out forwards;
+    box-shadow: 0 0 20px currentColor;
+}
+
+@keyframes explosion-animation {
+    0% {
+        transform: 
+            translate(0, 0) 
+            scale(1) 
+            rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: 
+            translate(calc(var(--explode-x) * 1px), calc(var(--explode-y) * 1px))
+            scale(0) 
+            rotate(720deg);
+        opacity: 0;
+    }
+}
+
+/* 🌊 УДАРНАЯ ВОЛНА ОТ КЛИКА */
+.shockwave {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    border: 3px solid rgba(255, 215, 0, 0.8);
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.paw-button:active .shockwave {
+    animation: shockwave-expand 0.6s ease-out;
+}
+
+@keyframes shockwave-expand {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0.9;
+        border-width: 3px;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(2.5);
+        opacity: 0;
+        border-width: 1px;
+    }
+}
+
+/* 🔥 ЭФФЕКТЫ ДЛЯ КРИТИЧЕСКИХ ПОПАДАНИЙ */
+.critical-mode .paw-button {
+    animation: 
+        critical-rainbow 1s linear infinite,
+        critical-pulse 0.5s ease-in-out infinite,
+        critical-shake 0.3s ease-in-out infinite;
+}
+
+@keyframes critical-rainbow {
+    0% {
+        filter: hue-rotate(0deg) brightness(1.5);
+    }
+    100% {
+        filter: hue-rotate(360deg) brightness(1.5);
+    }
+}
+
+@keyframes critical-pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.15);
+    }
+}
+
+@keyframes critical-shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-5px);
+    }
+    75% {
+        transform: translateX(5px);
+    }
+}
+
+.critical-explosion {
+    background: radial-gradient(circle, #ff0000, #ff8000, #ffff00) !important;
+    animation: critical-explosion-animation 0.8s ease-out !important;
+}
+
+@keyframes critical-explosion-animation {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.8);
+        opacity: 0.7;
+    }
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+/* ЭНЕРГЕТИЧЕСКИЕ ОРБЫ */
+.energy-orb {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: radial-gradient(circle, #00ffff, #0080ff);
+    border-radius: 50%;
+    filter: blur(8px);
+    opacity: 0.7;
+    animation: energy-orb-float 4s ease-in-out infinite;
+}
+
+@keyframes energy-orb-float {
+    0%, 100% {
+        transform: translate(0, 0) scale(1);
+    }
+    25% {
+        transform: translate(20px, -15px) scale(1.2);
+    }
+    50% {
+        transform: translate(-15px, 10px) scale(0.8);
+    }
+    75% {
+        transform: translate(10px, 20px) scale(1.1);
+    }
 }
 
 /* Игровая зона */
@@ -518,11 +810,11 @@ html {
     right: 0;
     background: var(--tg-theme-secondary-bg-color, var(--bg-secondary));
     display: flex;
-    padding: 8px 0; /* Уменьшил padding */
+    padding: 8px 0;
     z-index: 1000;
-    box-shadow: 0 -2px 15px rgba(0, 0, 0, 0.3); /* Уменьшил тень */
-    padding-bottom: calc(8px + env(safe-area-inset-bottom)); /* Уменьшил нижний отступ */
-    min-height: 60px; /* Минимальная высота */
+    box-shadow: 0 -2px 15px rgba(0, 0, 0, 0.3);
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    min-height: 60px;
 }
 
 .tab-item {
@@ -530,8 +822,8 @@ html {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px; /* Уменьшил расстояние между иконкой и текстом */
-    padding: 6px 0; /* Уменьшил padding */
+    gap: 4px;
+    padding: 6px 0;
     cursor: pointer;
     transition: all 0.3s ease;
     opacity: 0.6;
@@ -542,24 +834,24 @@ html {
 .tab-item.active {
     opacity: 1;
     color: var(--text-accent);
-    transform: translateY(-1px); /* Уменьшил подъем при активации */
+    transform: translateY(-1px);
 }
 
 .tab-item i {
-    font-size: 18px; /* Уменьшил размер иконок */
-    margin-bottom: 1px; /* Уменьшил отступ */
+    font-size: 18px;
+    margin-bottom: 1px;
     transition: all 0.3s ease;
 }
 
 .tab-item.active i {
-    transform: scale(1.05); /* Уменьшил масштаб при активации */
+    transform: scale(1.05);
 }
 
 .tab-item span {
-    font-size: 10px; /* Уменьшил размер текста */
+    font-size: 10px;
     font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 0.3px; /* Уменьшил межбуквенный интервал */
+    letter-spacing: 0.3px;
 }
 
 /* Стили для вкладки уровней */
@@ -816,7 +1108,7 @@ html {
 }
 
 .combo-collection h4 {
-    display: none; /* Скрываем заголовок коллекции карт */
+    display: none;
 }
 
 .cards-grid {
@@ -1376,8 +1668,22 @@ html {
     animation: pulse 0.5s ease-in-out;
 }
 
-/* Адаптивность */
+/* 📱 АДАПТИВНОСТЬ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ */
 @media (max-width: 768px) {
+    .paw-button {
+        width: 240px;
+        height: 240px;
+    }
+    
+    .paw-icon {
+        font-size: 90px;
+    }
+    
+    .floating-particle {
+        width: 5px;
+        height: 5px;
+    }
+
     .header {
         margin: 10px;
         margin-bottom: 15px;
@@ -1385,15 +1691,6 @@ html {
     
     .header-main {
         padding: 12px;
-    }
-    
-    .paw-button {
-        width: 220px;
-        height: 220px;
-    }
-    
-    .paw-icon {
-        font-size: 80px;
     }
     
     .tab-content {
@@ -1464,6 +1761,23 @@ html {
         font-size: 70px;
     }
     
+    @keyframes pulse-glow {
+        0%, 100% {
+            box-shadow: 
+                0 15px 40px rgba(0, 0, 0, 0.6),
+                0 0 0 6px rgba(255, 255, 255, 0.1),
+                0 0 0 12px rgba(139, 92, 246, 0.2),
+                inset 0 6px 30px rgba(255, 255, 255, 0.2);
+        }
+        50% {
+            box-shadow: 
+                0 20px 50px rgba(0, 0, 0, 0.7),
+                0 0 0 8px rgba(255, 255, 255, 0.15),
+                0 0 0 16px rgba(139, 92, 246, 0.3),
+                inset 0 8px 35px rgba(255, 255, 255, 0.25);
+        }
+    }
+
     .avatar {
         width: 45px;
         height: 45px;
@@ -1538,6 +1852,15 @@ html {
 }
 
 @media (max-width: 360px) {
+    .paw-button {
+        width: 180px;
+        height: 180px;
+    }
+    
+    .paw-icon {
+        font-size: 60px;
+    }
+    
     .cards-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 8px;
@@ -1566,6 +1889,23 @@ html {
     .power-value {
         font-size: 28px;
     }
+}
+
+/* 🎮 ТАКТИЛЬНАЯ ОТДАЧА (VIBRATION API) */
+@media (hover: none) and (pointer: coarse) {
+    .paw-button:active {
+        animation: 
+            mobile-vibration 0.3s ease-out,
+            rainbow-rotate 4s linear infinite,
+            pulse-glow 3s ease-in-out infinite;
+    }
+}
+
+@keyframes mobile-vibration {
+    0%, 100% { transform: translateX(0) scale(0.85); }
+    25% { transform: translateX(-2px) scale(0.85); }
+    50% { transform: translateX(2px) scale(0.85); }
+    75% { transform: translateX(-1px) scale(0.85); }
 }
 
 /* Анимация появления профиля */
@@ -1662,13 +2002,15 @@ button:focus-visible {
 }
 
 /* Оптимизация производительности анимаций */
-.particle, .critical-hit, .paw-glow {
-    will-change: transform, opacity;
+.paw-button * {
+    will-change: transform, opacity, filter;
+    backface-visibility: hidden;
 }
 
 /* Поддержка reduced-motion */
 @media (prefers-reduced-motion: reduce) {
-    * {
+    .paw-button,
+    .paw-button * {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
