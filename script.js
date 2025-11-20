@@ -1,3 +1,59 @@
+class ParticlePool {
+    constructor(size, className, container) {
+        this.pool = [];
+        this.index = 0;
+        this.className = className;
+        this.container = container;
+        this.initializePool(size);
+    }
+    
+    initializePool(size) {
+        for (let i = 0; i < size; i++) {
+            const particle = document.createElement('div');
+            particle.className = this.className;
+            particle.style.display = 'none';
+            this.container.appendChild(particle);
+            this.pool.push({
+                element: particle,
+                inUse: false
+            });
+        }
+    }
+    
+    getParticle() {
+        // Ищем первую свободную частицу
+        for (let i = 0; i < this.pool.length; i++) {
+            const particleIndex = (this.index + i) % this.pool.length;
+            const particle = this.pool[particleIndex];
+            
+            if (!particle.inUse) {
+                particle.inUse = true;
+                this.index = (particleIndex + 1) % this.pool.length;
+                particle.element.style.display = 'block';
+                return particle;
+            }
+        }
+        
+        // Если все частицы заняты, создаем новую
+        return this.createNewParticle();
+    }
+    
+    createNewParticle() {
+        const particle = document.createElement('div');
+        particle.className = this.className;
+        this.container.appendChild(particle);
+        const poolItem = { element: particle, inUse: true };
+        this.pool.push(poolItem);
+        return poolItem;
+    }
+    
+    releaseParticle(particle) {
+        particle.inUse = false;
+        particle.element.style.display = 'none';
+        particle.element.style.animation = 'none';
+    }
+}
+
 class DarkPawsClicker {
     constructor() {
         this.tg = window.Telegram.WebApp;
@@ -86,6 +142,16 @@ class DarkPawsClicker {
             lastSyncTime: 0
         };
         
+        // ПУЛЫ ЧАСТИЦ
+        this.particlePools = {
+            click: null,
+            explosion: null,
+            floating: null
+        };
+        
+        // ДЕБАУНС ДЛЯ ЧАСТЫХ ОПЕРАЦИЙ
+        this.debounceTimers = {};
+        
         this.init();
     }
 
@@ -106,6 +172,7 @@ class DarkPawsClicker {
         this.setupEventListeners();
         this.initTelegramAuth();
         await this.loadGameState();
+        this.initParticlePools();
         this.updateUI();
         this.startAutoClicker();
         this.setupTabs();
@@ -117,6 +184,26 @@ class DarkPawsClicker {
         this.setupHapticFeedback();
         
         this.showSyncNotification();
+        
+        // Помечаем кнопку как загруженную
+        setTimeout(() => {
+            if (this.pawButton) {
+                this.pawButton.classList.add('loaded');
+            }
+        }, 100);
+    }
+
+    initParticlePools() {
+        const particlesContainer = document.getElementById('particles-container');
+        const explosionContainer = document.getElementById('click-explosion');
+        
+        if (particlesContainer) {
+            this.particlePools.click = new ParticlePool(50, 'particle', particlesContainer);
+        }
+        
+        if (explosionContainer) {
+            this.particlePools.explosion = new ParticlePool(30, 'explosion-particle', explosionContainer);
+        }
     }
 
     /* ⭐ ПАРЯЩИЕ ЧАСТИЦЫ ВОКРУГ КНОПКИ */
@@ -124,7 +211,7 @@ class DarkPawsClicker {
         const container = document.getElementById('floating-particles');
         if (!container) return;
 
-        for (let i = 0; i < 15; i++) {
+        for (let i = 0; i < 12; i++) { // Уменьшено количество для производительности
             const particle = document.createElement('div');
             particle.className = 'floating-particle';
             
@@ -153,12 +240,9 @@ class DarkPawsClicker {
 
     /* 🎆 ВЗРЫВ ЧАСТИЦ ПО ВСЕМУ ЭКРАНУ */
     createExplosion(isCritical = false) {
-        const explosionContainer = document.getElementById('click-explosion');
-        if (!explosionContainer) return;
+        if (!this.particlePools.explosion) return;
 
-        explosionContainer.innerHTML = '';
-
-        const particleCount = isCritical ? 40 : 25;
+        const particleCount = isCritical ? 25 : 15; // Уменьшено количество
         const colors = isCritical 
             ? ['#ff0000', '#ff8000', '#ffff00', '#ffffff', '#ff00ff']
             : ['#ffd700', '#ffffff', '#00ffff', '#ff00ff', '#80ff00'];
@@ -169,12 +253,12 @@ class DarkPawsClicker {
         const centerY = buttonRect.top + buttonRect.height / 2;
 
         for (let i = 0; i < particleCount; i++) {
-            const particle = document.createElement('div');
-            particle.className = 'explosion-particle';
+            const poolItem = this.particlePools.explosion.getParticle();
+            const particle = poolItem.element;
             
             // Случайное направление взрыва по всему экрану
             const angle = Math.random() * Math.PI * 2;
-            const distance = 200 + Math.random() * 300; // Увеличиваем дистанцию
+            const distance = 150 + Math.random() * 200; // Уменьшена дистанция
             const explodeX = Math.cos(angle) * distance;
             const explodeY = Math.sin(angle) * distance;
             
@@ -187,14 +271,14 @@ class DarkPawsClicker {
             
             const color = colors[Math.floor(Math.random() * colors.length)];
             particle.style.background = `radial-gradient(circle, ${color}, transparent)`;
-            particle.style.boxShadow = `0 0 10px ${color}`;
+            particle.style.boxShadow = `0 0 8px ${color}`;
             
-            const size = 3 + Math.random() * 6;
+            const size = 3 + Math.random() * 4;
             particle.style.width = `${size}px`;
             particle.style.height = `${size}px`;
             
             // Случайная задержка для более натурального взрыва
-            particle.style.animationDelay = `${Math.random() * 0.4}s`;
+            particle.style.animationDelay = `${Math.random() * 0.3}s`;
             
             // Разные формы для разнообразия
             if (Math.random() > 0.7) {
@@ -202,13 +286,11 @@ class DarkPawsClicker {
                 particle.style.transform = `rotate(${Math.random() * 360}deg)`;
             }
             
-            explosionContainer.appendChild(particle);
+            // Автоматическое освобождение частицы после анимации
+            setTimeout(() => {
+                this.particlePools.explosion.releaseParticle(poolItem);
+            }, 1500);
         }
-
-        // Очистка через 2 секунды
-        setTimeout(() => {
-            explosionContainer.innerHTML = '';
-        }, 2000);
     }
 
     /* 🎮 УЛУЧШЕННАЯ ТАКТИЛЬНАЯ ОТДАЧА ДЛЯ МОБИЛЬНЫХ */
@@ -217,6 +299,7 @@ class DarkPawsClicker {
 
         let pressStartTime = 0;
         let isPressing = false;
+        let pressTimer = null;
 
         // Начало нажатия
         this.pawButton.addEventListener('touchstart', (e) => {
@@ -230,6 +313,14 @@ class DarkPawsClicker {
             // Визуальная обратная связь
             this.pawButton.style.transition = 'transform 0.1s ease';
             this.pawButton.style.transform = 'scale(0.9)';
+            
+            // Таймер для долгого нажатия
+            pressTimer = setTimeout(() => {
+                if (isPressing) {
+                    this.triggerHapticFeedback('long');
+                    this.createLongPressEffect();
+                }
+            }, 500);
         });
 
         // Окончание нажатия
@@ -238,10 +329,14 @@ class DarkPawsClicker {
             const pressDuration = Date.now() - pressStartTime;
             isPressing = false;
             
+            if (pressTimer) {
+                clearTimeout(pressTimer);
+                pressTimer = null;
+            }
+            
             // Разная вибрация в зависимости от длительности нажатия
             if (pressDuration > 500) {
                 this.triggerHapticFeedback('long');
-                this.createLongPressEffect();
             } else if (pressDuration > 200) {
                 this.triggerHapticFeedback('medium');
             } else {
@@ -255,20 +350,29 @@ class DarkPawsClicker {
         // Отмена нажатия (например, при выходе за пределы кнопки)
         this.pawButton.addEventListener('touchcancel', (e) => {
             isPressing = false;
+            if (pressTimer) {
+                clearTimeout(pressTimer);
+                pressTimer = null;
+            }
             this.pawButton.style.transform = 'scale(1)';
         });
     }
 
     triggerHapticFeedback(type) {
-        if (navigator.vibrate) {
+        if (navigator.vibrate && !this.isLowPerformanceDevice()) {
             const patterns = {
-                'light': [50],
-                'medium': [100],
-                'heavy': [150],
-                'long': [200, 50, 200]
+                'light': [30],
+                'medium': [60],
+                'heavy': [90],
+                'long': [100, 30, 100]
             };
-            navigator.vibrate(patterns[type] || [50]);
+            navigator.vibrate(patterns[type] || [30]);
         }
+    }
+
+    isLowPerformanceDevice() {
+        return navigator.hardwareConcurrency <= 4 || 
+               (navigator.deviceMemory && navigator.deviceMemory <= 4);
     }
 
     /* 🔥 ЭФФЕКТ ДОЛГОГО НАЖАТИЯ */
@@ -281,7 +385,7 @@ class DarkPawsClicker {
         
         setTimeout(() => {
             button.classList.remove('critical-mode');
-        }, 800);
+        }, 600);
     }
 
     /* 🔥 КРИТИЧЕСКИЕ ЭФФЕКТЫ */
@@ -291,10 +395,32 @@ class DarkPawsClicker {
         
         setTimeout(() => {
             button.classList.remove('critical-mode');
-        }, 800);
+        }, 600);
     }
 
-    // ОСТАЛЬНЫЕ МЕТОДЫ КЛАССА (сохранены из предыдущей версии)
+    // ДЕБАУНС ДЛЯ ЧАСТЫХ ОПЕРАЦИЙ
+    debounce(func, wait, immediate = false) {
+        const key = func.name || 'anonymous';
+        
+        return (...args) => {
+            if (this.debounceTimers[key]) {
+                clearTimeout(this.debounceTimers[key]);
+            }
+            
+            if (immediate && !this.debounceTimers[key]) {
+                func.apply(this, args);
+            }
+            
+            this.debounceTimers[key] = setTimeout(() => {
+                if (!immediate) {
+                    func.apply(this, args);
+                }
+                this.debounceTimers[key] = null;
+            }, wait);
+        };
+    }
+
+    // ОСТАЛЬНЫЕ МЕТОДЫ КЛАССА
     formatNumber(number) {
         if (number < 1000) return Math.floor(number).toString();
         
@@ -403,7 +529,10 @@ class DarkPawsClicker {
         
         if (!this.isProcessingQueue) this.processSaveQueue();
         
-        if (this.saveQueue.length > 15) this.saveQueue = this.saveQueue.slice(0, 10);
+        // Ограничиваем размер очереди
+        if (this.saveQueue.length > 20) {
+            this.saveQueue = this.saveQueue.slice(0, 15);
+        }
     }
 
     async processSaveQueue() {
@@ -421,7 +550,7 @@ class DarkPawsClicker {
                 await this.executeCloudSave(queueItem);
             }
             
-            await this.delay(50);
+            await this.delay(100); // Увеличена задержка между сохранениями
         }
         
         this.isProcessingQueue = false;
@@ -461,14 +590,16 @@ class DarkPawsClicker {
             console.error('❌ Cloud save failed:', error);
             this.syncStats.failedSaves++;
             
-            if (this.isHighPriority(queueItem.priority)) this.retrySave(queueItem);
+            if (this.isHighPriority(queueItem.priority)) {
+                this.retrySave(queueItem);
+            }
         } finally {
             this.saveInProgress = false;
         }
     }
 
     retrySave(queueItem, attempt = 1) {
-        if (attempt > 2) return;
+        if (attempt > 3) return;
         
         setTimeout(async () => {
             console.log(`🔄 Retry ${queueItem.reason} (attempt ${attempt})`);
@@ -692,9 +823,12 @@ class DarkPawsClicker {
     setupEventListeners() {
         const pawButton = document.getElementById('paw-button');
         if (pawButton) {
+            // Дебаунс для кликов
+            const debouncedClick = this.debounce(this.handleClick.bind(this), 50);
+            
             pawButton.addEventListener('click', (e) => {
                 e.preventDefault();
-                this.handleClick(e);
+                debouncedClick(e);
             });
             
             pawButton.addEventListener('touchstart', (e) => {
@@ -712,7 +846,7 @@ class DarkPawsClicker {
                         clientX: this.lastTouch.clientX,
                         clientY: this.lastTouch.clientY
                     };
-                    this.handleClick(touchEvent);
+                    debouncedClick(touchEvent);
                     this.lastTouch = null;
                 }
             }, { passive: false });
@@ -765,8 +899,13 @@ class DarkPawsClicker {
             });
         }
 
-        document.addEventListener('visibilitychange', async () => {
-            if (document.hidden) await this.saveGameState('LOW_PRIORITY', 'visibilityChange');
+        // Дебаунс для событий видимости
+        const debouncedVisibilitySave = this.debounce(() => {
+            this.saveGameState('LOW_PRIORITY', 'visibilityChange');
+        }, 1000);
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) debouncedVisibilitySave();
         });
 
         window.addEventListener('beforeunload', async () => {
@@ -853,6 +992,9 @@ class DarkPawsClicker {
             targetTabButton.classList.add('active');
             this.currentTab = tabId;
             this.updateTabContent(tabId);
+            
+            // Сохраняем при переключении вкладок
+            this.saveGameState('MEDIUM_PRIORITY', 'tabSwitch');
         }
     }
 
@@ -1050,7 +1192,7 @@ class DarkPawsClicker {
             const activeClass = this.gameState.activeDeck.includes(card.id) ? 'active' : '';
             
             cardsHTML += `
-                <div class="combo-card ${lockedClass} ${activeClass}" data-card-id="${card.id}">
+                <div class="combo-card ${lockedClass} ${activeClass}" data-card-id="${card.id}" role="button" aria-label="${card.name} - ${card.description}">
                     <div class="card-frame">
                         <div class="card-rarity ${card.rarity}">
                             ${this.getRarityText(card.rarity)}
@@ -1276,12 +1418,15 @@ class DarkPawsClicker {
         const profileModal = document.getElementById('profile-modal');
         if (profileModal) {
             profileModal.classList.add('active');
-            document.body.style.overflow = 'hidden';
+            profileModal.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('modal-open');
             
             if (this.isTelegram) {
                 this.tg.BackButton.show();
                 this.tg.BackButton.onClick(() => this.closeProfile());
             }
+            
+            this.saveGameState('MEDIUM_PRIORITY', 'profileOpen');
         }
     }
 
@@ -1289,7 +1434,8 @@ class DarkPawsClicker {
         const profileModal = document.getElementById('profile-modal');
         if (profileModal) {
             profileModal.classList.remove('active');
-            document.body.style.overflow = 'auto';
+            profileModal.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('modal-open');
             
             if (this.isTelegram) this.tg.BackButton.hide();
         }
@@ -1409,12 +1555,13 @@ class DarkPawsClicker {
         
         await this.addScore(points, isCritical);
         this.createParticles(event);
-        this.createExplosion(isCritical); // 🎆 Взрыв частиц по всему экрану
+        this.createExplosion(isCritical);
         
         if (isCritical) this.showCriticalEffect(points);
         
-        if (this.gameState.stats.totalClicks % 3 === 0) {
-            await this.saveGameState('MEDIUM_PRIORITY', 'clickBatch');
+        // Сохраняем пачками с дебаунсом
+        if (this.gameState.stats.totalClicks % 5 === 0) {
+            this.saveGameState('MEDIUM_PRIORITY', 'clickBatch');
         }
         
         this.checkAchievements();
@@ -1424,7 +1571,7 @@ class DarkPawsClicker {
         const randomEffect = Math.random();
         if (randomEffect < 0.3) {
             this.gameState.cardEffects.clickPower *= 1.5;
-            setTimeout(() => this.gameState.cardEffects.clickPower /= 1.5, 3000);
+            setTimeout(() => this.gameState.cardEffects.clickPower /= 1.5, 2000);
         }
     }
 
@@ -1528,8 +1675,7 @@ class DarkPawsClicker {
     }
 
     createParticles(event) {
-        const container = document.getElementById('particles-container');
-        if (!container) return;
+        if (!this.particlePools.click) return;
         
         let clientX, clientY;
         
@@ -1544,18 +1690,19 @@ class DarkPawsClicker {
             clientY = event.clientY;
         }
         
+        const container = this.particlePools.click.container;
         const rect = container.getBoundingClientRect();
         const x = clientX - rect.left;
         const y = clientY - rect.top;
         
-        const particleCount = 8 + Math.floor(Math.random() * 5);
+        const particleCount = 6 + Math.floor(Math.random() * 4); // Уменьшено количество
         
         for (let i = 0; i < particleCount; i++) {
-            const particle = document.createElement('div');
-            particle.className = 'particle';
+            const poolItem = this.particlePools.click.getParticle();
+            const particle = poolItem.element;
             
             const angle = Math.random() * Math.PI * 2;
-            const distance = 30 + Math.random() * 50;
+            const distance = 20 + Math.random() * 40;
             const tx = Math.cos(angle) * distance;
             const ty = Math.sin(angle) * distance;
             
@@ -1563,14 +1710,13 @@ class DarkPawsClicker {
             particle.style.setProperty('--ty', ty + 'px');
             particle.style.left = x + 'px';
             particle.style.top = y + 'px';
-            particle.style.width = (2 + Math.random() * 4) + 'px';
-            particle.style.height = (2 + Math.random() * 4) + 'px';
+            particle.style.width = (2 + Math.random() * 3) + 'px';
+            particle.style.height = (2 + Math.random() * 3) + 'px';
             particle.style.opacity = (0.3 + Math.random() * 0.7);
             
-            container.appendChild(particle);
-            
+            // Автоматическое освобождение частицы после анимации
             setTimeout(() => {
-                if (particle.parentNode === container) container.removeChild(particle);
+                this.particlePools.click.releaseParticle(poolItem);
             }, 1000);
         }
     }
@@ -1663,11 +1809,11 @@ class DarkPawsClicker {
         setInterval(async () => {
             this.gameState.stats.playTime += 1000;
             
-            if (this.gameState.stats.playTime % 15000 === 0) {
+            if (this.gameState.stats.playTime % 20000 === 0) {
                 await this.saveGameState('LOW_PRIORITY', 'autoTimerFast');
             }
             
-            if (this.gameState.stats.playTime % 30000 === 0) {
+            if (this.gameState.stats.playTime % 60000 === 0) {
                 await this.saveGameState('AUTO_SAVE', 'autoTimerFull');
             }
         }, 1000);
