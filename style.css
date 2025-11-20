@@ -43,14 +43,12 @@ body {
     -webkit-touch-callout: none;
     -webkit-text-size-adjust: none;
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-    /* Разрешаем скролл, но запрещаем масштабирование */
     touch-action: pan-y;
     height: 100vh;
     overflow-y: auto;
 }
 
 html {
-    /* Запрет масштабирования, но разрешение скролла */
     touch-action: pan-y;
     -ms-touch-action: pan-y;
     height: 100%;
@@ -58,7 +56,6 @@ html {
 }
 
 #app {
-    /* Запрет выделения текста и масштабирования */
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
@@ -243,7 +240,7 @@ html {
     }
 }
 
-/* 🌈 СУПЕР-ЭФФЕКТНАЯ КНОПКА-ЛАПКА */
+/* ОСНОВНЫЕ СТИЛИ КНОПКИ БЕЗ СВЕЧЕНИЯ */
 .paw-button {
     width: 280px;
     height: 280px;
@@ -262,14 +259,11 @@ html {
     position: relative;
     overflow: hidden;
     box-shadow: 
-        0 20px 60px rgba(0, 0, 0, 0.6),
-        0 0 0 8px rgba(255, 255, 255, 0.1),
-        0 0 0 16px rgba(139, 92, 246, 0.2),
-        inset 0 8px 40px rgba(255, 255, 255, 0.2),
-        inset 0 -8px 30px rgba(0, 0, 0, 0.4);
+        0 10px 30px rgba(0, 0, 0, 0.4),
+        inset 0 4px 20px rgba(255, 255, 255, 0.2),
+        inset 0 -4px 15px rgba(0, 0, 0, 0.3);
     animation: 
         rainbow-rotate 4s linear infinite,
-        pulse-glow 3s ease-in-out infinite,
         float-animation 6s ease-in-out infinite;
     touch-action: manipulation;
     border: none;
@@ -277,6 +271,7 @@ html {
     -webkit-appearance: none;
     transform-style: preserve-3d;
     perspective: 1000px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
 }
 
 /* 🌈 ВРАЩАЮЩИЙСЯ ГРАДИЕНТ */
@@ -295,38 +290,16 @@ html {
     }
 }
 
-/* ✨ ПУЛЬСИРУЮЩЕЕ СВЕЧЕНИЕ */
-@keyframes pulse-glow {
-    0%, 100% {
-        box-shadow: 
-            0 20px 60px rgba(0, 0, 0, 0.6),
-            0 0 0 8px rgba(255, 255, 255, 0.1),
-            0 0 0 16px rgba(139, 92, 246, 0.2),
-            0 0 0 24px rgba(255, 215, 0, 0.1),
-            inset 0 8px 40px rgba(255, 255, 255, 0.2),
-            inset 0 -8px 30px rgba(0, 0, 0, 0.4);
-    }
-    50% {
-        box-shadow: 
-            0 25px 80px rgba(0, 0, 0, 0.8),
-            0 0 0 12px rgba(255, 255, 255, 0.2),
-            0 0 0 20px rgba(139, 92, 246, 0.4),
-            0 0 0 30px rgba(255, 215, 0, 0.2),
-            inset 0 12px 50px rgba(255, 255, 255, 0.3),
-            inset 0 -8px 35px rgba(0, 0, 0, 0.5);
-    }
-}
-
 /* 💫 ПЛАВАЮЩАЯ АНИМАЦИЯ */
 @keyframes float-animation {
     0%, 100% {
         transform: translateY(0px) rotate(0deg);
     }
     33% {
-        transform: translateY(-10px) rotate(1deg);
+        transform: translateY(-8px) rotate(1deg);
     }
     66% {
-        transform: translateY(5px) rotate(-1deg);
+        transform: translateY(4px) rotate(-1deg);
     }
 }
 
@@ -343,12 +316,11 @@ html {
 
 .floating-particle {
     position: absolute;
-    width: 6px;
-    height: 6px;
+    width: 4px;
+    height: 4px;
     background: radial-gradient(circle, #ffd700, #ff6b00);
     border-radius: 50%;
     animation: float-particle 4s ease-in-out infinite;
-    box-shadow: 0 0 15px #ffd700;
 }
 
 @keyframes float-particle {
@@ -363,7 +335,7 @@ html {
         opacity: 1;
         transform: 
             translate(calc(var(--mid-x) * 1px), calc(var(--mid-y) * 1px))
-            scale(1.2)
+            scale(1.1)
             rotate(90deg);
     }
     50% {
@@ -377,7 +349,7 @@ html {
         opacity: 0.5;
         transform: 
             translate(calc(var(--mid-x) * 1px), calc(var(--mid-y) * 1px))
-            scale(1.1)
+            scale(1)
             rotate(270deg);
     }
 }
@@ -387,39 +359,19 @@ html {
     font-size: 110px;
     color: white;
     text-shadow: 
-        0 0 30px rgba(255, 255, 255, 0.8),
-        0 0 60px rgba(255, 215, 0, 0.6),
-        0 0 90px rgba(255, 107, 0, 0.4);
-    filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.5));
+        0 2px 10px rgba(0, 0, 0, 0.5);
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
     position: relative;
     z-index: 3;
-    transition: all 0.3s ease;
-    animation: icon-pulse 2s ease-in-out infinite;
-}
-
-@keyframes icon-pulse {
-    0%, 100% {
-        transform: scale(1);
-        text-shadow: 
-            0 0 30px rgba(255, 255, 255, 0.8),
-            0 0 60px rgba(255, 215, 0, 0.6);
-    }
-    50% {
-        transform: scale(1.1);
-        text-shadow: 
-            0 0 40px rgba(255, 255, 255, 1),
-            0 0 80px rgba(255, 215, 0, 0.8),
-            0 0 120px rgba(255, 107, 0, 0.6);
-    }
+    transition: all 0.2s ease;
 }
 
 /* АКТИВНОЕ СОСТОЯНИЕ КНОПКИ */
 .paw-button:active {
     animation: 
         click-squash 0.3s ease-out,
-        rainbow-rotate 4s linear infinite,
-        pulse-glow 3s ease-in-out infinite;
-    transform: scale(0.85) rotate(5deg);
+        rainbow-rotate 4s linear infinite;
+    transform: scale(0.85);
 }
 
 @keyframes click-squash {
@@ -427,21 +379,17 @@ html {
         transform: scale(1);
     }
     50% {
-        transform: scale(0.8) rotate(-5deg);
+        transform: scale(0.8);
     }
     100% {
-        transform: scale(0.85) rotate(5deg);
+        transform: scale(0.85);
     }
 }
 
 .paw-button:active .paw-icon {
-    transform: scale(1.3) rotate(15deg);
+    transform: scale(1.2) rotate(10deg);
     color: #ffd700;
-    text-shadow: 
-        0 0 50px rgba(255, 215, 0, 1),
-        0 0 100px rgba(255, 107, 0, 0.8),
-        0 0 150px rgba(255, 41, 0, 0.6);
-    animation: none;
+    transition: transform 0.1s ease, color 0.1s ease;
 }
 
 /* 💫 ЭФФЕКТ РЯБИ ПРИ КЛИКЕ */
@@ -451,7 +399,7 @@ html {
     left: 50%;
     width: 100%;
     height: 100%;
-    border: 4px solid rgba(255, 255, 255, 0.8);
+    border: 2px solid rgba(255, 255, 255, 0.6);
     border-radius: 50%;
     transform: translate(-50%, -50%) scale(0);
     opacity: 0;
@@ -460,44 +408,44 @@ html {
 }
 
 .paw-button:active .ripple-effect {
-    animation: ripple-expand 0.8s ease-out;
+    animation: ripple-expand 0.6s ease-out;
 }
 
 @keyframes ripple-expand {
     0% {
         transform: translate(-50%, -50%) scale(0);
         opacity: 0.8;
-        border-width: 4px;
+        border-width: 2px;
     }
     50% {
         opacity: 0.4;
-        border-width: 2px;
+        border-width: 1px;
     }
     100% {
-        transform: translate(-50%, -50%) scale(2);
+        transform: translate(-50%, -50%) scale(1.8);
         opacity: 0;
-        border-width: 1px;
+        border-width: 0.5px;
     }
 }
 
-/* 🎆 ВЗРЫВ ЧАСТИЦ ПРИ НАЖАТИИ */
+/* 🎆 ВЗРЫВ ЧАСТИЦ ПО ВСЕМУ ЭКРАНУ */
 .click-explosion {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     pointer-events: none;
-    z-index: 4;
+    z-index: 1000;
 }
 
 .explosion-particle {
     position: absolute;
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
-    animation: explosion-animation 1.2s ease-out forwards;
-    box-shadow: 0 0 20px currentColor;
+    animation: explosion-animation 1.5s ease-out forwards;
+    z-index: 1001;
 }
 
 @keyframes explosion-animation {
@@ -524,7 +472,7 @@ html {
     left: 50%;
     width: 100%;
     height: 100%;
-    border: 3px solid rgba(255, 215, 0, 0.8);
+    border: 2px solid rgba(255, 215, 0, 0.6);
     border-radius: 50%;
     transform: translate(-50%, -50%) scale(0);
     opacity: 0;
@@ -533,17 +481,17 @@ html {
 }
 
 .paw-button:active .shockwave {
-    animation: shockwave-expand 0.6s ease-out;
+    animation: shockwave-expand 0.8s ease-out;
 }
 
 @keyframes shockwave-expand {
     0% {
         transform: translate(-50%, -50%) scale(0);
-        opacity: 0.9;
-        border-width: 3px;
+        opacity: 0.8;
+        border-width: 2px;
     }
     100% {
-        transform: translate(-50%, -50%) scale(2.5);
+        transform: translate(-50%, -50%) scale(2);
         opacity: 0;
         border-width: 1px;
     }
@@ -552,70 +500,73 @@ html {
 /* 🔥 ЭФФЕКТЫ ДЛЯ КРИТИЧЕСКИХ ПОПАДАНИЙ */
 .critical-mode .paw-button {
     animation: 
-        critical-rainbow 1s linear infinite,
-        critical-pulse 0.5s ease-in-out infinite,
-        critical-shake 0.3s ease-in-out infinite;
+        critical-rainbow 0.8s linear infinite,
+        critical-pulse 0.4s ease-in-out infinite;
 }
 
 @keyframes critical-rainbow {
     0% {
-        filter: hue-rotate(0deg) brightness(1.5);
+        filter: hue-rotate(0deg) brightness(1.3);
     }
     100% {
-        filter: hue-rotate(360deg) brightness(1.5);
+        filter: hue-rotate(360deg) brightness(1.3);
     }
 }
 
 @keyframes critical-pulse {
     0%, 100% {
-        transform: scale(1);
+        transform: scale(0.85);
     }
     50% {
-        transform: scale(1.15);
+        transform: scale(0.95);
     }
 }
 
-@keyframes critical-shake {
-    0%, 100% {
-        transform: translateX(0);
+/* 📱 УЛУЧШЕННЫЕ ЭФФЕКТЫ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ */
+@media (hover: none) and (pointer: coarse) {
+    .paw-button {
+        -webkit-tap-highlight-color: transparent;
     }
-    25% {
-        transform: translateX(-5px);
+    
+    .paw-button:active {
+        animation: 
+            mobile-press 0.3s ease-out,
+            rainbow-rotate 4s linear infinite;
+        transform: scale(0.8);
     }
-    75% {
-        transform: translateX(5px);
+    
+    @keyframes mobile-press {
+        0% {
+            transform: scale(1);
+        }
+        25% {
+            transform: scale(0.75) translateX(-2px);
+        }
+        50% {
+            transform: scale(0.8) translateX(2px);
+        }
+        75% {
+            transform: scale(0.75) translateX(-1px);
+        }
+        100% {
+            transform: scale(0.8);
+        }
     }
-}
-
-.critical-explosion {
-    background: radial-gradient(circle, #ff0000, #ff8000, #ffff00) !important;
-    animation: critical-explosion-animation 0.8s ease-out !important;
-}
-
-@keyframes critical-explosion-animation {
-    0% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    50% {
-        transform: scale(1.8);
-        opacity: 0.7;
-    }
-    100% {
-        transform: scale(2);
-        opacity: 0;
+    
+    .paw-button:active .paw-icon {
+        transform: scale(1.3) rotate(15deg);
     }
 }
 
 /* ЭНЕРГЕТИЧЕСКИЕ ОРБЫ */
 .energy-orb {
     position: absolute;
-    width: 20px;
-    height: 20px;
+    width: 15px;
+    height: 15px;
     background: radial-gradient(circle, #00ffff, #0080ff);
     border-radius: 50%;
-    filter: blur(8px);
-    opacity: 0.7;
+    filter: blur(4px);
+    opacity: 0.5;
     animation: energy-orb-float 4s ease-in-out infinite;
 }
 
@@ -624,13 +575,13 @@ html {
         transform: translate(0, 0) scale(1);
     }
     25% {
-        transform: translate(20px, -15px) scale(1.2);
+        transform: translate(15px, -10px) scale(1.1);
     }
     50% {
-        transform: translate(-15px, 10px) scale(0.8);
+        transform: translate(-10px, 8px) scale(0.9);
     }
     75% {
-        transform: translate(10px, 20px) scale(1.1);
+        transform: translate(8px, 12px) scale(1.05);
     }
 }
 
@@ -1668,22 +1619,17 @@ html {
     animation: pulse 0.5s ease-in-out;
 }
 
-/* 📱 АДАПТИВНОСТЬ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ */
+/* АДАПТИВНОСТЬ */
 @media (max-width: 768px) {
     .paw-button {
-        width: 240px;
-        height: 240px;
+        width: 220px;
+        height: 220px;
     }
     
     .paw-icon {
-        font-size: 90px;
+        font-size: 80px;
     }
     
-    .floating-particle {
-        width: 5px;
-        height: 5px;
-    }
-
     .header {
         margin: 10px;
         margin-bottom: 15px;
@@ -1753,29 +1699,12 @@ html {
 
 @media (max-width: 480px) {
     .paw-button {
-        width: 200px;
-        height: 200px;
+        width: 180px;
+        height: 180px;
     }
     
     .paw-icon {
-        font-size: 70px;
-    }
-    
-    @keyframes pulse-glow {
-        0%, 100% {
-            box-shadow: 
-                0 15px 40px rgba(0, 0, 0, 0.6),
-                0 0 0 6px rgba(255, 255, 255, 0.1),
-                0 0 0 12px rgba(139, 92, 246, 0.2),
-                inset 0 6px 30px rgba(255, 255, 255, 0.2);
-        }
-        50% {
-            box-shadow: 
-                0 20px 50px rgba(0, 0, 0, 0.7),
-                0 0 0 8px rgba(255, 255, 255, 0.15),
-                0 0 0 16px rgba(139, 92, 246, 0.3),
-                inset 0 8px 35px rgba(255, 255, 255, 0.25);
-        }
+        font-size: 60px;
     }
 
     .avatar {
@@ -1853,12 +1782,12 @@ html {
 
 @media (max-width: 360px) {
     .paw-button {
-        width: 180px;
-        height: 180px;
+        width: 160px;
+        height: 160px;
     }
     
     .paw-icon {
-        font-size: 60px;
+        font-size: 50px;
     }
     
     .cards-grid {
@@ -1889,23 +1818,6 @@ html {
     .power-value {
         font-size: 28px;
     }
-}
-
-/* 🎮 ТАКТИЛЬНАЯ ОТДАЧА (VIBRATION API) */
-@media (hover: none) and (pointer: coarse) {
-    .paw-button:active {
-        animation: 
-            mobile-vibration 0.3s ease-out,
-            rainbow-rotate 4s linear infinite,
-            pulse-glow 3s ease-in-out infinite;
-    }
-}
-
-@keyframes mobile-vibration {
-    0%, 100% { transform: translateX(0) scale(0.85); }
-    25% { transform: translateX(-2px) scale(0.85); }
-    50% { transform: translateX(2px) scale(0.85); }
-    75% { transform: translateX(-1px) scale(0.85); }
 }
 
 /* Анимация появления профиля */
