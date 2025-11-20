@@ -2002,3 +2002,100 @@ button, .paw-button, .tab-item, .upgrade-card, .combo-card, .level-card {
         padding: 6px 10px;
     }
 }
+
+/* 🔧 НОВЫЕ ИСПРАВЛЕНИЯ */
+
+/* Оптимизация анимаций для слабых устройств */
+.performance-optimized {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000;
+}
+
+/* Упрощенные анимации для слабых устройств */
+@media (max-width: 768px) and (prefers-reduced-motion: no-preference) {
+    .paw-button {
+        animation: 
+            rainbow-rotate 6s linear infinite,
+            float-animation 8s ease-in-out infinite;
+    }
+    
+    .floating-particle {
+        animation-duration: 6s;
+    }
+}
+
+/* Предотвращение мерцания при загрузке */
+.paw-button {
+    opacity: 0;
+    animation-fill-mode: both;
+}
+
+.paw-button.loaded {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+/* Исправление для безопасных зон на iOS */
+@supports (padding: max(0px)) {
+    .bottom-tabs {
+        padding-bottom: max(8px, env(safe-area-inset-bottom));
+    }
+}
+
+/* Улучшенная обработка касаний для мобильных */
+@media (hover: none) and (pointer: coarse) {
+    .upgrade-card,
+    .combo-card,
+    .level-card,
+    .tab-item {
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    }
+}
+
+/* Исправление для высоких экранов */
+@media (min-height: 800px) {
+    .game-area {
+        margin: 60px 0;
+    }
+}
+
+/* Оптимизация рендеринга частиц */
+.particle,
+.explosion-particle,
+.floating-particle {
+    contain: layout style paint;
+}
+
+/* Улучшенная обработка памяти для анимаций */
+@keyframes optimized-float {
+    0% {
+        opacity: 0;
+        transform: translateY(0) scale(0.8);
+    }
+    50% {
+        opacity: 1;
+        transform: translateY(-10px) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.8);
+    }
+}
+
+/* Исправление z-index для модальных окон */
+.modal {
+    z-index: 10000;
+}
+
+.modal-content {
+    z-index: 10001;
+}
+
+/* Предотвращение скролла тела при открытом модальном окне */
+body.modal-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+}
