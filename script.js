@@ -151,76 +151,111 @@ class DarkPawsClicker {
         }
     }
 
-    /* 🎆 ВЗРЫВ ЧАСТИЦ ПРИ КЛИКЕ */
+    /* 🎆 ВЗРЫВ ЧАСТИЦ ПО ВСЕМУ ЭКРАНУ */
     createExplosion(isCritical = false) {
         const explosionContainer = document.getElementById('click-explosion');
         if (!explosionContainer) return;
 
         explosionContainer.innerHTML = '';
 
-        const particleCount = isCritical ? 30 : 15;
+        const particleCount = isCritical ? 40 : 25;
         const colors = isCritical 
-            ? ['#ff0000', '#ff8000', '#ffff00', '#ffffff']
-            : ['#ffd700', '#ffffff', '#00ffff', '#ff00ff'];
+            ? ['#ff0000', '#ff8000', '#ffff00', '#ffffff', '#ff00ff']
+            : ['#ffd700', '#ffffff', '#00ffff', '#ff00ff', '#80ff00'];
+
+        // Получаем позицию кнопки относительно окна
+        const buttonRect = this.pawButton.getBoundingClientRect();
+        const centerX = buttonRect.left + buttonRect.width / 2;
+        const centerY = buttonRect.top + buttonRect.height / 2;
 
         for (let i = 0; i < particleCount; i++) {
             const particle = document.createElement('div');
             particle.className = 'explosion-particle';
             
+            // Случайное направление взрыва по всему экрану
             const angle = Math.random() * Math.PI * 2;
-            const distance = 100 + Math.random() * 100;
+            const distance = 200 + Math.random() * 300; // Увеличиваем дистанцию
             const explodeX = Math.cos(angle) * distance;
             const explodeY = Math.sin(angle) * distance;
             
             particle.style.setProperty('--explode-x', explodeX);
             particle.style.setProperty('--explode-y', explodeY);
             
+            // Позиционируем частицы от центра кнопки
+            particle.style.left = centerX + 'px';
+            particle.style.top = centerY + 'px';
+            
             const color = colors[Math.floor(Math.random() * colors.length)];
             particle.style.background = `radial-gradient(circle, ${color}, transparent)`;
-            particle.style.color = color;
+            particle.style.boxShadow = `0 0 10px ${color}`;
             
-            const size = 4 + Math.random() * 8;
+            const size = 3 + Math.random() * 6;
             particle.style.width = `${size}px`;
             particle.style.height = `${size}px`;
             
-            particle.style.animationDelay = `${Math.random() * 0.3}s`;
+            // Случайная задержка для более натурального взрыва
+            particle.style.animationDelay = `${Math.random() * 0.4}s`;
+            
+            // Разные формы для разнообразия
+            if (Math.random() > 0.7) {
+                particle.style.borderRadius = '2px';
+                particle.style.transform = `rotate(${Math.random() * 360}deg)`;
+            }
             
             explosionContainer.appendChild(particle);
         }
 
+        // Очистка через 2 секунды
         setTimeout(() => {
             explosionContainer.innerHTML = '';
-        }, 1500);
+        }, 2000);
     }
 
-    /* 🎮 ТАКТИЛЬНАЯ ОТДАЧА */
+    /* 🎮 УЛУЧШЕННАЯ ТАКТИЛЬНАЯ ОТДАЧА ДЛЯ МОБИЛЬНЫХ */
     setupHapticFeedback() {
         if (!this.pawButton) return;
 
-        let longPressTimer;
-        let isLongPress = false;
+        let pressStartTime = 0;
+        let isPressing = false;
 
+        // Начало нажатия
         this.pawButton.addEventListener('touchstart', (e) => {
-            longPressTimer = setTimeout(() => {
-                isLongPress = true;
+            e.preventDefault();
+            pressStartTime = Date.now();
+            isPressing = true;
+            
+            // Легкая вибрация при начале нажатия
+            this.triggerHapticFeedback('light');
+            
+            // Визуальная обратная связь
+            this.pawButton.style.transition = 'transform 0.1s ease';
+            this.pawButton.style.transform = 'scale(0.9)';
+        });
+
+        // Окончание нажатия
+        this.pawButton.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            const pressDuration = Date.now() - pressStartTime;
+            isPressing = false;
+            
+            // Разная вибрация в зависимости от длительности нажатия
+            if (pressDuration > 500) {
                 this.triggerHapticFeedback('long');
                 this.createLongPressEffect();
-            }, 500);
-        });
-
-        this.pawButton.addEventListener('touchend', () => {
-            clearTimeout(longPressTimer);
-            if (isLongPress) {
-                isLongPress = false;
+            } else if (pressDuration > 200) {
+                this.triggerHapticFeedback('medium');
+            } else {
+                this.triggerHapticFeedback('light');
             }
+            
+            // Возврат к нормальному размеру
+            this.pawButton.style.transform = 'scale(1)';
         });
 
-        this.pawButton.addEventListener('touchstart', (e) => {
-            setTimeout(() => {
-                if (!isLongPress) {
-                    this.triggerHapticFeedback('light');
-                }
-            }, 50);
+        // Отмена нажатия (например, при выходе за пределы кнопки)
+        this.pawButton.addEventListener('touchcancel', (e) => {
+            isPressing = false;
+            this.pawButton.style.transform = 'scale(1)';
         });
     }
 
@@ -236,13 +271,17 @@ class DarkPawsClicker {
         }
     }
 
+    /* 🔥 ЭФФЕКТ ДОЛГОГО НАЖАТИЯ */
     createLongPressEffect() {
         const button = document.getElementById('paw-button');
         button.classList.add('critical-mode');
         
+        // Создаем дополнительный взрыв для долгого нажатия
+        this.createExplosion(true);
+        
         setTimeout(() => {
             button.classList.remove('critical-mode');
-        }, 1000);
+        }, 800);
     }
 
     /* 🔥 КРИТИЧЕСКИЕ ЭФФЕКТЫ */
@@ -250,26 +289,8 @@ class DarkPawsClicker {
         const button = document.getElementById('paw-button');
         button.classList.add('critical-mode');
         
-        const critExplosion = document.createElement('div');
-        critExplosion.className = 'explosion-particle critical-explosion';
-        critExplosion.style.cssText = `
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 5;
-        `;
-        
-        button.appendChild(critExplosion);
-        
         setTimeout(() => {
             button.classList.remove('critical-mode');
-            if (critExplosion.parentNode) {
-                critExplosion.remove();
-            }
         }, 800);
     }
 
@@ -1388,9 +1409,9 @@ class DarkPawsClicker {
         
         await this.addScore(points, isCritical);
         this.createParticles(event);
-        this.createExplosion(isCritical); // 🎆 Взрыв частиц
+        this.createExplosion(isCritical); // 🎆 Взрыв частиц по всему экрану
         
-        if (isCritical) this.showCriticalEffect(points); // 🔥 Критический эффект
+        if (isCritical) this.showCriticalEffect(points);
         
         if (this.gameState.stats.totalClicks % 3 === 0) {
             await this.saveGameState('MEDIUM_PRIORITY', 'clickBatch');
