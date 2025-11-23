@@ -2099,3 +2099,260 @@ body.modal-open {
     width: 100%;
     height: 100%;
 }
+
+/* Стили админ-панели */
+.admin-modal {
+    width: 95%;
+    max-width: 800px;
+    max-height: 90vh;
+}
+
+.admin-content {
+    padding: 20px;
+    overflow-y: auto;
+    max-height: calc(90vh - 120px);
+}
+
+.admin-section {
+    margin-bottom: 25px;
+    padding: 20px;
+    background: var(--tg-theme-secondary-bg-color, var(--bg-secondary));
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.admin-section h3 {
+    font-size: 16px;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 8px;
+}
+
+/* Статистика синхронизации */
+.sync-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.sync-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: var(--bg-tertiary);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.stat-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.stat-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-feature-settings: "tnum";
+}
+
+/* Редактирование полей */
+.edit-grid, .upgrades-edit-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.edit-field, .upgrade-edit {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.edit-field label, .upgrade-edit label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.edit-field input, .upgrade-edit input {
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-feature-settings: "tnum";
+}
+
+.edit-field input:focus, .upgrade-edit input:focus {
+    border-color: var(--text-accent);
+    outline: none;
+}
+
+.btn-small {
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-small:active {
+    transform: scale(0.95);
+}
+
+/* Управление картами */
+.cards-admin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.card-admin-control {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.card-admin-control label {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.btn-admin {
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.btn-admin:active {
+    transform: scale(0.98);
+}
+
+.btn-admin.danger {
+    background: var(--gradient-gold);
+}
+
+/* Системные кнопки */
+.system-buttons-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+/* Информационная сетка */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    font-size: 12px;
+}
+
+.info-item span:first-child {
+    color: var(--text-secondary);
+}
+
+.info-item span:last-child {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-feature-settings: "tnum";
+}
+
+/* Адаптивность админ-панели */
+@media (max-width: 768px) {
+    .admin-modal {
+        width: 98%;
+        margin: 10px;
+    }
+    
+    .admin-content {
+        padding: 15px;
+    }
+    
+    .admin-section {
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .sync-stats-grid,
+    .edit-grid,
+    .upgrades-edit-grid,
+    .cards-admin-grid,
+    .system-buttons-grid,
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .edit-field, .upgrade-edit {
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .edit-field input, .upgrade-edit input {
+        flex: 1;
+    }
+}
+
+/* Анимации для уведомлений */
+@keyframes slideInDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.admin-notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    z-index: 10000;
+    animation: slideInDown 0.3s ease-out;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.notification-success {
+    background: var(--gradient-success);
+    color: white;
+}
+
+.notification-error {
+    background: var(--gradient-gold);
+    color: white;
+}
+
+.notification-info {
+    background: var(--gradient-primary);
+    color: white;
+}
