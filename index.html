@@ -387,10 +387,154 @@
                 </div>
             </div>
         </div>
+
+        <!-- Админ-панель -->
+        <div id="admin-panel" class="modal" aria-hidden="true" role="dialog">
+            <div class="modal-content admin-modal">
+                <div class="modal-header">
+                    <h2>Админ-панель</h2>
+                    <button class="modal-close" id="close-admin" aria-label="Закрыть админ-панель">
+                        <i class="fas fa-times" aria-hidden="true"></i>
+                    </button>
+                </div>
+                
+                <div class="admin-content">
+                    <!-- Статистика синхронизации -->
+                    <div class="admin-section">
+                        <h3>📊 Статистика синхронизации</h3>
+                        <div class="sync-stats-grid">
+                            <div class="sync-stat">
+                                <span class="stat-label">Облачных сохранений:</span>
+                                <span class="stat-value" id="admin-cloud-saves">0</span>
+                            </div>
+                            <div class="sync-stat">
+                                <span class="stat-label">Успешных синхронизаций:</span>
+                                <span class="stat-value" id="admin-success-rate">0%</span>
+                            </div>
+                            <div class="sync-stat">
+                                <span class="stat-label">Последняя синхронизация:</span>
+                                <span class="stat-value" id="admin-last-sync">Никогда</span>
+                            </div>
+                            <div class="sync-stat">
+                                <span class="stat-label">ID устройства:</span>
+                                <span class="stat-value" id="admin-device-id">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Редактирование игровых данных -->
+                    <div class="admin-section">
+                        <h3>🎮 Редактирование данных</h3>
+                        <div class="edit-grid">
+                            <div class="edit-field">
+                                <label>Очки:</label>
+                                <input type="number" id="admin-edit-score" min="0" step="100">
+                                <button class="btn-small" onclick="window.clickerGame.adminEditValue('score')">Применить</button>
+                            </div>
+                            <div class="edit-field">
+                                <label>Уровень:</label>
+                                <input type="number" id="admin-edit-level" min="1" max="100">
+                                <button class="btn-small" onclick="window.clickerGame.adminEditValue('level')">Применить</button>
+                            </div>
+                            <div class="edit-field">
+                                <label>Всего заработано:</label>
+                                <input type="number" id="admin-edit-total-earned" min="0" step="1000">
+                                <button class="btn-small" onclick="window.clickerGame.adminEditValue('totalEarnedScore')">Применить</button>
+                            </div>
+                            <div class="edit-field">
+                                <label>Всего кликов:</label>
+                                <input type="number" id="admin-edit-total-clicks" min="0" step="100">
+                                <button class="btn-small" onclick="window.clickerGame.adminEditValue('totalClicks')">Применить</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Управление улучшениями -->
+                    <div class="admin-section">
+                        <h3>⚡ Управление улучшениями</h3>
+                        <div class="upgrades-edit-grid">
+                            <div class="upgrade-edit">
+                                <label>Сила лапы:</label>
+                                <input type="number" id="admin-edit-click-power" min="1" max="100">
+                                <button class="btn-small" onclick="window.clickerGame.adminEditUpgrade('clickPower')">Применить</button>
+                            </div>
+                            <div class="upgrade-edit">
+                                <label>Авто-клик:</label>
+                                <input type="number" id="admin-edit-auto-click" min="0" max="50">
+                                <button class="btn-small" onclick="window.clickerGame.adminEditUpgrade('autoClick')">Применить</button>
+                            </div>
+                            <div class="upgrade-edit">
+                                <label>Точность:</label>
+                                <input type="number" id="admin-edit-critical" min="1" max="50">
+                                <button class="btn-small" onclick="window.clickerGame.adminEditUpgrade('criticalChance')">Применить</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Управление картами -->
+                    <div class="admin-section">
+                        <h3>🎴 Управление картами</h3>
+                        <div class="cards-admin-grid">
+                            <div class="card-admin-control">
+                                <label>Разблокировать все карты:</label>
+                                <button class="btn-admin" onclick="window.clickerGame.adminUnlockAllCards()">Разблокировать</button>
+                            </div>
+                            <div class="card-admin-control">
+                                <label>Очистить колоду:</label>
+                                <button class="btn-admin" onclick="window.clickerGame.adminClearDeck()">Очистить</button>
+                            </div>
+                            <div class="card-admin-control">
+                                <label>Добавить все карты в колоду:</label>
+                                <button class="btn-admin" onclick="window.clickerGame.adminAddAllToDeck()">Добавить все</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Системные операции -->
+                    <div class="admin-section">
+                        <h3>🔧 Системные операции</h3>
+                        <div class="system-buttons-grid">
+                            <button class="btn-admin danger" onclick="window.clickerGame.adminForceSync()">Принудительная синхронизация</button>
+                            <button class="btn-admin danger" onclick="window.clickerGame.adminExportSave()">Экспорт данных</button>
+                            <button class="btn-admin danger" onclick="window.clickerGame.adminImportSave()">Импорт данных</button>
+                            <button class="btn-admin danger" onclick="window.clickerGame.adminResetGame()">Сбросить игру</button>
+                            <button class="btn-admin danger" onclick="window.clickerGame.adminBackupSave()">Создать бэкап</button>
+                            <button class="btn-admin danger" onclick="window.clickerGame.adminRestoreBackup()">Восстановить бэкап</button>
+                        </div>
+                    </div>
+
+                    <!-- Информация о версиях -->
+                    <div class="admin-section">
+                        <h3>ℹ️ Информация о системе</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span>Версия игры:</span>
+                                <span id="admin-game-version">1.3</span>
+                            </div>
+                            <div class="info-item">
+                                <span>Версия сохранения:</span>
+                                <span id="admin-save-version">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span>Облачное хранилище:</span>
+                                <span id="admin-cloud-status">Недоступно</span>
+                            </div>
+                            <div class="info-item">
+                                <span>Размер сохранения:</span>
+                                <span id="admin-save-size">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Контейнер для взрыва частиц по всему экрану -->
     <div class="click-explosion" id="click-explosion" aria-hidden="true"></div>
+
+    <!-- Секретная кнопка админа (удерживать 5 секунд) -->
+    <div id="admin-trigger" style="position: fixed; top: 10px; left: 10px; width: 50px; height: 50px; opacity: 0.1; z-index: 9999;"></div>
 
     <script src="script.js"></script>
 </body>
